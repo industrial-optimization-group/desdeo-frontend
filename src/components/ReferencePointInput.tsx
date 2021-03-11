@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const SingleInput = ({
   points,
@@ -20,6 +20,9 @@ const SingleInput = ({
         step="0.000001"
         // defaultValue={points[pointIndex]}
         value={focus ? currentInput : points[pointIndex]}
+        onFocus={() => {
+          SetCurrentInput(points[pointIndex]);
+        }}
         onBlur={(e) => {
           points[pointIndex] = currentInput;
           setPoints([...points]);

@@ -97,24 +97,10 @@ function App() {
     },
   ]);
 
-  const onClickHandler = (value: Value) => {
-    let index_att = 0;
-    let index_datum = 0;
-
-    for (let i = 0; i < dataSet.length; i++) {
-      let res = dataSet[i].data.findIndex((datum) => datum.id == value.id);
-      if (res > -1) {
-        index_att = res;
-        index_datum = i;
-        dataSet[i].data[res].isSelected = true;
-        break;
-      }
-    }
-    ReferencePoint[index_datum] = value.value;
-    console.log(ReferencePoint);
+  const onClickHandler = (attribute_tuple: [number, number]) => {
+    ReferencePoint[attribute_tuple[0] - 1] = attribute_tuple[1];
 
     // Spread the array to make React redraw the elements
-    setDataSet([...dataSet]);
     setReferencePoint([...ReferencePoint]);
   };
 

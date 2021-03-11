@@ -1,10 +1,9 @@
 import { useRef, useEffect } from "react";
-import { ParallelAxes, StackedBar } from "desdeo-components";
+import { ParallelAxes } from "desdeo-components";
 import {
   DataSet,
   Attribute,
   AttributeSet,
-  Value,
 } from "desdeo-components/build/types/dataTypes";
 
 const Display = ({
@@ -14,7 +13,7 @@ const Display = ({
 }: {
   title: string;
   dataSet: DataSet[];
-  onClickHandler: (value: Value) => void;
+  onClickHandler: (attribute_tuple: [number, number]) => void;
 }) => {
   const onLineClick = (active: Attribute[]) => {
     console.log(active);
@@ -32,6 +31,8 @@ const Display = ({
           data={dataSet}
           onLineClick={onLineClick}
           onChange={onChange}
+          onClicking={onClickHandler}
+          disableCursor={false}
         />
       </div>
     </div>
