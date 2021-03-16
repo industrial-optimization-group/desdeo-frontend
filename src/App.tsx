@@ -6,6 +6,7 @@ import Login from "./views/Login";
 import LandingPage from "./views/LandingPage";
 import NavigationBar from "./components/NavigationBar";
 import Logout from "./views/Logout";
+import Register from "./views/Register";
 import { Tokens } from "./types/AppTypes";
 import { useState } from "react";
 
@@ -45,6 +46,9 @@ function App() {
               tokens={tokens}
               setTokens={SetTokens}
             />
+          </Route>
+          <Route path="/register" exact>
+            <Register />
           </Route>
           <Route path="/demo" exact>
             <Demo />
