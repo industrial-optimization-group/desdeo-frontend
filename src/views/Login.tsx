@@ -20,10 +20,12 @@ interface FormData {
 }
 
 export const Login = ({
+  apiUrl,
   setIsLoggedIn,
   setLoggedAs,
   setTokens,
 }: {
+  apiUrl: string;
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
   setLoggedAs: React.Dispatch<React.SetStateAction<string>>;
   setTokens: React.Dispatch<React.SetStateAction<Tokens>>;
@@ -33,7 +35,7 @@ export const Login = ({
 
   const onSubmit = async (data: FormData) => {
     try {
-      const res = await fetch("http://127.0.0.1:5000/login", {
+      const res = await fetch(`${apiUrl}/login`, {
         method: "POST",
         headers: { "Content-type": "application/json" },
         body: JSON.stringify(data),

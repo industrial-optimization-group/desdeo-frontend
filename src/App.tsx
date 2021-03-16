@@ -18,6 +18,8 @@ function App() {
   const [loggedAs, SetLoggedAs] = useState<string>("");
   const [tokens, SetTokens] = useState<Tokens>({ access: "", refresh: "" });
 
+  const API_URL: string = "http://127.0.0.1:5000";
+
   return (
     <div className="App">
       <Router>
@@ -28,6 +30,7 @@ function App() {
           </Route>
           <Route path="/login" exact>
             <Login
+              apiUrl={API_URL}
               setIsLoggedIn={SetIsLoggedIn}
               setLoggedAs={SetLoggedAs}
               setTokens={SetTokens}
@@ -35,6 +38,7 @@ function App() {
           </Route>
           <Route path="/logout" exact>
             <Logout
+              apiUrl={API_URL}
               isLoggedIn={isLoggedIn}
               setIsLoggedIn={SetIsLoggedIn}
               setLoggedAs={SetLoggedAs}

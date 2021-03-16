@@ -6,12 +6,14 @@ import { Redirect } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 function Logout({
+  apiUrl,
   isLoggedIn,
   setIsLoggedIn,
   setLoggedAs,
   tokens,
   setTokens,
 }: {
+  apiUrl: string;
   isLoggedIn: boolean;
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
   setLoggedAs: React.Dispatch<React.SetStateAction<string>>;
@@ -24,7 +26,7 @@ function Logout({
   useEffect(() => {
     const handleLogout = async () => {
       try {
-        const res_access = await fetch("http://127.0.0.1:5000/logout/access", {
+        const res_access = await fetch(`${apiUrl}/logout/access`, {
           method: "POST",
           headers: { Authorization: `Bearer ${tokens.access}` },
         });
@@ -38,13 +40,10 @@ function Logout({
         return;
       }
       try {
-        const res_refresh = await fetch(
-          "http://127.0.0.1:5000/logout/refresh",
-          {
-            method: "POST",
-            headers: { Authorization: `Bearer ${tokens.refresh}` },
-          }
-        );
+        const res_refresh = await fetch(`${apiUrl}/logout/refresh`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${tokens.refresh}` },
+        });
 
         if (res_refresh.status != 200) {
           throw new Error("Could not revoke refresh token.");
