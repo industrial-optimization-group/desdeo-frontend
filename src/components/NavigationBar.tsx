@@ -3,7 +3,13 @@ import React from "react";
 import { Container, Navbar, Nav, NavDropdown } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-function NavigationBar() {
+function NavigationBar({
+  isLoggedIn,
+  loggedAs,
+}: {
+  isLoggedIn: boolean;
+  loggedAs: string;
+}) {
   return (
     <Container>
       <Navbar bg="light" expand="lg">
@@ -20,20 +26,28 @@ function NavigationBar() {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="mr-auto">
-            <Nav.Link as={Link} to="/login">
-              Login
-            </Nav.Link>
-            <Nav.Link as={Link} to="/register">
-              Register
-            </Nav.Link>
-            <NavDropdown title="Dropdown" id="basic-nav-dropdown">
-              <NavDropdown.Item>Action</NavDropdown.Item>
-              <NavDropdown.Item>Another action</NavDropdown.Item>
-              <NavDropdown.Item>Something</NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item>Separated link</NavDropdown.Item>
-            </NavDropdown>
+            {!isLoggedIn && (
+              <>
+                <Nav.Link as={Link} to="/login">
+                  Login
+                </Nav.Link>
+                <Nav.Link as={Link} to="/register">
+                  Register
+                </Nav.Link>
+              </>
+            )}
+            {isLoggedIn && (
+              <NavDropdown title="Dropdown" id="basic-nav-dropdown">
+                <NavDropdown.Item>Action</NavDropdown.Item>
+                <NavDropdown.Item>Another action</NavDropdown.Item>
+                <NavDropdown.Item>Something</NavDropdown.Item>
+                <NavDropdown.Divider />
+                <NavDropdown.Item>Separated link</NavDropdown.Item>
+              </NavDropdown>
+            )}
           </Nav>
+          {isLoggedIn && `Logged in as use ${loggedAs}`}
+          {!isLoggedIn && "You are not currently logged in"}
         </Navbar.Collapse>
       </Navbar>
     </Container>
