@@ -46,7 +46,14 @@ function NavigationBar({
               </NavDropdown>
             )}
           </Nav>
-          {isLoggedIn && `Logged in as use ${loggedAs}`}
+          {isLoggedIn && (
+            <>
+              {`Logged in as user: ${loggedAs}`}{" "}
+              <Nav.Link as={Link} to="/logout">
+                Logout
+              </Nav.Link>
+            </>
+          )}
           {!isLoggedIn && "You are not currently logged in"}
         </Navbar.Collapse>
       </Navbar>

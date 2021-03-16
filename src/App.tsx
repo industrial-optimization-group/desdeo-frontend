@@ -5,6 +5,7 @@ import Demo from "./views/Demo";
 import Login from "./views/Login";
 import LandingPage from "./views/LandingPage";
 import NavigationBar from "./components/NavigationBar";
+import Logout from "./views/Logout";
 import { Tokens } from "./types/AppTypes";
 import { useState } from "react";
 
@@ -29,6 +30,15 @@ function App() {
             <Login
               setIsLoggedIn={SetIsLoggedIn}
               setLoggedAs={SetLoggedAs}
+              setTokens={SetTokens}
+            />
+          </Route>
+          <Route path="/logout" exact>
+            <Logout
+              isLoggedIn={isLoggedIn}
+              setIsLoggedIn={SetIsLoggedIn}
+              setLoggedAs={SetLoggedAs}
+              tokens={tokens}
               setTokens={SetTokens}
             />
           </Route>
