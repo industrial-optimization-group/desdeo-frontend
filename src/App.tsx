@@ -7,6 +7,7 @@ import LandingPage from "./views/LandingPage";
 import NavigationBar from "./components/NavigationBar";
 import Logout from "./views/Logout";
 import Register from "./views/Register";
+import ProblemDefinition from "./views/ProblemDefinition";
 import { Tokens } from "./types/AppTypes";
 import { useState } from "react";
 
@@ -49,6 +50,14 @@ function App() {
           </Route>
           <Route path="/register" exact>
             <Register />
+          </Route>
+          <Route path="/problem/create" exact>
+            <ProblemDefinition
+              apiUrl={API_URL}
+              isLoggedIn={isLoggedIn}
+              loggedAs={loggedAs}
+              tokens={tokens}
+            />
           </Route>
           <Route path="/demo" exact>
             <Demo />

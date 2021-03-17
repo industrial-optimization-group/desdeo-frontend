@@ -37,12 +37,12 @@ function NavigationBar({
               </>
             )}
             {isLoggedIn && (
-              <NavDropdown title="Dropdown" id="basic-nav-dropdown">
-                <NavDropdown.Item>Action</NavDropdown.Item>
-                <NavDropdown.Item>Another action</NavDropdown.Item>
-                <NavDropdown.Item>Something</NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item>Separated link</NavDropdown.Item>
+              <NavDropdown title="Problem" id="basic-nav-dropdown">
+                <NavDropdown.Item>
+                  <Nav.Link as={Link} to="/problem/create">
+                    Define new
+                  </Nav.Link>
+                </NavDropdown.Item>
               </NavDropdown>
             )}
           </Nav>
