@@ -8,6 +8,7 @@ import NavigationBar from "./components/NavigationBar";
 import Logout from "./views/Logout";
 import Register from "./views/Register";
 import ProblemDefinition from "./views/ProblemDefinition";
+import ProblemExplore from "./views/ProblemExplore";
 import { Tokens } from "./types/AppTypes";
 import { useState } from "react";
 
@@ -53,6 +54,14 @@ function App() {
           </Route>
           <Route path="/problem/create" exact>
             <ProblemDefinition
+              apiUrl={API_URL}
+              isLoggedIn={isLoggedIn}
+              loggedAs={loggedAs}
+              tokens={tokens}
+            />
+          </Route>
+          <Route path="/problem/explore" exact>
+            <ProblemExplore
               apiUrl={API_URL}
               isLoggedIn={isLoggedIn}
               loggedAs={loggedAs}

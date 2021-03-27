@@ -43,6 +43,11 @@ function NavigationBar({
                     Define new
                   </Nav.Link>
                 </NavDropdown.Item>
+                <NavDropdown.Item>
+                  <Nav.Link as={Link} to="/problem/explore">
+                    Explore existing
+                  </Nav.Link>
+                </NavDropdown.Item>
               </NavDropdown>
             )}
           </Nav>

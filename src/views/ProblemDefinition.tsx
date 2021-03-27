@@ -47,6 +47,14 @@ function ProblemDefinition({
   ] = useState<ProblemNameAndType>({ name: "", type: "" });
   const { register, handleSubmit, errors } = useForm<ProblemData>();
 
+  if (!isLoggedIn) {
+    return (
+      <Container>
+        <p>You are not logged in. Please login first.</p>
+      </Container>
+    );
+  }
+
   const dummyProblem: ProblemData = {
     problem_type: "Analytical",
     name: "TestProblem",
