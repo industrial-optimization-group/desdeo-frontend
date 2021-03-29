@@ -21,6 +21,7 @@ import MethodCreate from "./views/MethodCreate";
 function App() {
   const [isLoggedIn, SetIsLoggedIn] = useState<boolean>(false);
   const [loggedAs, SetLoggedAs] = useState<string>("");
+  const [methodCreated, SetMethodCreated] = useState<boolean>(false);
   const [tokens, SetTokens] = useState<Tokens>({ access: "", refresh: "" });
 
   const API_URL: string = "http://127.0.0.1:5000";
@@ -71,7 +72,13 @@ function App() {
             />
           </Route>
           <Route path="/method/create" exact>
-            <MethodCreate></MethodCreate>
+            <MethodCreate
+              apiUrl={API_URL}
+              isLoggedIn={isLoggedIn}
+              loggedAs={loggedAs}
+              tokens={tokens}
+              setMethodCreated={SetMethodCreated}
+            />
           </Route>
           <Route path="/demo" exact>
             <Demo />
