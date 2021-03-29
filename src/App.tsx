@@ -9,12 +9,14 @@ import Logout from "./views/Logout";
 import Register from "./views/Register";
 import ProblemDefinition from "./views/ProblemDefinition";
 import ProblemExplore from "./views/ProblemExplore";
+import CreateMethod from "./views/MethodCreate";
 import { Tokens } from "./types/AppTypes";
 import { useState } from "react";
 
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
 import "bootstrap/dist/css/bootstrap.min.css";
+import MethodCreate from "./views/MethodCreate";
 
 function App() {
   const [isLoggedIn, SetIsLoggedIn] = useState<boolean>(false);
@@ -67,6 +69,9 @@ function App() {
               loggedAs={loggedAs}
               tokens={tokens}
             />
+          </Route>
+          <Route path="/method/create" exact>
+            <MethodCreate></MethodCreate>
           </Route>
           <Route path="/demo" exact>
             <Demo />

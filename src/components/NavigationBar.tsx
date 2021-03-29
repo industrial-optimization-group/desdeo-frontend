@@ -37,18 +37,27 @@ function NavigationBar({
               </>
             )}
             {isLoggedIn && (
-              <NavDropdown title="Problem" id="basic-nav-dropdown">
-                <NavDropdown.Item>
-                  <Nav.Link as={Link} to="/problem/create">
-                    Define new
-                  </Nav.Link>
-                </NavDropdown.Item>
-                <NavDropdown.Item>
-                  <Nav.Link as={Link} to="/problem/explore">
-                    Explore existing
-                  </Nav.Link>
-                </NavDropdown.Item>
-              </NavDropdown>
+              <>
+                <NavDropdown title="Problem" id="basic-nav-dropdown">
+                  <NavDropdown.Item>
+                    <Nav.Link as={Link} to="/problem/create">
+                      Define new
+                    </Nav.Link>
+                  </NavDropdown.Item>
+                  <NavDropdown.Item>
+                    <Nav.Link as={Link} to="/problem/explore">
+                      Explore existing
+                    </Nav.Link>
+                  </NavDropdown.Item>
+                </NavDropdown>
+                <NavDropdown title="Solve" id="basic-nav-dropdown">
+                  <NavDropdown.Item>
+                    <Nav.Link as={Link} to="/method/create">
+                      Define method
+                    </Nav.Link>
+                  </NavDropdown.Item>
+                </NavDropdown>
+              </>
             )}
           </Nav>
           {isLoggedIn && (
