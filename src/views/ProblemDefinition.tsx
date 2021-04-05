@@ -57,7 +57,7 @@ function ProblemDefinition({
 
   const dummyProblem: ProblemData = {
     problem_type: "Analytical",
-    name: "TestProblem",
+    name: "Correct directions",
     objective_functions: ["2*x+y", "x+2*y/z", "x+y+z"],
     objective_names: ["profit", "loss", "impact"],
     variables: ["x", "y", "z"],
@@ -68,8 +68,8 @@ function ProblemDefinition({
       [-20, 20],
     ],
     variable_names: ["speed", "luck", "dex"],
-    ideal: [10, 20, 30],
-    nadir: [-10, -20, -30],
+    ideal: [-10, 20, -30],
+    nadir: [10, -20, 30],
     minimize: [1, -1, 1],
   };
 

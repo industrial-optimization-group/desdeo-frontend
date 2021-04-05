@@ -9,6 +9,7 @@ interface MethodCreateProps {
   tokens: Tokens;
   apiUrl: string;
   setMethodCreated: React.Dispatch<React.SetStateAction<boolean>>;
+  setActiveProblemId: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
 interface Problem {
@@ -24,6 +25,7 @@ function MethodCreate({
   tokens,
   apiUrl,
   setMethodCreated,
+  setActiveProblemId,
 }: MethodCreateProps) {
   const [problems, SetProblems] = useState<Problem[]>([
     {
@@ -87,6 +89,7 @@ function MethodCreate({
         const body = await res.json();
         console.log(body);
         setMethodCreated(true);
+        setActiveProblemId(problemId);
         // created!
       } else {
         console.log(`Got return code ${res.status}. Could not create method.`);
