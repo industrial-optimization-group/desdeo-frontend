@@ -9,14 +9,14 @@ import Logout from "./views/Logout";
 import Register from "./views/Register";
 import ProblemDefinition from "./views/ProblemDefinition";
 import ProblemExplore from "./views/ProblemExplore";
-import CreateMethod from "./views/MethodCreate";
+import ReferencePointMethod from "./views/ReferencePointMethod";
+import MethodCreate from "./views/MethodCreate";
 import { Tokens } from "./types/AppTypes";
 import { useState } from "react";
 
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
 import "bootstrap/dist/css/bootstrap.min.css";
-import MethodCreate from "./views/MethodCreate";
 
 function App() {
   const [isLoggedIn, SetIsLoggedIn] = useState<boolean>(false);
@@ -79,6 +79,9 @@ function App() {
               tokens={tokens}
               setMethodCreated={SetMethodCreated}
             />
+          </Route>
+          <Route path="/method/optimize" exact>
+            <ReferencePointMethod></ReferencePointMethod>
           </Route>
           <Route path="/demo" exact>
             <Demo />

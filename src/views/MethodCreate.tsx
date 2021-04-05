@@ -37,6 +37,10 @@ function MethodCreate({
   const [methodKey, SetMethodKey] = useState<number>(0);
 
   useEffect(() => {
+    if (!isLoggedIn) {
+      // do nothing
+      return;
+    }
     const fetchProblems = async () => {
       try {
         const res = await fetch(`${apiUrl}/problem/access`, {
@@ -49,8 +53,7 @@ function MethodCreate({
         if (res.status == 200) {
           const body = await res.json();
           SetProblems(body.problems);
-          setMethodCreated(true);
-          // problems set!
+          // problems fetched!
         } else {
           console.log(
             `Got return code ${res.status}. Could not fetch problems.`
@@ -83,6 +86,7 @@ function MethodCreate({
       if (res.status == 201) {
         const body = await res.json();
         console.log(body);
+        setMethodCreated(true);
         // created!
       } else {
         console.log(`Got return code ${res.status}. Could not create method.`);
@@ -93,6 +97,14 @@ function MethodCreate({
       // Do nothing
     }
   };
+
+  if (!isLoggedIn) {
+    return (
+      <>
+        <p>You need to login first before setting up a new method.</p>
+      </>
+    );
+  }
 
   return (
     <>
