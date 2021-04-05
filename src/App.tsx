@@ -1,7 +1,6 @@
 import React from "react";
 import "./App.css";
 
-import Demo from "./views/Demo";
 import Login from "./views/Login";
 import LandingPage from "./views/LandingPage";
 import NavigationBar from "./components/NavigationBar";
@@ -91,9 +90,6 @@ function App() {
               methodCreated={methodCreated}
               activeProblemId={activeProblemId}
             />
-          </Route>
-          <Route path="/demo" exact>
-            <Demo />
           </Route>
         </Switch>
       </Router>

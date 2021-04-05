@@ -6,7 +6,7 @@ import {
   ObjectiveDatum,
 } from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
-import ReferencePointInput from "../components/ReferencePointInput";
+import ReferencePointInputForm from "../components/ReferencePointInputForm";
 
 interface ReferencePointMethodProps {
   isLoggedIn: boolean;
@@ -161,6 +161,12 @@ function ReferencePointMethod({
       </p>
       <p>{`Help: ${helpMessage}`}</p>
       <p>{`Current reference point: ${referencePoint}`}</p>
+      <ReferencePointInputForm
+        setReferencePoint={SetReferencePoint}
+        referencePoint={referencePoint}
+        nObjectives={activeProblemInfo.nObjectives}
+        objectiveNames={activeProblemInfo.objectiveNames}
+      />
     </div>
   );
 }
