@@ -166,6 +166,9 @@ function ReferencePointMethod({
         referencePoint={referencePoint}
         nObjectives={activeProblemInfo.nObjectives}
         objectiveNames={activeProblemInfo.objectiveNames}
+        ideal={activeProblemInfo.ideal}
+        nadir={activeProblemInfo.nadir}
+        directions={activeProblemInfo.minimize}
       />
     </div>
   );
