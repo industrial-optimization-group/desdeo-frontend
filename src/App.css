@@ -66,8 +66,15 @@ body {
   text-align: center;
 }
 
+.loading-icon {
+  display: inline-block;
+  align-content: center;
+  align-items: center;
+}
+
 .control-panel {
-  display: grid;
+  display: inline;
+  position: relative;
   grid-row: 2;
   grid-column: 1;
   grid-template-rows: 40px 1fr;

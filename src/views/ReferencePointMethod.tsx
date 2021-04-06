@@ -7,6 +7,9 @@ import {
 } from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
 import ReferencePointInputForm from "../components/ReferencePointInputForm";
+import { Container, Row, Col, Button } from "react-bootstrap";
+import ReactLoading from "react-loading";
+import { ParseSolutions } from "../utils/DataHandling";
 
 interface ReferencePointMethodProps {
   isLoggedIn: boolean;
@@ -32,6 +35,7 @@ function ReferencePointMethod({
     "Method not started yet."
   );
   const [referencePoint, SetReferencePoint] = useState<number[]>([0]);
+  const [loading, SetLoading] = useState<boolean>(false);
 
   // fetch current problem info
   useEffect(() => {
@@ -141,6 +145,45 @@ function ReferencePointMethod({
     startMethod();
   }, [activeProblemInfo, methodStarted]);
 
+  const iterate = async () => {
+    // Attempt to iterate
+    SetLoading(true);
+    console.log("loading...");
+    try {
+      const res = await fetch(`${apiUrl}/method/control`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${tokens.access}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ response: { reference_point: referencePoint } }),
+      });
+
+      if (res.status === 200) {
+        // ok
+        const body = await res.json();
+        const response = JSON.parse(body.response);
+        SetHelpMessage(response.message);
+        SetReferencePoint(response.current_solution);
+        console.log(response);
+        console.log(
+          ParseSolutions(
+            response.additional_solutions,
+            activeProblemInfo as ProblemInfo
+          )
+        );
+      } else {
+        console.log("Got a response which is not 200");
+      }
+    } catch (e) {
+      console.log("Could not iterate RFP");
+      console.log(e);
+      // do nothing
+    }
+    SetLoading(false);
+    console.log("done!");
+  };
+
   if (
     !methodCreated ||
     activeProblemId === null ||
@@ -150,7 +193,7 @@ function ReferencePointMethod({
   }
 
   return (
-    <div>
+    <Container>
       <p>
         {`Method is defined with active problem ID ${activeProblemId}! View to solve problems using the reference point
         method.\n${JSON.stringify(
@@ -161,16 +204,64 @@ function ReferencePointMethod({
       </p>
       <p>{`Help: ${helpMessage}`}</p>
       <p>{`Current reference point: ${referencePoint}`}</p>
-      <ReferencePointInputForm
-        setReferencePoint={SetReferencePoint}
-        referencePoint={referencePoint}
-        nObjectives={activeProblemInfo.nObjectives}
-        objectiveNames={activeProblemInfo.objectiveNames}
-        ideal={activeProblemInfo.ideal}
-        nadir={activeProblemInfo.nadir}
-        directions={activeProblemInfo.minimize}
-      />
-    </div>
+
+      <Row>
+        <Col sm={4}></Col>
+        <Col sm={4}>
+          {!loading && (
+            <Button block={true} size={"lg"} onClick={iterate}>
+              Iterate
+            </Button>
+          )}
+          {loading && (
+            <Button block={true} disabled={true} size={"lg"} variant={"info"}>
+              {"Iterating... "}
+              <ReactLoading
+                type={"bubbles"}
+                color={"#ffffff"}
+                className={"loading-icon"}
+                height={28}
+                width={32}
+              />
+            </Button>
+          )}
+        </Col>
+        <Col sm={4}></Col>
+      </Row>
+
+      <Row>
+        <Col sm={4}>
+          <p>Current reference point:</p>
+          <p>{`[${activeProblemInfo.objectiveNames.map(
+            (v, i) => v + ": " + referencePoint[i] + " "
+          )}]`}</p>
+          <ReferencePointInputForm
+            setReferencePoint={SetReferencePoint}
+            referencePoint={referencePoint}
+            nObjectives={activeProblemInfo.nObjectives}
+            objectiveNames={activeProblemInfo.objectiveNames}
+            ideal={activeProblemInfo.ideal}
+            nadir={activeProblemInfo.nadir}
+            directions={activeProblemInfo.minimize}
+          />
+        </Col>
+        <Col sm={8}></Col>
+      </Row>
+      <Row>
+        <Col>
+          <p>
+            {`Method is defined with active problem ID ${activeProblemId}! View to solve problems using the reference point
+        method.\n${JSON.stringify(
+          activeProblemInfo,
+          null,
+          4
+        )}\nActive data: ${JSON.stringify(data, null, 4)}`}
+          </p>
+          <p>{`Help: ${helpMessage}`}</p>
+          <p>{`Current reference point: ${referencePoint}`}</p>
+        </Col>
+      </Row>
+    </Container>
   );
 }
 
