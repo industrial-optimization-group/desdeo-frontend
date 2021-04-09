@@ -57,20 +57,24 @@ function ProblemDefinition({
 
   const dummyProblem: ProblemData = {
     problem_type: "Analytical",
-    name: "Correct directions",
-    objective_functions: ["2*x+y", "x+2*y/z", "x+y+z"],
-    objective_names: ["profit", "loss", "impact"],
-    variables: ["x", "y", "z"],
-    variable_initial_values: [5, 2, 3],
-    variable_bounds: [
-      [-5, 5],
-      [-15, 15],
-      [-20, 20],
+    name: "River pollution problem (correct)",
+    objective_functions: [
+      "-4.07 - 2.27*x",
+      "-2.60 - 0.03*x - 0.02*y - 0.01/(1.39 - x**2) - 0.30/(1.39 + y**2)",
+      "-8.21 + 0.71 / (1.09 - x**2)",
+      "-0.96 - 0.96/(1.09 - y**2)",
     ],
-    variable_names: ["speed", "luck", "dex"],
-    ideal: [-10, 20, -30],
-    nadir: [10, -20, 30],
-    minimize: [1, -1, 1],
+    objective_names: ["WQ City", "WQ Border", "ROI City", "Tax City"],
+    variables: ["x", "y"],
+    variable_initial_values: [0.5, 0.5],
+    variable_bounds: [
+      [0.3, 1.0],
+      [0.3, 1.0],
+    ],
+    variable_names: ["x_1", "x_2"],
+    ideal: [-6.339, -2.864, -7.499, -11.626],
+    nadir: [-4.751, -2.767, -0.321, -1.92],
+    minimize: [1, 1, 1, 1],
   };
 
   const onSubmit = async (data: ProblemData) => {

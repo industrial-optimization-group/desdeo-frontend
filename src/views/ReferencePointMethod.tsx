@@ -11,6 +11,7 @@ import { Container, Row, Col, Button } from "react-bootstrap";
 import ReactLoading from "react-loading";
 import { ParseSolutions } from "../utils/DataHandling";
 import { HorizontalBars } from "visual-components";
+import SolutionTable from "../components/SolutionTable";
 
 interface ReferencePointMethodProps {
   isLoggedIn: boolean;
@@ -35,8 +36,11 @@ function ReferencePointMethod({
   const [helpMessage, SetHelpMessage] = useState<string>(
     "Method not started yet."
   );
-  const [referencePoint, SetReferencePoint] = useState<number[]>([0, 0, 0]);
+  const [referencePoint, SetReferencePoint] = useState<number[]>([]);
+  const [currentPoint, SetCurrentPoint] = useState<number[]>([]);
+  const [fetchedInfo, SetFetchedInfo] = useState<boolean>(false);
   const [loading, SetLoading] = useState<boolean>(false);
+  const [alternatives, SetAlternatives] = useState<ObjectiveData>();
 
   // fetch current problem info
   useEffect(() => {
@@ -76,6 +80,9 @@ function ReferencePointMethod({
             nadir: body.nadir,
             minimize: body.minimize,
           });
+          SetReferencePoint(body.ideal);
+          SetCurrentPoint(body.ideal);
+          SetFetchedInfo(true);
         } else {
           //some other code
           console.log(`could not fetch problem, got status code ${res.status}`);
@@ -166,13 +173,11 @@ function ReferencePointMethod({
         const response = JSON.parse(body.response);
         SetHelpMessage(response.message);
         SetReferencePoint(response.current_solution);
-        console.log(response);
-        console.log(
-          ParseSolutions(
-            response.additional_solutions,
-            activeProblemInfo as ProblemInfo
-          )
+        SetCurrentPoint(response.current_solution);
+        SetAlternatives(
+          ParseSolutions(response.additional_solutions, activeProblemInfo!)
         );
+        console.log(response.additional_solutions);
       } else {
         console.log("Got a response which is not 200");
       }
@@ -195,17 +200,7 @@ function ReferencePointMethod({
 
   return (
     <Container>
-      <p>
-        {`Method is defined with active problem ID ${activeProblemId}! View to solve problems using the reference point
-        method.\n${JSON.stringify(
-          activeProblemInfo,
-          null,
-          4
-        )}\nActive data: ${JSON.stringify(data, null, 4)}`}
-      </p>
-      <p>{`Help: ${helpMessage}`}</p>
       <p>{`Current reference point: ${referencePoint}`}</p>
-
       <Row>
         <Col sm={4}></Col>
         <Col sm={4}>
@@ -232,43 +227,42 @@ function ReferencePointMethod({
 
       <Row>
         <Col sm={4}>
-          <ReferencePointInputForm
-            setReferencePoint={SetReferencePoint}
-            referencePoint={referencePoint}
-            nObjectives={activeProblemInfo.nObjectives}
-            objectiveNames={activeProblemInfo.objectiveNames}
-            ideal={activeProblemInfo.ideal}
-            nadir={activeProblemInfo.nadir}
-            directions={activeProblemInfo.minimize}
-          />
+          {fetchedInfo && (
+            <ReferencePointInputForm
+              setReferencePoint={SetReferencePoint}
+              referencePoint={referencePoint}
+              nObjectives={activeProblemInfo.nObjectives}
+              objectiveNames={activeProblemInfo.objectiveNames}
+              ideal={activeProblemInfo.ideal}
+              nadir={activeProblemInfo.nadir}
+              directions={activeProblemInfo.minimize}
+            />
+          )}
         </Col>
         <Col sm={8}>
-          {!(activeProblemInfo === undefined) && (
+          {fetchedInfo && (
             <HorizontalBars
               objectiveData={ParseSolutions(
                 [referencePoint],
                 activeProblemInfo
               )}
               referencePoint={referencePoint}
+              currentPoint={currentPoint}
               setReferencePoint={SetReferencePoint}
             />
           )}
         </Col>
       </Row>
-      <Row>
-        <Col>
-          <p>
-            {`Method is defined with active problem ID ${activeProblemId}! View to solve problems using the reference point
-        method.\n${JSON.stringify(
-          activeProblemInfo,
-          null,
-          4
-        )}\nActive data: ${JSON.stringify(data, null, 4)}`}
-          </p>
-          <p>{`Help: ${helpMessage}`}</p>
-          <p>{`Current reference point: ${referencePoint}`}</p>
-        </Col>
-      </Row>
+      {!(alternatives === undefined) && (
+        <Row>
+          <Col>
+            <SolutionTable
+              objectiveData={alternatives!}
+              setSolution={SetCurrentPoint}
+            />
+          </Col>
+        </Row>
+      )}
     </Container>
   );
 }
