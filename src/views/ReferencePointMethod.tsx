@@ -1,5 +1,5 @@
 import React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   ProblemInfo,
   ObjectiveData,
@@ -10,6 +10,7 @@ import ReferencePointInputForm from "../components/ReferencePointInputForm";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import ReactLoading from "react-loading";
 import { ParseSolutions } from "../utils/DataHandling";
+import { HorizontalBars } from "visual-components";
 
 interface ReferencePointMethodProps {
   isLoggedIn: boolean;
@@ -34,7 +35,7 @@ function ReferencePointMethod({
   const [helpMessage, SetHelpMessage] = useState<string>(
     "Method not started yet."
   );
-  const [referencePoint, SetReferencePoint] = useState<number[]>([0]);
+  const [referencePoint, SetReferencePoint] = useState<number[]>([0, 0, 0]);
   const [loading, SetLoading] = useState<boolean>(false);
 
   // fetch current problem info
@@ -231,10 +232,6 @@ function ReferencePointMethod({
 
       <Row>
         <Col sm={4}>
-          <p>Current reference point:</p>
-          <p>{`[${activeProblemInfo.objectiveNames.map(
-            (v, i) => v + ": " + referencePoint[i] + " "
-          )}]`}</p>
           <ReferencePointInputForm
             setReferencePoint={SetReferencePoint}
             referencePoint={referencePoint}
@@ -245,7 +242,18 @@ function ReferencePointMethod({
             directions={activeProblemInfo.minimize}
           />
         </Col>
-        <Col sm={8}></Col>
+        <Col sm={8}>
+          {!(activeProblemInfo === undefined) && (
+            <HorizontalBars
+              objectiveData={ParseSolutions(
+                [referencePoint],
+                activeProblemInfo
+              )}
+              referencePoint={referencePoint}
+              setReferencePoint={SetReferencePoint}
+            />
+          )}
+        </Col>
       </Row>
       <Row>
         <Col>

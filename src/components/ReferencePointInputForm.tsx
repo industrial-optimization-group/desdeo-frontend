@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 import { useForm } from "react-hook-form";
 import { Form, Button, Container, Row, Col } from "react-bootstrap";
@@ -32,11 +32,19 @@ function ReferencePointInputForm({
     register,
     formState: { errors },
     handleSubmit,
-  } = useForm<FormData>({ mode: "onBlur" });
+    reset,
+  } = useForm<FormData>({
+    mode: "onBlur",
+  });
+  useEffect(() => {
+    reset();
+  }, [referencePoint]);
 
   const onSubmit = (data: FormData) => {
     setReferencePoint(data.values);
   };
+
+  console.log("called form", JSON.stringify(referencePoint));
 
   return (
     <Form action="" onSubmit={handleSubmit(onSubmit)}>
@@ -48,7 +56,7 @@ function ReferencePointInputForm({
               <Form.Control
                 key={`controlof${name}`}
                 name={`values.${i}`}
-                defaultValue={referencePoint[i]}
+                defaultValue={`${referencePoint[i]}`}
                 ref={register({
                   required: true,
                   pattern: {

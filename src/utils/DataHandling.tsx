@@ -12,6 +12,7 @@ function ParseSolutions(
   const datums: ObjectiveDatum[] = solutions.map((solution, i) => {
     return { value: solution, selected: false };
   });
+  console.log(solutions);
   const data: ObjectiveData = {
     values: datums,
     names: info.objectiveNames,
@@ -19,6 +20,8 @@ function ParseSolutions(
     ideal: info.ideal,
     nadir: info.nadir,
   };
+
+  console.log(data);
 
   return data;
 }
