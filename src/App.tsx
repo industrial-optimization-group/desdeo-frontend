@@ -10,6 +10,7 @@ import ProblemDefinition from "./views/ProblemDefinition";
 import ProblemExplore from "./views/ProblemExplore";
 import ReferencePointMethod from "./views/ReferencePointMethod";
 import MethodCreate from "./views/MethodCreate";
+import Questionnaire from "./views/Questionnaire";
 import { Tokens } from "./types/AppTypes";
 import { useState } from "react";
 
@@ -89,6 +90,14 @@ function App() {
               tokens={tokens}
               methodCreated={methodCreated}
               activeProblemId={activeProblemId}
+            />
+          </Route>
+          <Route path="/questionnaire" exact>
+            <Questionnaire
+              apiUrl={API_URL}
+              isLoggedIn={isLoggedIn}
+              loggedAs={loggedAs}
+              tokens={tokens}
             />
           </Route>
         </Switch>

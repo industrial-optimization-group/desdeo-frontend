@@ -62,6 +62,9 @@ function NavigationBar({
                     </Nav.Link>
                   </NavDropdown.Item>
                 </NavDropdown>
+                <Nav.Link as={Link} to="/questionnaire">
+                  Questionnaire
+                </Nav.Link>
               </>
             )}
           </Nav>
