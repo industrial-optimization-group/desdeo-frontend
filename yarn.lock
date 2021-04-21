@@ -1770,10 +1770,17 @@
     "@babel/runtime" "^7.12.5"
     "@testing-library/dom" "^7.28.1"
 
-"@testing-library/user-event@^12.7.1", "@testing-library/user-event@^12.8.3":
+"@testing-library/user-event@^12.8.3":
   version "12.8.3"
   resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-12.8.3.tgz#1aa3ed4b9f79340a1e1836bc7f57c501e838704a"
   integrity sha512-IR0iWbFkgd56Bu5ZI/ej8yQwrkCv8Qydx6RzwbKz9faXazR/+5tvYKsZQgyXJiwgpcva127YO6JcWy7YlCfofQ==
+  dependencies:
+    "@babel/runtime" "^7.12.5"
+
+"@testing-library/user-event@^13.0.0":
+  version "13.1.5"
+  resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-13.1.5.tgz#1ce11c37bf4df8f264fb7999ded7139e092a29bd"
+  integrity sha512-dD1FRHuWhfdcnb6H9/oaIIZHx9LQKGxbTtYV3i5Zru8I3GWWJoG2WtlAlXZ/56djO+6TvfsWPj5cXQvoTFQATQ==
   dependencies:
     "@babel/runtime" "^7.12.5"
 
@@ -1878,6 +1885,11 @@
   resolved "https://registry.yarnpkg.com/@types/d3-ease/-/d3-ease-2.0.0.tgz#798cbd9908d26cfe9f1a295a3a75164da9a3666e"
   integrity sha512-6aZrTyX5LG+ptofVHf+gTsThLRY1nhLotJjgY4drYqk1OkJMu2UvuoZRlPw2fffjRHeYepue3/fxTufqKKmvsA==
 
+"@types/d3-path@^1":
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/@types/d3-path/-/d3-path-1.0.9.tgz#73526b150d14cd96e701597cbf346cfd1fd4a58c"
+  integrity sha512-NaIeSIBiFgSC6IGUBjZWcscUJEq7vpVu7KthHN8eieTV9d9MqkSOZLH4chq1PmcKy06PNe3axLeKmRIyxJ+PZQ==
+
 "@types/d3-scale@^3.2.2":
   version "3.2.2"
   resolved "https://registry.yarnpkg.com/@types/d3-scale/-/d3-scale-3.2.2.tgz#5e28d0b1c599328aaec6094219f10a2570be6d74"
@@ -1889,6 +1901,13 @@
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@types/d3-selection/-/d3-selection-2.0.0.tgz#59df94a8e47ed1050a337d4ffb4d4d213aa590a8"
   integrity sha512-EF0lWZ4tg7oDFg4YQFlbOU3936e3a9UmoQ2IXlBy1+cv2c2Pv7knhKUzGlH5Hq2sF/KeDTH1amiRPey2rrLMQA==
+
+"@types/d3-shape@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@types/d3-shape/-/d3-shape-2.0.0.tgz#61aa065726f3c2641aedc59c3603475ab11aeb2f"
+  integrity sha512-NLzD02m5PiD1KLEDjLN+MtqEcFYn4ZL9+Rqc9ZwARK1cpKZXd91zBETbe6wpBB6Ia0D0VZbpmbW3+BsGPGnCpA==
+  dependencies:
+    "@types/d3-path" "^1"
 
 "@types/d3-time@*":
   version "2.0.0"
@@ -4695,6 +4714,11 @@ d3-path@1:
   resolved "https://registry.yarnpkg.com/d3-path/-/d3-path-1.0.9.tgz#48c050bb1fe8c262493a8caf5524e3e9591701cf"
   integrity sha512-VLaYcn81dtHVTjEHd8B+pbe9yHWpXKZUC87PzoFmsFrJqgFwDe/qxfp5MlfsfM1V5E/iVt0MmEbWQ7FVIXh/bg==
 
+"d3-path@1 - 2":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/d3-path/-/d3-path-2.0.0.tgz#55d86ac131a0548adae241eebfb56b4582dd09d8"
+  integrity sha512-ZwZQxKhBnv9yHaiWd6ZU4x5BtCQ7pXszEV9CU6kRgwIQVQGLMv1oiL4M+MK/n79sYzsj+gcgpPQSctJUsLN7fA==
+
 d3-quadtree@1:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/d3-quadtree/-/d3-quadtree-1.0.7.tgz#ca8b84df7bb53763fe3c2f24bd435137f4e53135"
@@ -4735,6 +4759,13 @@ d3-shape@^1.0.0, d3-shape@^1.2.0:
   integrity sha512-EUkvKjqPFUAZyOlhY5gzCxCeI0Aep04LwIRpsZ/mLFelJiUfnK56jo5JMDSE7yyP2kLSb6LtF+S5chMk7uqPqw==
   dependencies:
     d3-path "1"
+
+d3-shape@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/d3-shape/-/d3-shape-2.1.0.tgz#3b6a82ccafbc45de55b57fcf956c584ded3b666f"
+  integrity sha512-PnjUqfM2PpskbSLTJvAzp2Wv4CZsnAgTfcVRTwW03QR3MkXF8Uo7B1y/lWkAsmbKwuecto++4NlsYcvYpXpTHA==
+  dependencies:
+    d3-path "1 - 2"
 
 d3-time-format@2, d3-time-format@^2.2.3:
   version "2.3.0"
@@ -4976,12 +5007,12 @@ des.js@^1.0.0:
     inherits "^2.0.1"
     minimalistic-assert "^1.0.0"
 
-"desdeo-components@file:../../desdeo-components":
+"desdeo-components@file:../desdeo-components":
   version "0.1.18"
   dependencies:
     "@testing-library/jest-dom" "^5.11.9"
     "@testing-library/react" "^11.2.5"
-    "@testing-library/user-event" "^12.7.1"
+    "@testing-library/user-event" "^13.0.0"
     react-scripts "4.0.3"
     typescript "^4.1.5"
     victory "^35.4.9"
@@ -14437,7 +14468,7 @@ victory@^35.4.9:
     victory-voronoi-container "^35.4.13"
     victory-zoom-container "^35.4.11"
 
-visual-components@/home/kilo/workspace/visual-components/:
+"visual-components@file:../visual-components":
   version "0.1.0"
   dependencies:
     "@types/d3-array" "^2.9.0"
@@ -14445,6 +14476,7 @@ visual-components@/home/kilo/workspace/visual-components/:
     "@types/d3-ease" "^2.0.0"
     "@types/d3-scale" "^3.2.2"
     "@types/d3-selection" "^2.0.0"
+    "@types/d3-shape" "^2.0.0"
     "@types/d3-transition" "^2.0.0"
     "@types/jest" "^26.0.22"
     "@types/node" "^12.20.7"
@@ -14454,27 +14486,7 @@ visual-components@/home/kilo/workspace/visual-components/:
     d3-ease "^2.0.0"
     d3-scale "^3.2.4"
     d3-selection "^2.0.0"
-    d3-transition "^2.0.0"
-    randomstring "^1.1.5"
-    web-vitals "^1.1.1"
-
-"visual-components@file:../../../visual-components":
-  version "0.1.0"
-  dependencies:
-    "@types/d3-array" "^2.9.0"
-    "@types/d3-axis" "^2.0.0"
-    "@types/d3-ease" "^2.0.0"
-    "@types/d3-scale" "^3.2.2"
-    "@types/d3-selection" "^2.0.0"
-    "@types/d3-transition" "^2.0.0"
-    "@types/jest" "^26.0.22"
-    "@types/node" "^12.20.7"
-    "@types/randomstring" "^1.1.6"
-    d3-array "^2.12.1"
-    d3-axis "^2.1.0"
-    d3-ease "^2.0.0"
-    d3-scale "^3.2.4"
-    d3-selection "^2.0.0"
+    d3-shape "^2.1.0"
     d3-transition "^2.0.0"
     randomstring "^1.1.5"
     web-vitals "^1.1.1"
