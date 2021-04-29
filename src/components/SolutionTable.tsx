@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Container, ListGroup, Tab, Row, Col } from "react-bootstrap";
+import {
+  Container,
+  ListGroup,
+  Tab,
+  Row,
+  Col,
+  ListGroupItem,
+} from "react-bootstrap";
 import { ObjectiveData } from "../types/ProblemTypes";
 
 interface SolutionTableProps {
@@ -33,14 +40,26 @@ function SolutionTable({ objectiveData, setSolution }: SolutionTableProps) {
       >
         <h4>Alternative solutions</h4>
         <ListGroup>
+          <ListGroup.Item variant="dark">
+            <Row>
+              {objectiveData.names.map((name) => {
+                return <Col>{name}</Col>;
+              })}
+            </Row>
+          </ListGroup.Item>
           {data.map((datum, index) => {
             return (
               <ListGroup.Item
                 action
+                variant={index === parseInt(key!) ? "info" : ""}
                 onClick={() => SetKey(`${index}`)}
                 key={index}
               >
-                {`${JSON.stringify(datum.value)}`}
+                <Row>
+                  {datum.value.map((value) => {
+                    return <Col>{value.toPrecision(4)}</Col>;
+                  })}
+                </Row>
               </ListGroup.Item>
             );
           })}

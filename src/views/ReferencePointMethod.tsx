@@ -175,7 +175,10 @@ function ReferencePointMethod({
         SetReferencePoint(response.current_solution);
         SetCurrentPoint(response.current_solution);
         SetAlternatives(
-          ParseSolutions(response.additional_solutions, activeProblemInfo!)
+          ParseSolutions(
+            [response.current_solution].concat(response.additional_solutions),
+            activeProblemInfo!
+          )
         );
         console.log(response.additional_solutions);
       } else {
@@ -261,6 +264,7 @@ function ReferencePointMethod({
               setSolution={SetCurrentPoint}
             />
           </Col>
+          <Col></Col>
         </Row>
       )}
     </Container>
