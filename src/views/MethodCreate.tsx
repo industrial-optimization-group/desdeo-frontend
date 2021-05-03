@@ -9,6 +9,7 @@ interface MethodCreateProps {
   tokens: Tokens;
   apiUrl: string;
   setMethodCreated: React.Dispatch<React.SetStateAction<boolean>>;
+  setChosenMethod: React.Dispatch<React.SetStateAction<string>>;
   setActiveProblemId: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
@@ -25,6 +26,7 @@ function MethodCreate({
   tokens,
   apiUrl,
   setMethodCreated,
+  setChosenMethod,
   setActiveProblemId,
 }: MethodCreateProps) {
   const [problems, SetProblems] = useState<Problem[]>([
@@ -75,7 +77,22 @@ function MethodCreate({
   const handleSubmit = async () => {
     console.log(`selected: problem ${problemId} method ${methodKey}`);
     try {
-      const data = { problem_id: problemId, method: "reference_point_method" };
+      let methodName: string = "";
+      switch (methodKey) {
+        case 0: {
+          methodName = "reference_point_method";
+          break;
+        }
+        case 1: {
+          methodName = "synchronous_nimbus";
+          break;
+        }
+        default: {
+          throw Error(`Invalid methodKey: ${methodKey}`);
+        }
+      }
+
+      const data = { problem_id: problemId, method: methodName };
       const res = await fetch(`${apiUrl}/method/create`, {
         method: "POST",
         headers: {
@@ -90,6 +107,7 @@ function MethodCreate({
         console.log(body);
         setMethodCreated(true);
         setActiveProblemId(problemId);
+        setChosenMethod(methodName);
         // created!
       } else {
         console.log(`Got return code ${res.status}. Could not create method.`);
@@ -152,9 +170,7 @@ function MethodCreate({
                       }}
                     >
                       <option value={0}>Reference Point Method</option>
-                      <option value={1}>
-                        Reference Point Method 2 (just for testing)
-                      </option>
+                      <option value={1}>Synchronous NIMBUS</option>
                     </Form.Control>
                   </Form.Group>
                 </Col>

@@ -24,8 +24,27 @@ function App() {
   const [methodCreated, SetMethodCreated] = useState<boolean>(false);
   const [activeProblemId, SetActiveProblemId] = useState<number | null>(null);
   const [tokens, SetTokens] = useState<Tokens>({ access: "", refresh: "" });
+  const [chosenMethod, SetChosenMethod] = useState("");
 
   const API_URL: string = "http://127.0.0.1:5000";
+
+  /*
+  const MethodSwitch = (methodName: string) => {
+    switch (methodName) {
+      case "reference_point_method": {
+        return ReferencePointMethod;
+      }
+      case "synchronous_nimbus": {
+        return ReferencePointMethod;
+      }
+      default: {
+        throw Error(
+          `Selected method with name ${methodName} is not supported.`
+        );
+      }
+    }
+  };
+  */
 
   return (
     <div className="App">
@@ -79,18 +98,24 @@ function App() {
               loggedAs={loggedAs}
               tokens={tokens}
               setMethodCreated={SetMethodCreated}
+              setChosenMethod={SetChosenMethod}
               setActiveProblemId={SetActiveProblemId}
             />
           </Route>
           <Route path="/method/optimize" exact>
-            <ReferencePointMethod
-              apiUrl={API_URL}
-              isLoggedIn={isLoggedIn}
-              loggedAs={loggedAs}
-              tokens={tokens}
-              methodCreated={methodCreated}
-              activeProblemId={activeProblemId}
-            />
+            {chosenMethod === "reference_point_method" && (
+              <ReferencePointMethod
+                apiUrl={API_URL}
+                isLoggedIn={isLoggedIn}
+                loggedAs={loggedAs}
+                tokens={tokens}
+                methodCreated={methodCreated}
+                activeProblemId={activeProblemId}
+              />
+            )}
+            {chosenMethod === "synchronous_nimbus" && (
+              <div>You chose NIMBUS you silly you!</div>
+            )}
           </Route>
           <Route path="/questionnaire" exact>
             <Questionnaire
