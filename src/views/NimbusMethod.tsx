@@ -6,7 +6,7 @@ import {
   ObjectiveDatum,
 } from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
-import ReferencePointInputForm from "../components/ReferencePointInputForm";
+import ClassificationsInputForm from "../components/ClassificationsInputForm";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import ReactLoading from "react-loading";
 import { ParseSolutions } from "../utils/DataHandling";
@@ -48,6 +48,7 @@ function NimbusMethod({
     []
   );
   const [classificationOk, SetClassificationOk] = useState<boolean>(false);
+  const [barSelection, SetBarSelection] = useState<number[]>([]);
 
   // fetch current problem info
   useEffect(() => {
@@ -199,6 +200,10 @@ function NimbusMethod({
   };
 
   const checkClassifications = useEffect(() => {
+    if (state === "not started") {
+      // do nothing if not started
+      return;
+    }
     const improve =
       classifications.includes("<" as Classification) ||
       classifications.includes("<=" as Classification);
@@ -206,7 +211,6 @@ function NimbusMethod({
       classifications.includes(">=" as Classification) ||
       classifications.includes("0" as Classification);
 
-    console.log(classifications);
     if (!improve) {
       SetHelpMessage(
         "Check classifications: at least one objective should be improved."
@@ -226,12 +230,12 @@ function NimbusMethod({
     }
   }, [classifications]);
 
-  const inferClassifications = (selection: number[]) => {
-    const isDiff = selection.map((v, i) => {
-      return Math.abs(v - preferredPoint[i]) < 1e-6 ? false : true;
+  const inferClassifications = useEffect(() => {
+    const isDiff = barSelection.map((v, i) => {
+      return Math.abs(v - preferredPoint[i]) < 1e-12 ? false : true;
     });
     const levels = classificationLevels;
-    const classes = selection.map((value, i) => {
+    const classes = barSelection.map((value, i) => {
       if (!isDiff[i]) {
         // no change, return old classification
         return classifications[i];
@@ -241,10 +245,12 @@ function NimbusMethod({
         if (value > preferredPoint[i]) {
           // selected value is greater than currently preferred (worse)
           // Worsen until
+          levels[i] = barSelection[i];
           return ">=" as Classification;
         } else if (value < preferredPoint[i]) {
           // selected value is less than currently preferred (better)
           // improve until
+          levels[i] = barSelection[i];
           return "<=" as Classification;
         } else {
           // no change, keep as it is
@@ -255,10 +261,12 @@ function NimbusMethod({
         if (value > preferredPoint[i]) {
           // selected value is greater than currently preferred (better)
           // improve until
+          levels[i] = barSelection[i];
           return "<=" as Classification;
         } else if (value < preferredPoint[i]) {
           // selected value is less than currently preferred (worse)
           // worsen until
+          levels[i] = barSelection[i];
           return ">=" as Classification;
         } else {
           // no change, keep as it is
@@ -270,9 +278,11 @@ function NimbusMethod({
         return classifications[i];
       }
     });
+    console.log(isDiff);
+    console.log(`new classes ${classes}`);
     SetClassifications([...classes]);
     SetClassificationLevels([...levels]);
-  };
+  }, [barSelection]);
 
   if (
     !methodCreated ||
@@ -289,6 +299,8 @@ function NimbusMethod({
         <Col sm={4}>
           <h2>Classification</h2>
           <p>{helpMessage}</p>
+          <p>{classifications}</p>
+          <p>{classificationLevels}</p>
           <Button block={true} size={"lg"} onClick={iterate}>
             Iterate
           </Button>
@@ -300,7 +312,19 @@ function NimbusMethod({
       {state === "classification" && (
         <>
           <Row>
-            <Col sm={4}>Manual input goes here</Col>
+            <Col sm={4}>
+              <ClassificationsInputForm
+                setClassifications={SetClassifications}
+                setClassificationLevels={SetClassificationLevels}
+                classifications={classifications}
+                classificationLevels={classificationLevels}
+                nObjectives={activeProblemInfo.nObjectives}
+                objectiveNames={activeProblemInfo.objectiveNames}
+                ideal={activeProblemInfo.ideal}
+                nadir={activeProblemInfo.nadir}
+                directions={activeProblemInfo.minimize}
+              />
+            </Col>
             <Col sm={8}>
               <HorizontalBars
                 objectiveData={ParseSolutions(
@@ -309,7 +333,7 @@ function NimbusMethod({
                 )}
                 referencePoint={preferredPoint}
                 currentPoint={preferredPoint}
-                setReferencePoint={(e: number[]) => inferClassifications(e)}
+                setReferencePoint={SetBarSelection}
               />
             </Col>
           </Row>
