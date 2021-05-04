@@ -44,6 +44,10 @@ function NimbusMethod({
     "not started" | "classification" | "archive" | "intermediate" | "stop"
   >("not started");
   const [classifications, SetClassifications] = useState<Classification[]>([]);
+  const [classificationLevels, SetClassificationLevels] = useState<number[]>(
+    []
+  );
+  const [classificationOk, SetClassificationOk] = useState<boolean>(false);
 
   // fetch current problem info
   useEffect(() => {
@@ -84,6 +88,7 @@ function NimbusMethod({
             minimize: body.minimize,
           });
           SetClassifications(body.objective_names.map(() => "="));
+          SetClassificationLevels(body.objective_names.map(() => 0.0));
           SetFetchedInfo(true);
         } else {
           //some other code
@@ -126,6 +131,7 @@ function NimbusMethod({
           SetHelpMessage(body.response.message);
           SetMethodStarted(true);
           SetPreferredPoint(body.response.objective_values);
+          SetClassificationLevels(body.response.objective_values);
           SetState("classification");
         }
       } catch (e) {
@@ -141,6 +147,19 @@ function NimbusMethod({
     // Attempt to iterate
     SetLoading(true);
     console.log("loading...");
+    console.log(state);
+
+    switch (state) {
+      case "classification": {
+        console.log(classifications);
+        break;
+      }
+      default: {
+        console.log("Default case");
+        break;
+      }
+    }
+
     /*
     try {
       const res = await fetch(`${apiUrl}/method/control`, {
@@ -179,14 +198,81 @@ function NimbusMethod({
     console.log("done!");
   };
 
-  const inferClassifications = useCallback(
-    (selection: number[]) => {
-      const classes = selection.map((value) => {
-        return ">";
-      });
-    },
-    [preferredPoint]
-  );
+  const checkClassifications = useEffect(() => {
+    const improve =
+      classifications.includes("<" as Classification) ||
+      classifications.includes("<=" as Classification);
+    const worsen =
+      classifications.includes(">=" as Classification) ||
+      classifications.includes("0" as Classification);
+
+    console.log(classifications);
+    if (!improve) {
+      SetHelpMessage(
+        "Check classifications: at least one objective should be improved."
+      );
+      SetClassificationOk(false);
+      return;
+    } else if (!worsen) {
+      SetHelpMessage(
+        "Check classifications: at least one objective should be allowed to worsen."
+      );
+      SetClassificationOk(false);
+      return;
+    } else {
+      SetHelpMessage("Classifications ok!");
+      SetClassificationOk(true);
+      return;
+    }
+  }, [classifications]);
+
+  const inferClassifications = (selection: number[]) => {
+    const isDiff = selection.map((v, i) => {
+      return Math.abs(v - preferredPoint[i]) < 1e-6 ? false : true;
+    });
+    const levels = classificationLevels;
+    const classes = selection.map((value, i) => {
+      if (!isDiff[i]) {
+        // no change, return old classification
+        return classifications[i];
+      }
+      if (activeProblemInfo?.minimize[i] === 1) {
+        // minimization
+        if (value > preferredPoint[i]) {
+          // selected value is greater than currently preferred (worse)
+          // Worsen until
+          return ">=" as Classification;
+        } else if (value < preferredPoint[i]) {
+          // selected value is less than currently preferred (better)
+          // improve until
+          return "<=" as Classification;
+        } else {
+          // no change, keep as it is
+          return classifications[i];
+        }
+      } else if (activeProblemInfo?.minimize[i] === -1) {
+        // maximization
+        if (value > preferredPoint[i]) {
+          // selected value is greater than currently preferred (better)
+          // improve until
+          return "<=" as Classification;
+        } else if (value < preferredPoint[i]) {
+          // selected value is less than currently preferred (worse)
+          // worsen until
+          return ">=" as Classification;
+        } else {
+          // no change, keep as it is
+          return classifications[i];
+        }
+      } else {
+        // something went wrong, return previous classification
+        console.log("Encountered something strange in inferClassifications...");
+        return classifications[i];
+      }
+    });
+    SetClassifications([...classes]);
+    SetClassificationLevels([...levels]);
+  };
 
   if (
     !methodCreated ||
@@ -202,6 +288,7 @@ function NimbusMethod({
         <Col sm={4}></Col>
         <Col sm={4}>
           <h2>Classification</h2>
+          <p>{helpMessage}</p>
           <Button block={true} size={"lg"} onClick={iterate}>
             Iterate
           </Button>
