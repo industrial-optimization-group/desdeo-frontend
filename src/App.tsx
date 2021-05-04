@@ -9,6 +9,7 @@ import Register from "./views/Register";
 import ProblemDefinition from "./views/ProblemDefinition";
 import ProblemExplore from "./views/ProblemExplore";
 import ReferencePointMethod from "./views/ReferencePointMethod";
+import NimbusMethod from "./views/NimbusMethod";
 import MethodCreate from "./views/MethodCreate";
 import Questionnaire from "./views/Questionnaire";
 import { Tokens } from "./types/AppTypes";
@@ -114,7 +115,14 @@ function App() {
               />
             )}
             {chosenMethod === "synchronous_nimbus" && (
-              <div>You chose NIMBUS you silly you!</div>
+              <NimbusMethod
+                apiUrl={API_URL}
+                isLoggedIn={isLoggedIn}
+                loggedAs={loggedAs}
+                tokens={tokens}
+                methodCreated={methodCreated}
+                activeProblemId={activeProblemId}
+              />
             )}
           </Route>
           <Route path="/questionnaire" exact>
