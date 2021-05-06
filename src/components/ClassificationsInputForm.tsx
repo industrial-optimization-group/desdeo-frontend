@@ -224,14 +224,20 @@ function ClassificationsInputForm({
                           min: {
                             value:
                               directions[i] === 1
-                                ? tmpClassifications[i] === "=" ||
-                                  tmpClassifications[i] === "0" ||
-                                  tmpClassifications[i] === "<"
+                                ? tmpClassifications[i] ===
+                                    ("=" as Classification) ||
+                                  tmpClassifications[i] ===
+                                    ("0" as Classification) ||
+                                  tmpClassifications[i] ===
+                                    ("<" as Classification)
                                   ? -Infinity
                                   : ideal[i]
-                                : tmpClassifications[i] === "=" ||
-                                  tmpClassifications[i] === "0" ||
-                                  tmpClassifications[i] === "<"
+                                : tmpClassifications[i] ===
+                                    ("=" as Classification) ||
+                                  tmpClassifications[i] ===
+                                    ("0" as Classification) ||
+                                  tmpClassifications[i] ===
+                                    ("<" as Classification)
                                 ? -Infinity
                                 : nadir[i],
                             message: `Value too small. Must be greater than ${
@@ -241,16 +247,22 @@ function ClassificationsInputForm({
                           max: {
                             value:
                               directions[i] === 1
-                                ? tmpClassifications[i] === "=" ||
-                                  tmpClassifications[i] === "0" ||
-                                  tmpClassifications[i] === "<"
+                                ? tmpClassifications[i] ===
+                                    ("=" as Classification) ||
+                                  tmpClassifications[i] ===
+                                    ("0" as Classification) ||
+                                  tmpClassifications[i] ===
+                                    ("<" as Classification)
                                   ? Infinity
-                                  : ideal[i]
-                                : tmpClassifications[i] === "=" ||
-                                  tmpClassifications[i] === "0" ||
-                                  tmpClassifications[i] === "<"
+                                  : nadir[i]
+                                : tmpClassifications[i] ===
+                                    ("=" as Classification) ||
+                                  tmpClassifications[i] ===
+                                    ("0" as Classification) ||
+                                  tmpClassifications[i] ===
+                                    ("<" as Classification)
                                 ? Infinity
-                                : nadir[i],
+                                : ideal[i],
                             message: `Value too too large. Must be less than ${
                               directions[i] === -1 ? ideal[i] : nadir[i]
                             }`,

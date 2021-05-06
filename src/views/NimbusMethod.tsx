@@ -7,7 +7,7 @@ import {
 } from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
 import ClassificationsInputForm from "../components/ClassificationsInputForm";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col, Button, Form } from "react-bootstrap";
 import ReactLoading from "react-loading";
 import { ParseSolutions } from "../utils/DataHandling";
 import { HorizontalBars } from "visual-components";
@@ -23,6 +23,12 @@ interface NimbusMethodProps {
 }
 
 type Classification = "<" | "<=" | ">=" | "=" | "0";
+type NimbusState =
+  | "not started"
+  | "classification"
+  | "archive"
+  | "intermediate"
+  | "stop";
 
 function NimbusMethod({
   isLoggedIn,
@@ -40,14 +46,14 @@ function NimbusMethod({
   const [preferredPoint, SetPreferredPoint] = useState<number[]>([]);
   const [fetchedInfo, SetFetchedInfo] = useState<boolean>(false);
   const [loading, SetLoading] = useState<boolean>(false);
-  const [state, SetState] = useState<
-    "not started" | "classification" | "archive" | "intermediate" | "stop"
-  >("not started");
+  const [nimbusState, SetNimbusState] = useState<NimbusState>("not started");
   const [classifications, SetClassifications] = useState<Classification[]>([]);
   const [classificationLevels, SetClassificationLevels] = useState<number[]>(
     []
   );
   const [classificationOk, SetClassificationOk] = useState<boolean>(false);
+  const [numberOfSolutions, SetNumberOfSolutions] = useState<number>(1);
+  const [newSolutions, SetNewSolutions] = useState<ObjectiveData>();
 
   // fetch current problem info
   useEffect(() => {
@@ -132,7 +138,7 @@ function NimbusMethod({
           SetMethodStarted(true);
           SetPreferredPoint(body.response.objective_values);
           SetClassificationLevels(body.response.objective_values);
-          SetState("classification");
+          SetNimbusState("classification");
         }
       } catch (e) {
         console.log("not ok, could not start the method");
@@ -147,12 +153,51 @@ function NimbusMethod({
     // Attempt to iterate
     SetLoading(true);
     console.log("loading...");
-    console.log(state);
+    console.log(nimbusState);
 
-    switch (state) {
+    switch (nimbusState) {
       case "classification": {
-        console.log(classifications);
-        break;
+        if (!classificationOk) {
+          // classification not ok, do nothing
+          break;
+        }
+        try {
+          const res = await fetch(`${apiUrl}/method/control`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${tokens.access}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              response: {
+                classifications: classifications,
+                levels: classificationLevels,
+                number_of_solutions: numberOfSolutions,
+              },
+            }),
+          });
+
+          if (res.status === 200) {
+            // ok
+            const body = await res.json();
+            const response = JSON.parse(body.response);
+            SetNewSolutions(
+              ParseSolutions(response.objectives, activeProblemInfo!)
+            );
+            SetNimbusState("archive");
+            break;
+          } else {
+            // not ok
+            console.log(`Got response code ${res.status}`);
+            // do nothing
+            break;
+          }
+        } catch (e) {
+          console.log("Could not iterate NIMBUS");
+          console.log(e);
+          // do nothing
+          break;
+        }
       }
       default: {
         console.log("Default case");
@@ -160,46 +205,12 @@ function NimbusMethod({
       }
     }
 
-    /*
-    try {
-      const res = await fetch(`${apiUrl}/method/control`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${tokens.access}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ response: { reference_point: referencePoint } }),
-      });
-
-      if (res.status === 200) {
-        // ok
-        const body = await res.json();
-        const response = JSON.parse(body.response);
-        SetHelpMessage(response.message);
-        SetReferencePoint(response.current_solution);
-        SetCurrentPoint(response.current_solution);
-        SetAlternatives(
-          ParseSolutions(
-            [response.current_solution].concat(response.additional_solutions),
-            activeProblemInfo!
-          )
-        );
-        console.log(response.additional_solutions);
-      } else {
-        console.log("Got a response which is not 200");
-      }
-    } catch (e) {
-      console.log("Could not iterate RFP");
-      console.log(e);
-      // do nothing
-    }
-    */
     SetLoading(false);
     console.log("done!");
   };
 
   const checkClassifications = useEffect(() => {
-    if (state === "not started") {
+    if (nimbusState === "not started") {
       // do nothing if not started
       return;
     }
@@ -306,11 +317,52 @@ function NimbusMethod({
         </Col>
         <Col sm={4}></Col>
       </Row>
-      {state === "not started" && <div>Method not started yet</div>}
-      {state === "classification" && (
+      {nimbusState === "not started" && <div>Method not started yet</div>}
+      {nimbusState === "classification" && (
         <>
           <Row>
             <Col sm={4}>
+              <Form>
+                <Form.Group as={Row}>
+                  <Form.Label column sm="12">
+                    Desired number of solutions
+                  </Form.Label>
+                  <Col sm={12}>
+                    <Form.Check
+                      inline
+                      label="1"
+                      type="radio"
+                      value={1}
+                      checked={numberOfSolutions === 1 ? true : false}
+                      onClick={() => SetNumberOfSolutions(1)}
+                    />
+                    <Form.Check
+                      inline
+                      label="2"
+                      type="radio"
+                      value={2}
+                      checked={numberOfSolutions === 2 ? true : false}
+                      onClick={() => SetNumberOfSolutions(2)}
+                    />
+                    <Form.Check
+                      inline
+                      label="3"
+                      type="radio"
+                      value={3}
+                      checked={numberOfSolutions === 3 ? true : false}
+                      onClick={() => SetNumberOfSolutions(3)}
+                    />
+                    <Form.Check
+                      inline
+                      label="4"
+                      type="radio"
+                      value={4}
+                      checked={numberOfSolutions === 4 ? true : false}
+                      onClick={() => SetNumberOfSolutions(4)}
+                    />
+                  </Col>
+                </Form.Group>
+              </Form>
               <ClassificationsInputForm
                 setClassifications={SetClassifications}
                 setClassificationLevels={SetClassificationLevels}
@@ -335,6 +387,20 @@ function NimbusMethod({
                 setReferencePoint={inferClassifications}
               />
             </Col>
+          </Row>
+        </>
+      )}
+      {nimbusState === "archive" && (
+        <>
+          <Row>
+            <Col sm={4}></Col>
+            <Col sm={4}>
+              <SolutionTable
+                objectiveData={newSolutions!}
+                setSolution={() => console.log("selected")}
+              />
+            </Col>
+            <Col sm={4}></Col>
           </Row>
         </>
       )}
