@@ -48,7 +48,6 @@ function NimbusMethod({
     []
   );
   const [classificationOk, SetClassificationOk] = useState<boolean>(false);
-  const [barSelection, SetBarSelection] = useState<number[]>([]);
 
   // fetch current problem info
   useEffect(() => {
@@ -230,9 +229,10 @@ function NimbusMethod({
     }
   }, [classifications]);
 
-  const inferClassifications = useEffect(() => {
+  const inferClassifications = (barSelection: number[]) => {
     const isDiff = barSelection.map((v, i) => {
-      return Math.abs(v - preferredPoint[i]) < 1e-12 ? false : true;
+      const res = Math.abs(v - preferredPoint[i]) < 1e-12 ? false : true;
+      return res;
     });
     const levels = classificationLevels;
     const classes = barSelection.map((value, i) => {
@@ -278,11 +278,9 @@ function NimbusMethod({
         return classifications[i];
       }
     });
-    console.log(isDiff);
-    console.log(`new classes ${classes}`);
-    SetClassifications([...classes]);
-    SetClassificationLevels([...levels]);
-  }, [barSelection]);
+    SetClassificationLevels(levels);
+    SetClassifications(classes);
+  };
 
   if (
     !methodCreated ||
@@ -318,6 +316,7 @@ function NimbusMethod({
                 setClassificationLevels={SetClassificationLevels}
                 classifications={classifications}
                 classificationLevels={classificationLevels}
+                currentPoint={preferredPoint}
                 nObjectives={activeProblemInfo.nObjectives}
                 objectiveNames={activeProblemInfo.objectiveNames}
                 ideal={activeProblemInfo.ideal}
@@ -331,9 +330,9 @@ function NimbusMethod({
                   [preferredPoint],
                   activeProblemInfo
                 )}
-                referencePoint={preferredPoint}
+                referencePoint={classificationLevels}
                 currentPoint={preferredPoint}
-                setReferencePoint={SetBarSelection}
+                setReferencePoint={inferClassifications}
               />
             </Col>
           </Row>

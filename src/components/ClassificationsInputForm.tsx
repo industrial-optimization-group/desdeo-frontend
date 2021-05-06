@@ -26,6 +26,7 @@ interface ClassificationsInputFormProps {
   setClassificationLevels: React.Dispatch<React.SetStateAction<number[]>>;
   classifications: Classification[];
   classificationLevels: number[];
+  currentPoint: number[];
   nObjectives: number;
   objectiveNames: string[];
   ideal: number[];
@@ -38,6 +39,7 @@ function ClassificationsInputForm({
   setClassificationLevels,
   classifications,
   classificationLevels,
+  currentPoint,
   nObjectives,
   objectiveNames,
   ideal,
@@ -65,10 +67,10 @@ function ClassificationsInputForm({
 
   useEffect(() => {
     reset({
-      values: classificationLevels.map((v) => parseFloat(v.toPrecision(4))),
+      values: classificationLevels.map((v) => parseFloat(v.toFixed(4))),
       classifications: classifications,
     });
-  }, [classifications]);
+  }, [classifications, classificationLevels]);
 
   const classToHumanReadable = (c: Classification) => {
     switch (c) {
@@ -96,7 +98,7 @@ function ClassificationsInputForm({
     setClassificationLevels(data.values);
   };
 
-  console.log("called form", JSON.stringify(classificationLevels));
+  console.log("called form", JSON.stringify(classifications));
 
   return (
     <Form action="" onSubmit={handleSubmit(onSubmit)}>
@@ -149,9 +151,9 @@ function ClassificationsInputForm({
                       <Form.Control
                         key={`controlof${name}`}
                         name={`values.${i}`}
-                        defaultValue={`${classificationLevels[i].toPrecision(
-                          4
-                        )}`}
+                        //defaultValue={`${classificationLevels[i].toPrecision(
+                        // 4
+                        //)}`}
                         readOnly={
                           tmpClassifications[i] === ("=" as Classification) ||
                           tmpClassifications[i] === ("0" as Classification) ||
@@ -170,15 +172,85 @@ function ClassificationsInputForm({
                             isFloat: (v) =>
                               !Number.isNaN(parseFloat(v)) ||
                               "Input must be float",
+                            isValidLevel: (v) => {
+                              // check that the given level makes sense with the classification chosen
+                              switch (tmpClassifications[i]) {
+                                case "<=": {
+                                  // improve until
+                                  if (directions[i] === 1) {
+                                    // min
+                                    return (
+                                      v <= currentPoint[i] ||
+                                      `Value must be less than ${currentPoint[
+                                        i
+                                      ].toFixed(4)}`
+                                    );
+                                  } else {
+                                    // max
+                                    return (
+                                      v >= currentPoint[i] ||
+                                      `Value must be greater than ${currentPoint[
+                                        i
+                                      ].toFixed(4)}`
+                                    );
+                                  }
+                                }
+                                case ">=": {
+                                  // worsen until
+                                  if (directions[i] === 1) {
+                                    // min
+                                    return (
+                                      v >= currentPoint[i] ||
+                                      `Value must be greater than ${currentPoint[
+                                        i
+                                      ].toFixed(4)}`
+                                    );
+                                  } else {
+                                    // max
+                                    return (
+                                      v <= currentPoint[i] ||
+                                      `Value must be less than ${currentPoint[
+                                        i
+                                      ].toFixed(4)}`
+                                    );
+                                  }
+                                }
+                                default: {
+                                  return true;
+                                }
+                              }
+                            },
                           },
                           min: {
-                            value: directions[i] === 1 ? ideal[i] : nadir[i],
+                            value:
+                              directions[i] === 1
+                                ? tmpClassifications[i] === "=" ||
+                                  tmpClassifications[i] === "0" ||
+                                  tmpClassifications[i] === "<"
+                                  ? -Infinity
+                                  : ideal[i]
+                                : tmpClassifications[i] === "=" ||
+                                  tmpClassifications[i] === "0" ||
+                                  tmpClassifications[i] === "<"
+                                ? -Infinity
+                                : nadir[i],
                             message: `Value too small. Must be greater than ${
                               directions[i] === 1 ? ideal[i] : nadir[i]
                             }`,
                           },
                           max: {
-                            value: directions[i] === -1 ? ideal[i] : nadir[i],
+                            value:
+                              directions[i] === 1
+                                ? tmpClassifications[i] === "=" ||
+                                  tmpClassifications[i] === "0" ||
+                                  tmpClassifications[i] === "<"
+                                  ? Infinity
+                                  : ideal[i]
+                                : tmpClassifications[i] === "=" ||
+                                  tmpClassifications[i] === "0" ||
+                                  tmpClassifications[i] === "<"
+                                ? Infinity
+                                : nadir[i],
                             message: `Value too too large. Must be less than ${
                               directions[i] === -1 ? ideal[i] : nadir[i]
                             }`,
