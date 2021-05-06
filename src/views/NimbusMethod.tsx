@@ -7,11 +7,19 @@ import {
 } from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
 import ClassificationsInputForm from "../components/ClassificationsInputForm";
-import { Container, Row, Col, Button, Form } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Button,
+  Form,
+  ToggleButton,
+} from "react-bootstrap";
 import ReactLoading from "react-loading";
 import { ParseSolutions } from "../utils/DataHandling";
 import { HorizontalBars } from "visual-components";
 import SolutionTable from "../components/SolutionTable";
+import SolutionTableMultiSelect from "../components/SolutionTableMultiSelect";
 
 interface NimbusMethodProps {
   isLoggedIn: boolean;
@@ -54,6 +62,11 @@ function NimbusMethod({
   const [classificationOk, SetClassificationOk] = useState<boolean>(false);
   const [numberOfSolutions, SetNumberOfSolutions] = useState<number>(1);
   const [newSolutions, SetNewSolutions] = useState<ObjectiveData>();
+  const [selectedIndices, SetSelectedIndices] = useState<number[]>([]);
+  const [archive, SetArchive] = useState<ObjectiveData>();
+  const [computeIntermediate, SetComputeIntermediate] = useState<boolean>(
+    false
+  );
 
   // fetch current problem info
   useEffect(() => {
@@ -199,6 +212,139 @@ function NimbusMethod({
           break;
         }
       }
+      case "archive": {
+        try {
+          const res = await fetch(`${apiUrl}/method/control`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${tokens.access}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              response: {
+                indices: selectedIndices,
+              },
+            }),
+          });
+          if (res.status === 200) {
+            // ok
+            // save selected solutions to archive
+            if (archive === undefined) {
+              const selectedSolutions = selectedIndices.map(
+                (i) => newSolutions?.values[i].value
+              );
+              SetArchive(
+                ParseSolutions(
+                  selectedSolutions!.map((v) => v!),
+                  activeProblemInfo!
+                )
+              );
+            } else {
+              const selectedSolutions = selectedIndices.map(
+                (i) => newSolutions?.values[i].value
+              );
+              SetArchive(
+                ParseSolutions(
+                  [
+                    ...archive.values.map((v) => v.value),
+                    ...selectedSolutions!.map((v) => v!),
+                  ],
+                  activeProblemInfo!
+                )
+              );
+            }
+
+            const body = await res.json();
+            const response = JSON.parse(body.response);
+            console.log(response);
+
+            // update the solutions to be shown
+            const toBeShown = ParseSolutions(
+              response.objectives,
+              activeProblemInfo!
+            );
+            SetNewSolutions(toBeShown);
+
+            // reset the active selection
+            SetSelectedIndices([]);
+
+            // reset the number of solutions
+            SetNumberOfSolutions(1);
+
+            SetNimbusState("intermediate");
+            break;
+          } else {
+            // not ok
+            console.log(`Got response code ${res.status}`);
+            // do nothing
+            return;
+          }
+        } catch (e) {
+          console.log("Could not iterate NIMBUS");
+          console.log(e);
+          // do nothing
+          break;
+        }
+      }
+      case "intermediate": {
+        if (computeIntermediate && selectedIndices.length !== 2) {
+          SetHelpMessage(
+            "Please select two on the shown solutions between which you would like to see intermediate solutions."
+          );
+          // do nothing
+          break;
+        }
+        try {
+          const res = await fetch(`${apiUrl}/method/control`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${tokens.access}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              response: {
+                indices: computeIntermediate ? selectedIndices : [],
+                number_of_desired_solutions: computeIntermediate
+                  ? numberOfSolutions
+                  : 0,
+              },
+            }),
+          });
+
+          if (res.status === 200) {
+            // ok
+            const body = await res.json();
+            const response = JSON.parse(body.response);
+            console.log(response);
+
+            if (computeIntermediate) {
+              // update solutions to be shown
+              const toBeShown = ParseSolutions(
+                response.objectives,
+                activeProblemInfo!
+              );
+              SetNewSolutions(toBeShown);
+
+              // reset and ask to save next
+              SetComputeIntermediate(false);
+              SetSelectedIndices([]);
+              SetNumberOfSolutions(1);
+              SetNimbusState("archive");
+            }
+            break;
+          } else {
+            // not ok
+            console.log(`Got response code ${res.status}`);
+            // do nothing
+            return;
+          }
+        } catch (e) {
+          console.log("Could not iterate NIMBUS");
+          console.log(e);
+          // do nothing
+          break;
+        }
+      }
       default: {
         console.log("Default case");
         break;
@@ -209,7 +355,20 @@ function NimbusMethod({
     console.log("done!");
   };
 
-  const checkClassifications = useEffect(() => {
+  // only allow two selected indices at any given time in the 'intermediate' state
+  useEffect(() => {
+    if (nimbusState !== "intermediate") {
+      // do nothing
+      return;
+    }
+    if (selectedIndices.length < 3) {
+      // do nothing
+      return;
+    }
+    SetSelectedIndices(selectedIndices.slice(1));
+  }, [selectedIndices]);
+
+  useEffect(() => {
     if (nimbusState === "not started") {
       // do nothing if not started
       return;
@@ -393,14 +552,71 @@ function NimbusMethod({
       {nimbusState === "archive" && (
         <>
           <Row>
-            <Col sm={4}></Col>
-            <Col sm={4}>
-              <SolutionTable
+            <Col sm={6}>
+              <SolutionTableMultiSelect
                 objectiveData={newSolutions!}
-                setSolution={() => console.log("selected")}
+                activeIndices={selectedIndices}
+                setIndices={SetSelectedIndices}
               />
             </Col>
-            <Col sm={4}></Col>
+          </Row>
+        </>
+      )}
+      {nimbusState === "intermediate" && (
+        <>
+          <Row>
+            <Col sm={6}>
+              <Form>
+                <Form.Group as={Row}>
+                  <Form.Label column sm={8}>
+                    {"Would you like to see intermediate solutions?"}
+                  </Form.Label>
+                  <Col sm={3}>
+                    <Form.Check
+                      id="intermediate-switch"
+                      type="switch"
+                      label="no/yes"
+                      checked={computeIntermediate}
+                      onChange={() =>
+                        SetComputeIntermediate(!computeIntermediate)
+                      }
+                    ></Form.Check>
+                  </Col>
+                  <Form.Label column sm={8}>
+                    {"Number of intermediate solutions:"}
+                  </Form.Label>
+                  <Col sm={3}>
+                    <Form.Control
+                      type="number"
+                      readOnly={!computeIntermediate}
+                      defaultValue={1}
+                      onChange={(v) => {
+                        const input = v.target.value;
+                        const parsed = parseInt(input);
+                        if (parsed !== NaN) {
+                          if (parsed > 0 && parsed <= 20) {
+                            SetNumberOfSolutions(parsed);
+                            SetHelpMessage(
+                              `Number of intermediate solutions to be computed in the next iteration set to ${parsed}`
+                            );
+                          } else {
+                            SetHelpMessage(
+                              "The number of solutions should be more than 0, but less than 20."
+                            );
+                          }
+                        }
+                      }}
+                    ></Form.Control>
+                  </Col>
+                  <Col sm={1} />
+                </Form.Group>
+              </Form>
+              <SolutionTableMultiSelect
+                objectiveData={newSolutions!}
+                activeIndices={selectedIndices}
+                setIndices={SetSelectedIndices}
+              />
+            </Col>
           </Row>
         </>
       )}
