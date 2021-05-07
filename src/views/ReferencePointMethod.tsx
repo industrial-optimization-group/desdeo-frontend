@@ -262,6 +262,7 @@ function ReferencePointMethod({
             <SolutionTable
               objectiveData={alternatives!}
               setSolution={SetCurrentPoint}
+              tableTitle={"Alternative Solutions"}
             />
           </Col>
           <Col></Col>

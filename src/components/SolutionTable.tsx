@@ -12,9 +12,14 @@ import { ObjectiveData } from "../types/ProblemTypes";
 interface SolutionTableProps {
   objectiveData: ObjectiveData;
   setSolution: React.Dispatch<React.SetStateAction<number[]>>;
+  tableTitle: string;
 }
 
-function SolutionTable({ objectiveData, setSolution }: SolutionTableProps) {
+function SolutionTable({
+  objectiveData,
+  setSolution,
+  tableTitle,
+}: SolutionTableProps) {
   const [key, SetKey] = useState<string | null>("0");
   const [data, SetData] = useState(objectiveData.values);
 
@@ -38,7 +43,7 @@ function SolutionTable({ objectiveData, setSolution }: SolutionTableProps) {
           SetKey(k);
         }}
       >
-        <h4>Alternative solutions</h4>
+        <h4>{tableTitle}</h4>
         <ListGroup>
           <ListGroup.Item variant="dark">
             <Row>

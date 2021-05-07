@@ -13,12 +13,14 @@ interface SolutionTableMultiSelectProps {
   objectiveData: ObjectiveData;
   activeIndices: number[];
   setIndices: React.Dispatch<React.SetStateAction<number[]>>;
+  tableTitle: string;
 }
 
 function SolutionTableMultiSelect({
   objectiveData,
   activeIndices,
   setIndices,
+  tableTitle,
 }: SolutionTableMultiSelectProps) {
   const [keys, SetKeys] = useState<number[]>(activeIndices);
   const [data, SetData] = useState(objectiveData.values);
@@ -46,7 +48,7 @@ function SolutionTableMultiSelect({
         }}
         */
       >
-        <h4>Alternative solutions</h4>
+        <h4>{tableTitle}</h4>
         <ListGroup>
           <ListGroup.Item variant="dark">
             <Row>
