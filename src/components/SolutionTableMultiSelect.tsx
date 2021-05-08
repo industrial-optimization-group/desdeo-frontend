@@ -30,10 +30,6 @@ function SolutionTableMultiSelect({
   }, [objectiveData]);
 
   useEffect(() => {
-    setIndices(keys);
-  }, [keys]);
-
-  useEffect(() => {
     SetKeys(activeIndices);
   }, [activeIndices]);
 
@@ -64,9 +60,9 @@ function SolutionTableMultiSelect({
                 variant={keys.includes(index) ? "info" : ""}
                 onClick={() => {
                   if (keys.includes(index)) {
-                    SetKeys(keys.filter((k) => k !== index));
+                    setIndices(keys.filter((k) => k !== index));
                   } else {
-                    SetKeys([...keys, index]);
+                    setIndices([...keys, index]);
                   }
                 }}
                 key={index}

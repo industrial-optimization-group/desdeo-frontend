@@ -10,7 +10,7 @@ import ClassificationsInputForm from "../components/ClassificationsInputForm";
 import { Container, Row, Col, Button, Form, Table } from "react-bootstrap";
 import ReactLoading from "react-loading";
 import { ParseSolutions } from "../utils/DataHandling";
-import { HorizontalBars } from "visual-components";
+import { HorizontalBars, ParallelAxes } from "visual-components";
 import SolutionTable from "../components/SolutionTable";
 import SolutionTableMultiSelect from "../components/SolutionTableMultiSelect";
 import { Link } from "react-router-dom";
@@ -674,6 +674,13 @@ function NimbusMethod({
                 tableTitle={"New solutions"}
               />
             </Col>
+            <Col sm={6}>
+              <ParallelAxes
+                objectiveData={newSolutions!}
+                selectedIndices={selectedIndices}
+                handleSelection={SetSelectedIndices}
+              />
+            </Col>
           </Row>
         </>
       )}
@@ -745,6 +752,13 @@ function NimbusMethod({
                 tableTitle={"Archive and new solutions"}
               />
             </Col>
+            <Col sm={6}>
+              <ParallelAxes
+                objectiveData={newSolutions!}
+                selectedIndices={selectedIndices}
+                handleSelection={SetSelectedIndices}
+              />
+            </Col>
           </Row>
         </>
       )}
@@ -789,7 +803,13 @@ function NimbusMethod({
                 tableTitle={"Solutions"}
               />
             </Col>
-            <Col sm={6}></Col>
+            <Col sm={6}>
+              <ParallelAxes
+                objectiveData={newSolutions!}
+                selectedIndices={selectedIndices}
+                handleSelection={SetSelectedIndices}
+              />
+            </Col>
           </Row>
         </>
       )}
