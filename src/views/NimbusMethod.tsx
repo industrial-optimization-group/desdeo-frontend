@@ -513,6 +513,9 @@ function NimbusMethod({
   return (
     <Container>
       <Row>
+        <Col sm={12}>
+          <h3>Synchronous NIMBUS</h3>
+        </Col>
         <Col sm={2}></Col>
         <Col sm={8}>
           <p>{`Help: ${helpMessage}`}</p>
@@ -594,6 +597,9 @@ function NimbusMethod({
       {nimbusState === "classification" && (
         <>
           <Row>
+            <Col sm={12}>
+              <h4 className={"mt-3"}>{"Classification"}</h4>
+            </Col>
             <Col sm={4}>
               <Form>
                 <Form.Group as={Row}>
@@ -650,15 +656,17 @@ function NimbusMethod({
               />
             </Col>
             <Col sm={8}>
-              <HorizontalBars
-                objectiveData={ParseSolutions(
-                  [preferredPoint],
-                  activeProblemInfo
-                )}
-                referencePoint={classificationLevels}
-                currentPoint={preferredPoint}
-                setReferencePoint={inferClassifications}
-              />
+              <div className={"mt-5"}>
+                <HorizontalBars
+                  objectiveData={ParseSolutions(
+                    [preferredPoint],
+                    activeProblemInfo
+                  )}
+                  referencePoint={classificationLevels}
+                  currentPoint={preferredPoint}
+                  setReferencePoint={inferClassifications}
+                />
+              </div>
             </Col>
           </Row>
         </>
@@ -666,20 +674,25 @@ function NimbusMethod({
       {nimbusState === "archive" && (
         <>
           <Row>
+            <Col sm={12}>
+              <h4 className={"mt-3"}>{"New solutions"}</h4>
+            </Col>
             <Col sm={6}>
               <SolutionTableMultiSelect
                 objectiveData={newSolutions!}
                 activeIndices={selectedIndices}
                 setIndices={SetSelectedIndices}
-                tableTitle={"New solutions"}
+                tableTitle={""}
               />
             </Col>
             <Col sm={6}>
-              <ParallelAxes
-                objectiveData={newSolutions!}
-                selectedIndices={selectedIndices}
-                handleSelection={SetSelectedIndices}
-              />
+              <div className={"mt-1"}>
+                <ParallelAxes
+                  objectiveData={newSolutions!}
+                  selectedIndices={selectedIndices}
+                  handleSelection={SetSelectedIndices}
+                />
+              </div>
             </Col>
           </Row>
         </>
@@ -687,6 +700,9 @@ function NimbusMethod({
       {nimbusState === "intermediate" && (
         <>
           <Row>
+            <Col sm={12}>
+              <h4 className={"mt-3"}>{"Archive and new solutions"}</h4>
+            </Col>
             <Col sm={6}>
               <Form>
                 <Form.Group as={Row}>
@@ -749,15 +765,17 @@ function NimbusMethod({
                 objectiveData={newSolutions!}
                 activeIndices={selectedIndices}
                 setIndices={SetSelectedIndices}
-                tableTitle={"Archive and new solutions"}
+                tableTitle={""}
               />
             </Col>
             <Col sm={6}>
-              <ParallelAxes
-                objectiveData={newSolutions!}
-                selectedIndices={selectedIndices}
-                handleSelection={SetSelectedIndices}
-              />
+              <div className={"mt-1"}>
+                <ParallelAxes
+                  objectiveData={newSolutions!}
+                  selectedIndices={selectedIndices}
+                  handleSelection={SetSelectedIndices}
+                />
+              </div>
             </Col>
           </Row>
         </>
@@ -765,6 +783,9 @@ function NimbusMethod({
       {nimbusState === "select preferred" && (
         <>
           <Row>
+            <Col sm={12}>
+              <h4 className={"mt-3"}>{"Select the most preferred solution"}</h4>
+            </Col>
             <Col sm={6}>
               <Form>
                 <Form.Group as={Row}>
@@ -775,6 +796,7 @@ function NimbusMethod({
                   </Form.Label>
                   <Col sm={3}>
                     <Form.Check
+                      className={"mt-3"}
                       id="stop-switch"
                       type="switch"
                       label={
@@ -804,11 +826,13 @@ function NimbusMethod({
               />
             </Col>
             <Col sm={6}>
-              <ParallelAxes
-                objectiveData={newSolutions!}
-                selectedIndices={selectedIndices}
-                handleSelection={SetSelectedIndices}
-              />
+              <div className={"mt-1"}>
+                <ParallelAxes
+                  objectiveData={newSolutions!}
+                  selectedIndices={selectedIndices}
+                  handleSelection={SetSelectedIndices}
+                />
+              </div>
             </Col>
           </Row>
         </>

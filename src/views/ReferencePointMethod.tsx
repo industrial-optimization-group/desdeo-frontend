@@ -273,6 +273,7 @@ function ReferencePointMethod({
 
   return (
     <Container>
+      <h3 className="mb-3">{"Reference point method"}</h3>
       {!showFinal && (
         <>
           <p>{`Help: ${helpMessage}`}</p>
@@ -312,7 +313,9 @@ function ReferencePointMethod({
           <Row>
             <Col sm={2}></Col>
             <Col>
-              <h4>Currently selected solution and reference point</h4>
+              <h4 className="mt-3">
+                Currently selected solution and reference point
+              </h4>
             </Col>
             <Col sm={2}></Col>
           </Row>
@@ -385,29 +388,33 @@ function ReferencePointMethod({
               <Row>
                 <Col sm={2}></Col>
                 <Col>
-                  <h4>Alternative solutions</h4>
+                  <h4 className="mt-3">Alternative solutions</h4>
                 </Col>
                 <Col sm={2}></Col>
               </Row>
               <Row>
                 <Col sm={6}>
-                  <SolutionTable
-                    objectiveData={alternatives!}
-                    setIndex={SetIndexCurrentPoint}
-                    selectedIndex={indexCurrentPoint}
-                    tableTitle={""}
-                  />
+                  <div className={"mt-2"}>
+                    <SolutionTable
+                      objectiveData={alternatives!}
+                      setIndex={SetIndexCurrentPoint}
+                      selectedIndex={indexCurrentPoint}
+                      tableTitle={""}
+                    />
+                  </div>
                 </Col>
                 <Col sm={6}>
-                  <ParallelAxes
-                    objectiveData={alternatives!}
-                    selectedIndices={[indexCurrentPoint]}
-                    handleSelection={(x: number[]) => {
-                      x.length > 0
-                        ? SetIndexCurrentPoint(x.pop()!)
-                        : SetIndexCurrentPoint(indexCurrentPoint);
-                    }}
-                  />
+                  <div className={"mt-3"}>
+                    <ParallelAxes
+                      objectiveData={alternatives!}
+                      selectedIndices={[indexCurrentPoint]}
+                      handleSelection={(x: number[]) => {
+                        x.length > 0
+                          ? SetIndexCurrentPoint(x.pop()!)
+                          : SetIndexCurrentPoint(indexCurrentPoint);
+                      }}
+                    />
+                  </div>
                 </Col>
               </Row>
             </>
