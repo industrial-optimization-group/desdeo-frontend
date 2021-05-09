@@ -11,16 +11,18 @@ import { ObjectiveData } from "../types/ProblemTypes";
 
 interface SolutionTableProps {
   objectiveData: ObjectiveData;
-  setSolution: React.Dispatch<React.SetStateAction<number[]>>;
+  setIndex: (x: number) => void;
+  selectedIndex: number;
   tableTitle: string;
 }
 
 function SolutionTable({
   objectiveData,
-  setSolution,
+  setIndex,
+  selectedIndex,
   tableTitle,
 }: SolutionTableProps) {
-  const [key, SetKey] = useState<string | null>("0");
+  const [key, SetKey] = useState<number>(selectedIndex);
   const [data, SetData] = useState(objectiveData.values);
 
   useEffect(() => {
@@ -28,22 +30,17 @@ function SolutionTable({
   }, [objectiveData]);
 
   useEffect(() => {
-    if (key === null) {
-      return;
-    }
-    setSolution(data[parseInt(key!)].value);
+    setIndex(key);
   }, [key]);
+
+  useEffect(() => {
+    SetKey(selectedIndex);
+  }, [selectedIndex]);
 
   return (
     <Container>
-      <Tab.Container
-        id="table-of-alternatives"
-        activeKey={key}
-        onSelect={(k) => {
-          SetKey(k);
-        }}
-      >
-        <h4>{tableTitle}</h4>
+      <Tab.Container id="table-of-alternatives">
+        {tableTitle.length > 0 && <h4>{tableTitle}</h4>}
         <ListGroup>
           <ListGroup.Item variant="dark">
             <Row>
@@ -56,8 +53,8 @@ function SolutionTable({
             return (
               <ListGroup.Item
                 action
-                variant={index === parseInt(key!) ? "info" : ""}
-                onClick={() => SetKey(`${index}`)}
+                variant={index === selectedIndex ? "info" : ""}
+                onClick={() => SetKey(index)}
                 key={index}
               >
                 <Row>

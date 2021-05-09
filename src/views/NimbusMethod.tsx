@@ -817,7 +817,8 @@ function NimbusMethod({
         <>
           <SolutionTable
             objectiveData={ParseSolutions([preferredPoint], activeProblemInfo)}
-            setSolution={() => console.log("nothing happens...")}
+            setIndex={() => console.log("nothing happens...")}
+            selectedIndex={0}
             tableTitle={"Final objective values"}
           />
           <p>{"Final decision variable values:"}</p>

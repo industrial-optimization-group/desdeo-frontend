@@ -7,11 +7,12 @@ import {
 } from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
 import ReferencePointInputForm from "../components/ReferencePointInputForm";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Table, Container, Row, Col, Button, Form } from "react-bootstrap";
 import ReactLoading from "react-loading";
 import { ParseSolutions } from "../utils/DataHandling";
-import { HorizontalBars } from "visual-components";
+import { HorizontalBars, ParallelAxes } from "visual-components";
 import SolutionTable from "../components/SolutionTable";
+import { Link } from "react-router-dom";
 
 interface ReferencePointMethodProps {
   isLoggedIn: boolean;
@@ -41,6 +42,39 @@ function ReferencePointMethod({
   const [fetchedInfo, SetFetchedInfo] = useState<boolean>(false);
   const [loading, SetLoading] = useState<boolean>(false);
   const [alternatives, SetAlternatives] = useState<ObjectiveData>();
+  const [indexCurrentPoint, SetIndexCurrentPoint] = useState<number>(0);
+  const [satisfied, SetSatisfied] = useState<boolean>(false);
+  const [showFinal, SetShowFinal] = useState<boolean>(false);
+  const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
+  const [finalVariables, SetFinalVariables] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (alternatives !== undefined) {
+      SetCurrentPoint(alternatives.values[indexCurrentPoint].value);
+    }
+  }, [indexCurrentPoint]);
+
+  useEffect(() => {
+    if (alternatives === undefined) {
+      SetHelpMessage(
+        `Provide a reference point. The current reference point is [${referencePoint.map(
+          (v) => v.toFixed(3)
+        )}]`
+      );
+    } else if (!satisfied) {
+      SetHelpMessage(
+        `Provide a new reference point or select a final solution and stop. The current reference point is [${referencePoint.map(
+          (v) => v.toFixed(3)
+        )}]`
+      );
+    } else {
+      SetHelpMessage(
+        `Final solution is set to [${referencePoint.map((v) =>
+          v.toFixed(3)
+        )}]. If you are happy with the solution, click on 'stop'`
+      );
+    }
+  }, [referencePoint, alternatives, satisfied]);
 
   // fetch current problem info
   useEffect(() => {
@@ -121,7 +155,6 @@ function ReferencePointMethod({
 
         if (res.status == 200) {
           const body = await res.json();
-          SetHelpMessage(body.response.message);
 
           // To begin, just show something neutral
           const datum: ObjectiveDatum = {
@@ -143,6 +176,11 @@ function ReferencePointMethod({
           SetData(data);
           SetMethodStarted(true);
           SetReferencePoint(datum.value);
+          SetHelpMessage(
+            `Provide a reference point. The current reference point is [${datum.value.map(
+              (v) => v.toFixed(3)
+            )}]`
+          );
         }
       } catch (e) {
         console.log("not ok, could not start the method");
@@ -157,37 +195,69 @@ function ReferencePointMethod({
     // Attempt to iterate
     SetLoading(true);
     console.log("loading...");
-    try {
-      const res = await fetch(`${apiUrl}/method/control`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${tokens.access}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ response: { reference_point: referencePoint } }),
-      });
+    if (!satisfied) {
+      try {
+        const res = await fetch(`${apiUrl}/method/control`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${tokens.access}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            response: { reference_point: referencePoint },
+          }),
+        });
 
-      if (res.status === 200) {
-        // ok
-        const body = await res.json();
-        const response = JSON.parse(body.response);
-        SetHelpMessage(response.message);
-        SetReferencePoint(response.current_solution);
-        SetCurrentPoint(response.current_solution);
-        SetAlternatives(
-          ParseSolutions(
-            [response.current_solution].concat(response.additional_solutions),
-            activeProblemInfo!
-          )
-        );
-        console.log(response.additional_solutions);
-      } else {
-        console.log("Got a response which is not 200");
+        if (res.status === 200) {
+          // ok
+          const body = await res.json();
+          const response = JSON.parse(body.response);
+          SetHelpMessage(response.message);
+          SetReferencePoint(response.current_solution);
+          SetCurrentPoint(response.current_solution);
+          SetAlternatives(
+            ParseSolutions(
+              [response.current_solution].concat(response.additional_solutions),
+              activeProblemInfo!
+            )
+          );
+          console.log(response.additional_solutions);
+        } else {
+          console.log("Got a response which is not 200");
+        }
+      } catch (e) {
+        console.log("Could not iterate RFP");
+        console.log(e);
+        // do nothing
       }
-    } catch (e) {
-      console.log("Could not iterate RFP");
-      console.log(e);
-      // do nothing
+    } else {
+      try {
+        const res = await fetch(`${apiUrl}/method/control`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${tokens.access}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            response: { satisfied: true, solution_index: indexCurrentPoint },
+          }),
+        });
+
+        if (res.status === 200) {
+          // ok
+          const body = await res.json();
+          const response = JSON.parse(body.response);
+          SetFinalObjectives(response.objective_vector);
+          SetFinalVariables(response.solution);
+          SetShowFinal(true);
+        } else {
+          console.log("Got a response which is not 200");
+        }
+      } catch (e) {
+        console.log("Could not iterate RFP");
+        console.log(e);
+        // do nothing
+      }
     }
     SetLoading(false);
     console.log("done!");
@@ -203,70 +273,176 @@ function ReferencePointMethod({
 
   return (
     <Container>
-      <p>{`Current reference point: ${referencePoint}`}</p>
-      <Row>
-        <Col sm={4}></Col>
-        <Col sm={4}>
-          {!loading && (
-            <Button block={true} size={"lg"} onClick={iterate}>
-              Iterate
-            </Button>
-          )}
-          {loading && (
-            <Button block={true} disabled={true} size={"lg"} variant={"info"}>
-              {"Iterating... "}
-              <ReactLoading
-                type={"bubbles"}
-                color={"#ffffff"}
-                className={"loading-icon"}
-                height={28}
-                width={32}
-              />
-            </Button>
-          )}
-        </Col>
-        <Col sm={4}></Col>
-      </Row>
-
-      <Row>
-        <Col sm={4}>
-          {fetchedInfo && (
-            <ReferencePointInputForm
-              setReferencePoint={SetReferencePoint}
-              referencePoint={referencePoint}
-              nObjectives={activeProblemInfo.nObjectives}
-              objectiveNames={activeProblemInfo.objectiveNames}
-              ideal={activeProblemInfo.ideal}
-              nadir={activeProblemInfo.nadir}
-              directions={activeProblemInfo.minimize}
-            />
-          )}
-        </Col>
-        <Col sm={8}>
-          {fetchedInfo && (
-            <HorizontalBars
-              objectiveData={ParseSolutions(
-                [referencePoint],
-                activeProblemInfo
+      {!showFinal && (
+        <>
+          <p>{`Help: ${helpMessage}`}</p>
+          <Row>
+            <Col sm={4}></Col>
+            <Col sm={4}>
+              {!loading && !satisfied && (
+                <Button block={true} size={"lg"} onClick={iterate}>
+                  Iterate
+                </Button>
               )}
-              referencePoint={referencePoint}
-              currentPoint={currentPoint}
-              setReferencePoint={SetReferencePoint}
-            />
+              {!loading && satisfied && (
+                <Button block={true} size={"lg"} onClick={iterate}>
+                  Stop
+                </Button>
+              )}
+              {loading && (
+                <Button
+                  block={true}
+                  disabled={true}
+                  size={"lg"}
+                  variant={"info"}
+                >
+                  {"Working... "}
+                  <ReactLoading
+                    type={"bubbles"}
+                    color={"#ffffff"}
+                    className={"loading-icon"}
+                    height={28}
+                    width={32}
+                  />
+                </Button>
+              )}
+            </Col>
+            <Col sm={4}></Col>
+          </Row>
+          <Row>
+            <Col sm={2}></Col>
+            <Col>
+              <h4>Currently selected solution and reference point</h4>
+            </Col>
+            <Col sm={2}></Col>
+          </Row>
+          <Row>
+            <Col sm={4}>
+              {fetchedInfo && (
+                <>
+                  <Form>
+                    <Form.Group as={Row}>
+                      <Form.Label column sm={8}>
+                        {
+                          "Are you satisfied with the currently selected solution?"
+                        }
+                      </Form.Label>
+                      <Col sm={3}>
+                        <Form.Check
+                          className={"mt-3"}
+                          id="satisfied-switch"
+                          type="switch"
+                          disabled={alternatives === undefined ? true : false}
+                          label={
+                            satisfied ? (
+                              <>
+                                {"no/"}
+                                <b>{"yes"}</b>
+                              </>
+                            ) : (
+                              <>
+                                <b>{"no"}</b>
+                                {"/yes"}
+                              </>
+                            )
+                          }
+                          checked={satisfied}
+                          onChange={() => SetSatisfied(!satisfied)}
+                        />
+                      </Col>
+                    </Form.Group>
+                  </Form>
+                  <ReferencePointInputForm
+                    setReferencePoint={SetReferencePoint}
+                    referencePoint={referencePoint}
+                    nObjectives={activeProblemInfo.nObjectives}
+                    objectiveNames={activeProblemInfo.objectiveNames}
+                    ideal={activeProblemInfo.ideal}
+                    nadir={activeProblemInfo.nadir}
+                    directions={activeProblemInfo.minimize}
+                  />
+                </>
+              )}
+            </Col>
+            <Col sm={8}>
+              {fetchedInfo && (
+                <div className={"mt-5"}>
+                  <HorizontalBars
+                    objectiveData={ParseSolutions(
+                      [referencePoint],
+                      activeProblemInfo
+                    )}
+                    referencePoint={referencePoint}
+                    currentPoint={currentPoint}
+                    setReferencePoint={SetReferencePoint}
+                  />
+                </div>
+              )}
+            </Col>
+          </Row>
+          {!(alternatives === undefined) && (
+            <>
+              <Row>
+                <Col sm={2}></Col>
+                <Col>
+                  <h4>Alternative solutions</h4>
+                </Col>
+                <Col sm={2}></Col>
+              </Row>
+              <Row>
+                <Col sm={6}>
+                  <SolutionTable
+                    objectiveData={alternatives!}
+                    setIndex={SetIndexCurrentPoint}
+                    selectedIndex={indexCurrentPoint}
+                    tableTitle={""}
+                  />
+                </Col>
+                <Col sm={6}>
+                  <ParallelAxes
+                    objectiveData={alternatives!}
+                    selectedIndices={[indexCurrentPoint]}
+                    handleSelection={(x: number[]) => {
+                      x.length > 0
+                        ? SetIndexCurrentPoint(x.pop()!)
+                        : SetIndexCurrentPoint(indexCurrentPoint);
+                    }}
+                  />
+                </Col>
+              </Row>
+            </>
           )}
-        </Col>
-      </Row>
-      {!(alternatives === undefined) && (
-        <Row>
-          <Col>
-            <SolutionTable
-              objectiveData={alternatives!}
-              setSolution={SetCurrentPoint}
-              tableTitle={"Alternative Solutions"}
-            />
-          </Col>
-          <Col></Col>
-        </Row>
+        </>
+      )}
+      {showFinal && (
+        <>
+          <SolutionTable
+            objectiveData={ParseSolutions([finalObjectives], activeProblemInfo)}
+            setIndex={() => console.log("nothing happens...")}
+            selectedIndex={0}
+            tableTitle={"Final objective values"}
+          />
+          <p>{"Final decision variable values:"}</p>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                {finalVariables.map((_, i) => {
+                  return <th>{`x${i + 1}`}</th>;
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                {finalVariables.map((v) => {
+                  return <td>{`${v.toFixed(4)}`}</td>;
+                })}
+              </tr>
+            </tbody>
+          </Table>
+          <Button as={Link} to="/">
+            {"Back to index"}
+          </Button>
+        </>
       )}
     </Container>
   );
