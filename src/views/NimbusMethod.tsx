@@ -9,7 +9,7 @@ import { Tokens } from "../types/AppTypes";
 import ClassificationsInputForm from "../components/ClassificationsInputForm";
 import { Container, Row, Col, Button, Form, Table } from "react-bootstrap";
 import ReactLoading from "react-loading";
-import { ParseSolutions } from "../utils/DataHandling";
+import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
 import { HorizontalBars, ParallelAxes } from "visual-components";
 import SolutionTable from "../components/SolutionTable";
 import SolutionTableMultiSelect from "../components/SolutionTableMultiSelect";
@@ -144,7 +144,7 @@ function NimbusMethod({
         if (res.status == 200) {
           const body = await res.json();
           SetMethodStarted(true);
-          SetPreferredPoint(body.response.objective_values);
+          SetPreferredPoint([...body.response.objective_values]); // make copy to avoid aliasing
           SetClassificationLevels(body.response.objective_values);
           SetHelpMessage("Please classify each of the shown objectives.");
           SetNimbusState("classification");
@@ -172,6 +172,7 @@ function NimbusMethod({
           break;
         }
         try {
+          console.log(`iterating with levels ${classificationLevels}`);
           const res = await fetch(`${apiUrl}/method/control`, {
             method: "POST",
             headers: {
@@ -358,7 +359,7 @@ function NimbusMethod({
 
             if (cont) {
               // continue iterating
-              SetPreferredPoint(response.objective_values);
+              SetPreferredPoint([...response.objective_values]); // avoid aliasing
               SetClassificationLevels(response.objective_values);
               SetClassifications(
                 response.objective_values.map(() => "=" as Classification)
@@ -451,7 +452,11 @@ function NimbusMethod({
 
   const inferClassifications = (barSelection: number[]) => {
     const isDiff = barSelection.map((v, i) => {
-      const res = Math.abs(v - preferredPoint[i]) < 1e-12 ? false : true;
+      const res =
+        // The preferred point must be in the original scale to be compared with barSelection
+        Math.abs(v - preferredPoint[i] * activeProblemInfo!.minimize[i]) < 1e-12
+          ? false
+          : true;
       return res;
     });
     const levels = classificationLevels;
@@ -478,15 +483,16 @@ function NimbusMethod({
         }
       } else if (activeProblemInfo?.minimize[i] === -1) {
         // maximization
-        if (value > preferredPoint[i]) {
+        // levels must be transformed back to original scale, hence the minus signs
+        if (value > -1 * preferredPoint[i]) {
           // selected value is greater than currently preferred (better)
           // improve until
-          levels[i] = barSelection[i];
+          levels[i] = -barSelection[i];
           return "<=" as Classification;
-        } else if (value < preferredPoint[i]) {
+        } else if (value < -1 * preferredPoint[i]) {
           // selected value is less than currently preferred (worse)
           // worsen until
-          levels[i] = barSelection[i];
+          levels[i] = -barSelection[i];
           return ">=" as Classification;
         } else {
           // no change, keep as it is
@@ -658,13 +664,16 @@ function NimbusMethod({
             <Col sm={8}>
               <div className={"mt-5"}>
                 <HorizontalBars
-                  objectiveData={ParseSolutions(
-                    [preferredPoint],
-                    activeProblemInfo
+                  objectiveData={ToTrueValues(
+                    ParseSolutions([preferredPoint], activeProblemInfo)
                   )}
-                  referencePoint={classificationLevels}
-                  currentPoint={preferredPoint}
-                  setReferencePoint={inferClassifications}
+                  referencePoint={classificationLevels.map((v, i) =>
+                    activeProblemInfo.minimize[i] === 1 ? v : -v
+                  )}
+                  currentPoint={preferredPoint.map((v, i) =>
+                    activeProblemInfo.minimize[i] === 1 ? v : -v
+                  )}
+                  setReferencePoint={inferClassifications} // the reference point is passed in its true form to the callback
                 />
               </div>
             </Col>
@@ -688,7 +697,7 @@ function NimbusMethod({
             <Col sm={6}>
               <div className={"mt-1"}>
                 <ParallelAxes
-                  objectiveData={newSolutions!}
+                  objectiveData={ToTrueValues(newSolutions!)}
                   selectedIndices={selectedIndices}
                   handleSelection={SetSelectedIndices}
                 />
@@ -771,7 +780,7 @@ function NimbusMethod({
             <Col sm={6}>
               <div className={"mt-1"}>
                 <ParallelAxes
-                  objectiveData={newSolutions!}
+                  objectiveData={ToTrueValues(newSolutions!)}
                   selectedIndices={selectedIndices}
                   handleSelection={SetSelectedIndices}
                 />
@@ -828,7 +837,7 @@ function NimbusMethod({
             <Col sm={6}>
               <div className={"mt-1"}>
                 <ParallelAxes
-                  objectiveData={newSolutions!}
+                  objectiveData={ToTrueValues(newSolutions!)}
                   selectedIndices={selectedIndices}
                   handleSelection={SetSelectedIndices}
                 />

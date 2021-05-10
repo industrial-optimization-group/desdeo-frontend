@@ -23,4 +23,25 @@ function ParseSolutions(
   return data;
 }
 
-export { ParseSolutions };
+function ToTrueValues(data: ObjectiveData): ObjectiveData {
+  const newDatums: ObjectiveDatum[] = data.values.map((d, i) => {
+    return {
+      value:
+        data.directions[i] === 1
+          ? (d.value as number[])
+          : d.value.map((x) => -x),
+      selected: false,
+    };
+  });
+
+  const newData: ObjectiveData = {
+    values: newDatums,
+    names: data.names,
+    directions: data.directions,
+    ideal: data.ideal.map((v, i) => (data.directions[i] === 1 ? v : -v)),
+    nadir: data.nadir.map((v, i) => (data.directions[i] === 1 ? v : -v)),
+  };
+  return newData;
+}
+
+export { ParseSolutions, ToTrueValues };

@@ -44,8 +44,12 @@ function SolutionTable({
         <ListGroup>
           <ListGroup.Item variant="dark">
             <Row>
-              {objectiveData.names.map((name) => {
-                return <Col>{name}</Col>;
+              {objectiveData.names.map((name, i) => {
+                return (
+                  <Col>{`${name} (${
+                    objectiveData.directions[i] === 1 ? "min" : "max"
+                  })`}</Col>
+                );
               })}
             </Row>
           </ListGroup.Item>
@@ -59,7 +63,13 @@ function SolutionTable({
               >
                 <Row>
                   {datum.value.map((value) => {
-                    return <Col>{value.toPrecision(4)}</Col>;
+                    return (
+                      <Col>{`${
+                        objectiveData.directions[index] === 1
+                          ? value.toPrecision(4)
+                          : -value.toPrecision(4)
+                      }`}</Col>
+                    );
                   })}
                 </Row>
               </ListGroup.Item>

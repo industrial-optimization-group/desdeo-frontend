@@ -9,7 +9,7 @@ import { Tokens } from "../types/AppTypes";
 import ReferencePointInputForm from "../components/ReferencePointInputForm";
 import { Table, Container, Row, Col, Button, Form } from "react-bootstrap";
 import ReactLoading from "react-loading";
-import { ParseSolutions } from "../utils/DataHandling";
+import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
 import { HorizontalBars, ParallelAxes } from "visual-components";
 import SolutionTable from "../components/SolutionTable";
 import { Link } from "react-router-dom";
@@ -58,23 +58,25 @@ function ReferencePointMethod({
     if (alternatives === undefined) {
       SetHelpMessage(
         `Provide a reference point. The current reference point is [${referencePoint.map(
-          (v) => v.toFixed(3)
+          (v, i) =>
+            activeProblemInfo?.minimize[i] === 1 ? v.toFixed(3) : -v.toFixed(3)
         )}]`
       );
     } else if (!satisfied) {
       SetHelpMessage(
         `Provide a new reference point or select a final solution and stop. The current reference point is [${referencePoint.map(
-          (v) => v.toFixed(3)
+          (v, i) =>
+            activeProblemInfo?.minimize[i] === 1 ? v.toFixed(3) : -v.toFixed(3)
         )}]`
       );
     } else {
       SetHelpMessage(
-        `Final solution is set to [${referencePoint.map((v) =>
-          v.toFixed(3)
+        `Final solution is set to [${referencePoint.map((v, i) =>
+          activeProblemInfo?.minimize[i] === 1 ? v.toFixed(3) : -v.toFixed(3)
         )}]. If you are happy with the solution, click on 'stop'`
       );
     }
-  }, [referencePoint, alternatives, satisfied]);
+  }, [referencePoint, alternatives, satisfied, activeProblemInfo]);
 
   // fetch current problem info
   useEffect(() => {
@@ -197,6 +199,7 @@ function ReferencePointMethod({
     console.log("loading...");
     if (!satisfied) {
       try {
+        console.log(`Trying to iterate with ${referencePoint}`);
         const res = await fetch(`${apiUrl}/method/control`, {
           method: "POST",
           headers: {
@@ -371,13 +374,22 @@ function ReferencePointMethod({
               {fetchedInfo && (
                 <div className={"mt-5"}>
                   <HorizontalBars
-                    objectiveData={ParseSolutions(
-                      [referencePoint],
-                      activeProblemInfo
+                    objectiveData={ToTrueValues(
+                      ParseSolutions([referencePoint], activeProblemInfo)
                     )}
-                    referencePoint={referencePoint}
-                    currentPoint={currentPoint}
-                    setReferencePoint={SetReferencePoint}
+                    referencePoint={referencePoint.map((v, i) =>
+                      activeProblemInfo.minimize[i] === 1 ? v : -v
+                    )}
+                    currentPoint={currentPoint.map((v, i) =>
+                      activeProblemInfo.minimize[i] === 1 ? v : -v
+                    )}
+                    setReferencePoint={(ref: number[]) =>
+                      SetReferencePoint(
+                        ref.map((v, i) =>
+                          activeProblemInfo.minimize[i] === 1 ? v : -v
+                        )
+                      )
+                    }
                   />
                 </div>
               )}
@@ -406,7 +418,7 @@ function ReferencePointMethod({
                 <Col sm={6}>
                   <div className={"mt-3"}>
                     <ParallelAxes
-                      objectiveData={alternatives!}
+                      objectiveData={ToTrueValues(alternatives!)}
                       selectedIndices={[indexCurrentPoint]}
                       handleSelection={(x: number[]) => {
                         x.length > 0

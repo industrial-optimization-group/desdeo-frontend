@@ -49,7 +49,7 @@ function ReferencePointInputForm({
   }, [referencePoint]);
 
   const onSubmit = (data: FormData) => {
-    setReferencePoint(data.values);
+    setReferencePoint(directions.map((d, i) => d * data.values[i]));
   };
 
   console.log("called form", JSON.stringify(referencePoint));
@@ -74,7 +74,7 @@ function ReferencePointInputForm({
                   </Form.Label>
                   <Row>
                     <Col sm={3}>
-                      {(directions[i] === 1 ? ideal[i] : nadir[i]).toPrecision(
+                      {(directions[i] === 1 ? ideal[i] : -nadir[i]).toPrecision(
                         4
                       )}
                     </Col>
@@ -82,7 +82,11 @@ function ReferencePointInputForm({
                       <Form.Control
                         key={`controlof${name}`}
                         name={`values.${i}`}
-                        defaultValue={`${referencePoint[i].toPrecision(4)}`}
+                        defaultValue={`${
+                          directions[i] === 1
+                            ? referencePoint[i].toPrecision(4)
+                            : -referencePoint[i].toPrecision(4)
+                        }`}
                         ref={register({
                           required: true,
                           pattern: {
@@ -96,15 +100,15 @@ function ReferencePointInputForm({
                               "Input must be float",
                           },
                           min: {
-                            value: directions[i] === 1 ? ideal[i] : nadir[i],
+                            value: directions[i] === 1 ? ideal[i] : -nadir[i],
                             message: `Value too small. Must be greater than ${
-                              directions[i] === 1 ? ideal[i] : nadir[i]
+                              directions[i] === 1 ? ideal[i] : -nadir[i]
                             }`,
                           },
                           max: {
-                            value: directions[i] === -1 ? ideal[i] : nadir[i],
+                            value: directions[i] === -1 ? -ideal[i] : nadir[i],
                             message: `Value too too large. Must be less than ${
-                              directions[i] === -1 ? ideal[i] : nadir[i]
+                              directions[i] === -1 ? -ideal[i] : nadir[i]
                             }`,
                           },
                         })}
@@ -116,9 +120,10 @@ function ReferencePointInputForm({
                       />
                     </Col>
                     <Col sm={3}>
-                      {(directions[i] === -1 ? ideal[i] : nadir[i]).toPrecision(
-                        4
-                      )}
+                      {(directions[i] === -1
+                        ? -ideal[i]
+                        : nadir[i]
+                      ).toPrecision(4)}
                     </Col>
                   </Row>
                 </div>

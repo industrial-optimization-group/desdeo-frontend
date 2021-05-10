@@ -67,7 +67,11 @@ function ClassificationsInputForm({
 
   useEffect(() => {
     reset({
-      values: classificationLevels.map((v) => parseFloat(v.toFixed(4))),
+      values: classificationLevels.map((v, i) =>
+        directions[i] === 1
+          ? parseFloat(v.toFixed(4))
+          : -parseFloat(v.toFixed(4))
+      ),
       classifications: classifications,
     });
   }, [classifications, classificationLevels]);
@@ -95,7 +99,9 @@ function ClassificationsInputForm({
   const onSubmit = (data: FormData) => {
     console.log(data);
     setClassifications(data.classifications);
-    setClassificationLevels(data.values);
+    setClassificationLevels(
+      data.values.map((v, i) => (directions[i] === 1 ? v : -v))
+    );
   };
 
   console.log("called form", JSON.stringify(classifications));
@@ -188,8 +194,8 @@ function ClassificationsInputForm({
                                   } else {
                                     // max
                                     return (
-                                      v >= currentPoint[i] ||
-                                      `Value must be greater than ${currentPoint[
+                                      v >= -currentPoint[i] ||
+                                      `Value must be greater than ${-currentPoint[
                                         i
                                       ].toFixed(4)}`
                                     );
@@ -208,8 +214,8 @@ function ClassificationsInputForm({
                                   } else {
                                     // max
                                     return (
-                                      v <= currentPoint[i] ||
-                                      `Value must be less than ${currentPoint[
+                                      v <= -currentPoint[i] ||
+                                      `Value must be less than ${-currentPoint[
                                         i
                                       ].toFixed(4)}`
                                     );
@@ -239,9 +245,9 @@ function ClassificationsInputForm({
                                   tmpClassifications[i] ===
                                     ("<" as Classification)
                                 ? -Infinity
-                                : nadir[i],
+                                : -nadir[i],
                             message: `Value too small. Must be greater than ${
-                              directions[i] === 1 ? ideal[i] : nadir[i]
+                              directions[i] === 1 ? ideal[i] : -nadir[i]
                             }`,
                           },
                           max: {
@@ -262,9 +268,9 @@ function ClassificationsInputForm({
                                   tmpClassifications[i] ===
                                     ("<" as Classification)
                                 ? Infinity
-                                : ideal[i],
+                                : -ideal[i],
                             message: `Value too too large. Must be less than ${
-                              directions[i] === -1 ? ideal[i] : nadir[i]
+                              directions[i] === 1 ? nadir[i] : -ideal[i]
                             }`,
                           },
                         })}
