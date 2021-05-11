@@ -101,26 +101,6 @@ export const Login = ({
                 </Form.Group>
                 <Button type="submit">Submit</Button>
               </Form>
-              <OverlayTrigger
-                trigger="click"
-                placement="bottom"
-                overlay={popover}
-                // Transition false to hide the warning: Warning: findDOMNode is deprecated in StrictMode.
-                // this is also why the functional form of OverlayTrigger is used.
-                transition={false}
-              >
-                {({ ref, ...triggerHandler }) => (
-                  <Button
-                    className="mt-1"
-                    variant="secondary"
-                    {...triggerHandler}
-                    ref={ref}
-                    size="sm"
-                  >
-                    Help
-                  </Button>
-                )}
-              </OverlayTrigger>
             </Col>
           </Row>
         </Container>

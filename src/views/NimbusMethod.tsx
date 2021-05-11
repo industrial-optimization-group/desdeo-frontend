@@ -871,6 +871,7 @@ function NimbusMethod({
               </tr>
             </tbody>
           </Table>
+          <h4>{`Please answer to the questions in the survey regarding the synchronous NIMBUS method before returning back to the index.`}</h4>
           <Button as={Link} to="/">
             {"Back to index"}
           </Button>

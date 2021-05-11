@@ -53,7 +53,15 @@ function App() {
         <NavigationBar isLoggedIn={isLoggedIn} loggedAs={loggedAs} />
         <Switch>
           <Route path="/" exact>
-            <LandingPage />
+            <LandingPage
+              apiUrl={API_URL}
+              isLoggedIn={isLoggedIn}
+              loggedAs={loggedAs}
+              setMethodCreated={SetMethodCreated}
+              setActiveProblemId={SetActiveProblemId}
+              tokens={tokens}
+              setChosenMethod={SetChosenMethod}
+            />
           </Route>
           <Route path="/login" exact>
             <Login
