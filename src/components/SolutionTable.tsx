@@ -37,6 +37,8 @@ function SolutionTable({
     SetKey(selectedIndex);
   }, [selectedIndex]);
 
+  console.log("Got alternatives", objectiveData);
+
   return (
     <Container>
       <Tab.Container id="table-of-alternatives">
@@ -62,7 +64,7 @@ function SolutionTable({
                 key={index}
               >
                 <Row>
-                  {datum.value.map((value) => {
+                  {datum.value.map((value, index) => {
                     return (
                       <Col>{`${
                         objectiveData.directions[index] === 1
