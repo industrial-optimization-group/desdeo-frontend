@@ -58,9 +58,8 @@ function NimbusMethod({
   const [numberOfSolutions, SetNumberOfSolutions] = useState<number>(1);
   const [newSolutions, SetNewSolutions] = useState<ObjectiveData>();
   const [selectedIndices, SetSelectedIndices] = useState<number[]>([]);
-  const [computeIntermediate, SetComputeIntermediate] = useState<boolean>(
-    false
-  );
+  const [computeIntermediate, SetComputeIntermediate] =
+    useState<boolean>(false);
   const [cont, SetCont] = useState<boolean>(true);
   const [finalVariables, SetFinalVariables] = useState<number[]>([]);
 
@@ -191,7 +190,7 @@ function NimbusMethod({
           if (res.status === 200) {
             // ok
             const body = await res.json();
-            const response = JSON.parse(body.response);
+            const response = body.response;
             SetNewSolutions(
               ParseSolutions(response.objectives, activeProblemInfo!)
             );
@@ -229,7 +228,7 @@ function NimbusMethod({
           });
           if (res.status === 200) {
             const body = await res.json();
-            const response = JSON.parse(body.response);
+            const response = body.response;
 
             // update the solutions to be shown
             const toBeShown = ParseSolutions(
@@ -290,7 +289,8 @@ function NimbusMethod({
           if (res.status === 200) {
             // ok
             const body = await res.json();
-            const response = JSON.parse(body.response);
+            // const response = JSON.parse(body.response);
+            const response = body.response;
 
             if (computeIntermediate) {
               // update solutions to be shown
@@ -355,7 +355,7 @@ function NimbusMethod({
           if (res.status === 200) {
             // Ok
             const body = await res.json();
-            const response = JSON.parse(body.response);
+            const response = body.response;
 
             if (cont) {
               // continue iterating
