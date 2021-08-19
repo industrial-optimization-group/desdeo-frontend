@@ -58,7 +58,7 @@ function NavigationBar({
                   </NavDropdown.Item>
                   <NavDropdown.Item>
                     <Nav.Link as={Link} to="/method/optimize">
-                      Optimze
+                      Optimize
                     </Nav.Link>
                   </NavDropdown.Item>
                 </NavDropdown>

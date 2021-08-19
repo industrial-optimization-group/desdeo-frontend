@@ -1,6 +1,6 @@
 import "react";
 
-type ProblemType = "Analytical" | "Placeholder";
+type ProblemType = "Analytical" | "Discrete";
 type MinOrMax = 1 | -1;
 
 interface ProblemInfo {

@@ -87,6 +87,10 @@ function MethodCreate({
           methodName = "synchronous_nimbus";
           break;
         }
+        case 2: {
+          methodName = "nautilus_navigator";
+          break;
+        }
         default: {
           throw Error(`Invalid methodKey: ${methodKey}`);
         }
@@ -171,6 +175,7 @@ function MethodCreate({
                     >
                       <option value={0}>Reference Point Method</option>
                       <option value={1}>Synchronous NIMBUS</option>
+                      <option value={2}>Nautilus Navigator</option>
                     </Form.Control>
                   </Form.Group>
                 </Col>

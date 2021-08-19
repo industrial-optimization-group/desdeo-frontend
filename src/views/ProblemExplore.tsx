@@ -79,6 +79,7 @@ function ProblemExplore({
         <Container>
           <Tab.Container
             id="list-group-tabs-example"
+            // @ts-ignore
             activeKey={key}
             onSelect={(k) => SetKey(k)}
           >
