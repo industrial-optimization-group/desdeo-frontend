@@ -29,29 +29,14 @@ type ProblemData = {
   stepsTaken: number;
 };
 
-const susProbInfo: ProblemInfo = {
-  problemId: 1,
-  problemName: "Sustainability problem",
-  problemType: "Discrete",
-  objectiveNames: [
-    "x1",
-    "x2",
-    "x3",
-    "x4",
-    "x5",
-    "x6",
-    "x7",
-    "x8",
-    "x9",
-    "x10",
-    "x11",
-  ],
-  variableNames: ["social", "economic", "commercial"],
-  nObjectives: 3,
-  ideal: [-2.3208, -2.593, -3.9995],
-  nadir: [-2.316, -1.7273, -1.7377],
-  minimize: [-1, -1, -1],
-};
+/* TODO:
+ * varmaan parempi olisi jos menisi navbarseille
+ * referencePoints ja boundary omassa propsissa.
+ * ei tarvitse piirtää koko dataa uudestaan kun niitä
+ * liiikuttaa sitten
+ *
+ *
+ */
 
 const emptyData: ProblemData = {
   upperBounds: [
@@ -65,19 +50,21 @@ const emptyData: ProblemData = {
     [-1.8, -1.85], // objective 3
   ],
   referencePoints: [
-    [-2.318, -2.318, -2.318], // objective 1
-    [-1.9, -2, -2], // objective 2
-    [-2.6, -2.7, -2.89], // objective 3
+    [-2.318, -2.318], // objective 1
+    [-1.9, -2], // objective 2
+    [-2.6, -2.7], // objective 3
   ],
   // boundary needs to have set default value or some value for the objective if its not used so the order doenst go wrong
   boundaries: [
-    [Number.NaN],
-    [Number.NaN],
-    //[0.7, 0.7,0.7,0.7,0.7,0.7,1, 1, 1, 1],
-    [Number.NaN],
+    //[Number.NaN], 
+    //[Number.NaN],
+    [-2.319, -2.319],
+    [-2.2, -2.2],
+    //[-3.2, -3.5],
+    [Number.NaN ]
   ],
   totalSteps: 100,
-  stepsTaken: 2, // this must to be stepsTaken - 1 from to the bounds and refereslines given.
+  stepsTaken: 1, // this must to be stepsTaken - 1 from to the bounds and refereslines given.
 };
 
 interface NautilusNavigatorMethodProps {
@@ -110,9 +97,14 @@ function NautilusNavigatorMethod({
   const [stoppedNav, setStoppedNav] = useState<boolean>(true);
 
   // tämänlaisete mutta refviivoille / boundareille
-  const [referencePoint, SetReferencePoint] = useState<number[]>([]);
-  const [boundaryPoint, SetBoundaryPoint] = useState<number[]>([]);
+  const [referencePoint, SetReferencePoint] = useState<number[][]>(
+    emptyData.referencePoints
+  );
+  const [boundaryPoint, SetBoundaryPoint] = useState<number[][]>(
+    emptyData.boundaries
+  );
 
+  // this could be the new point, just moved. To be added to refpoints.
   const [currentPoint, SetCurrentPoint] = useState<number[]>([]);
 
   // yleiset
@@ -135,8 +127,6 @@ function NautilusNavigatorMethod({
       SetCurrentPoint(alternatives.values[indexCurrentPoint].value);
     }
   }, [indexCurrentPoint]);
-
-
 
   // fetch current problem info
   useEffect(() => {
@@ -178,7 +168,7 @@ function NautilusNavigatorMethod({
             nadir: body.nadir,
             minimize: body.minimize,
           });
-          console.log("AcT prob", activeProblemInfo)
+          //console.log("AcT prob", activeProblemInfo)
           // lisätään navigaattorille oma info täällä
           //SetReferencePoint(body.ideal);
           //SetCurrentPoint(body.ideal);
@@ -239,7 +229,7 @@ function NautilusNavigatorMethod({
 
           SetData(data);
           SetMethodStarted(true);
-          //SetReferencePoint(datum.value);
+          // SetReferencePoint(data.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
           SetHelpMessage(
             `Provide a reference point. The current reference point is `
           );
@@ -257,7 +247,7 @@ function NautilusNavigatorMethod({
     // Attempt to iterate
     SetLoading(true);
     console.log("loading...");
-    if (!stoppedNav) {
+    if (stoppedNav) {
       try {
         console.log(`Trying to iterate with ${referencePoint}`);
         const res = await fetch(`${apiUrl}/method/control`, {
@@ -268,9 +258,23 @@ function NautilusNavigatorMethod({
           },
           body: JSON.stringify({
             // oikeanmuotoisena navin tiedot
-            response: { reference_point: data!.referencePoints },
+            response: {
+              reference_point: data!.referencePoints,
+              speed: 5,
+              go_to_previous: false,
+              stop: false,
+              user_bounds: [null, null, null],
+            },
           }),
         });
+
+        // response
+        // palautttaaa vaan ns. yhden uuden "pisteen" eli pitää täällä käyttöliittymässä
+        // lisätä johonkin dataobjektin listaan aina se uusi askel ja samalla kopioida ja tehdä siitä uusi että piirtää uudestaan.
+        // Ja sitten pitää pystyä pitämään tallessa kaikki arvot, että voi vaan palata aiempaan..
+        // Jotain tyyliä NavigationData.. tms
+        // Ehkä olisi navigationData jossa kaikki data historioineen piirtämistä varten. Sitten olisi
+        // current refpoint ja current Bound josta piirretään ne refpointit ja boundit.. nämä myös olisi navdatassa jos esim palataan.
 
         if (res.status === 200) {
           // ok
@@ -278,15 +282,7 @@ function NautilusNavigatorMethod({
           const response = body.response;
           // muutokset
           SetHelpMessage(response.message);
-          SetReferencePoint(response.current_solution);
-          SetCurrentPoint(response.current_solution);
-          SetAlternatives(
-            ParseSolutions(
-              [response.current_solution].concat(response.additional_solutions),
-              activeProblemInfo!
-            )
-          );
-          console.log(response.additional_solutions);
+          console.log("resp", response);
         } else {
           console.log("Got a response which is not 200");
         }
@@ -312,9 +308,10 @@ function NautilusNavigatorMethod({
           // ok
           const body = await res.json();
           const response = body.response;
-          SetFinalObjectives(response.objective_vector);
-          SetFinalVariables(response.solution);
-          SetShowFinal(true);
+          console.log("resp", response);
+          //SetFinalObjectives(response.objective_vector);
+          //SetFinalVariables(response.solution);
+          //SetShowFinal(true);
         } else {
           console.log("Got a response which is not 200");
         }
@@ -379,11 +376,18 @@ function NautilusNavigatorMethod({
             <Col sm={8}>
               {fetchedInfo && (
                 <div className={"mt-5"}>
+                  {console.log("ennen piirtoa", activeProblemInfo)}
                   <NavigationBars
-                    problemInfotest={activeProblemInfo} // TODO: these correct, its pain
+                    problemInfo={activeProblemInfo} // TODO: these correct, its pain
                     problemData={emptyData}
-                    handleReferencePoint={SetReferencePoint}
-                    handleBound={SetBoundaryPoint}
+                    referencePoints={emptyData.referencePoints}
+                    boundaries={emptyData.boundaries}
+                    handleReferencePoint={(ref: number[][]) => {
+                      SetReferencePoint(ref);
+                    }}
+                    handleBound={(bound: number[][]) => {
+                      SetBoundaryPoint(bound);
+                    }}
                   />
                 </div>
               )}
