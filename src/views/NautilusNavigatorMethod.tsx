@@ -35,6 +35,8 @@ type ProblemData = {
  * ei tarvitse piirtää koko dataa uudestaan kun niitä
  * liiikuttaa sitten
  *
+ * polygoneille step 0:
+ * idealista ja nadirista kun valmistaa..
  *
  */
 
@@ -87,7 +89,18 @@ function NautilusNavigatorMethod({
 }: NautilusNavigatorMethodProps) {
   const [activeProblemInfo, SetActiveProblemInfo] = useState<ProblemInfo>();
   const [methodStarted, SetMethodStarted] = useState<boolean>(false);
-  const [data, SetData] = useState<ProblemData>();
+  // this has one data object the currently used
+  const [currentData, SetCurrentData] = useState<ProblemData>();
+  // this has all of the data saved, and you should send the wanted problemData object of these to the navigator
+  const [dataArchive, SetDataArchive] = useState<ProblemData[]>([]);
+  const [currentStep, SetCurrentStep] = useState<number>(); // maybe this to set the currentstep to right one and then pick the correct from dataArchive ?
+
+  // apinoidaan nimbuksen classifications logiikka
+
+  // this would have every problemData unit as a list
+  //let dataArchive:ProblemData[] = [];
+
+
   const [helpMessage, SetHelpMessage] = useState<string>(
     "Method not started yet."
   );
@@ -112,14 +125,27 @@ function NautilusNavigatorMethod({
   const [loading, SetLoading] = useState<boolean>(false);
 
   // ei ehkä navigaattorille, mutta vastaavat voi olla hyvä
-  const [satisfied, SetSatisfied] = useState<boolean>(false);
+  //const [satisfied, SetSatisfied] = useState<boolean>(false);
   const [showFinal, SetShowFinal] = useState<boolean>(false);
   const [alternatives, SetAlternatives] = useState<ObjectiveData>();
-  const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
-  const [finalVariables, SetFinalVariables] = useState<number[]>([]);
+  //const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
+  //const [finalVariables, SetFinalVariables] = useState<number[]>([]);
 
   // ei olleenkaan / en ole varma
   const [indexCurrentPoint, SetIndexCurrentPoint] = useState<number>(0);
+
+
+  const updateDataArchive = (data: ProblemData, ind: number) => {
+    console.log("DAtaa on nyt", dataArchive)
+    dataArchive[ind] = data;
+    console.log("DAtaa on nyt2", dataArchive)
+  }
+
+
+  useEffect(() => {
+    console.log(currentData, ' -  has changed')
+
+  }, [currentData])
 
   // use effectejä vaan
   useEffect(() => {
@@ -170,9 +196,29 @@ function NautilusNavigatorMethod({
           });
           //console.log("AcT prob", activeProblemInfo)
           // lisätään navigaattorille oma info täällä
+          
+          // set data start from ideal and nadir
+          const ogdata: ProblemData = {
+            upperBounds: body.nadir.map((d:number) => {
+              return [d]
+            }),
+            lowerBounds: body.ideal.map((d:number)=>{
+              return [d]
+            }),
+            referencePoints: body.minimize.map((_:any,i:number)=>{
+              return [(body.nadir[i] + body.ideal[i])]
+            }),
+            boundaries: [[Number.NaN], [Number.NaN], [Number.NaN]], // convert to these from the coming nulls.
+            totalSteps: 0,
+            stepsTaken: 0,
+          };
+          SetCurrentData(ogdata); 
+          SetDataArchive([ogdata]) // should be ok ?
+          updateDataArchive(ogdata, 0)
+
+          //SetDataArchive(ogdata); 
           //SetReferencePoint(body.ideal);
           //SetCurrentPoint(body.ideal);
-          SetFetchedInfo(true);
         } else {
           //some other code
           console.log(`could not fetch problem, got status code ${res.status}`);
@@ -212,24 +258,53 @@ function NautilusNavigatorMethod({
         if (res.status == 200) {
           const body = await res.json();
           console.log("method data", body);
-          console.log("Act prob infoi", activeProblemInfo);
           // To begin, just show something neutral
           // näytä alkunäkymä missä step 0
 
-          const data: ProblemData = {
-            upperBounds: body.response.reachable_ub,
-            lowerBounds: body.response.reachable_lb,
-            referencePoints: body.response.navigation_point,
+          const currdata: ProblemData = {
+            upperBounds: body.response.reachable_ub.map((d:number) => {
+              return [d]
+            }),
+            lowerBounds: body.response.reachable_lb.map((d:number)=>{
+              return [d]
+            }),
+            referencePoints: body.response.navigation_point.map((d:number)=>{
+              return [d]
+            }),
             boundaries: [[Number.NaN], [Number.NaN], [Number.NaN]], // convert to these from the coming nulls.
             totalSteps: body.response.steps_remaining,
             stepsTaken: body.response.step_number,
           };
 
-          console.log("Tämä muoto", data);
+          console.log("Tämä muoto", currdata);
 
-          SetData(data);
+
+          // stupid but kinda the right idea. Now just need to add the currentData values to the dataArchive..
+          const newArchiveData = {
+            upperBounds: currdata.upperBounds.map((d, i) => {
+              return dataArchive[0].upperBounds[i].concat(d)
+            }),
+            lowerBounds: currdata.lowerBounds.map((d, i) => {
+              return dataArchive[0].lowerBounds[i].concat(d)
+            }),
+            referencePoints: currdata.referencePoints.map((d, i) => {
+              return dataArchive[0].referencePoints[i].concat(d)
+            }),
+            boundaries: [[Number.NaN], [Number.NaN], [Number.NaN]], // convert to these from the coming nulls.
+            totalSteps: 100,
+            stepsTaken: currdata.stepsTaken,
+          }
+
+          console.log("toim iko,", newArchiveData)
+          SetDataArchive(dataArchive.map(() => dataArchive[0] =  newArchiveData))
+
+
+          console.log(dataArchive[1])
+
+          SetCurrentData(dataArchive[0]);
           SetMethodStarted(true);
           // SetReferencePoint(data.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
+          SetFetchedInfo(true);
           SetHelpMessage(
             `Provide a reference point. The current reference point is `
           );
@@ -259,7 +334,7 @@ function NautilusNavigatorMethod({
           body: JSON.stringify({
             // oikeanmuotoisena navin tiedot
             response: {
-              reference_point: data!.referencePoints,
+              reference_point: [-2.316, -1.9, -2.6],
               speed: 5,
               go_to_previous: false,
               stop: false,
@@ -283,6 +358,29 @@ function NautilusNavigatorMethod({
           // muutokset
           SetHelpMessage(response.message);
           console.log("resp", response);
+
+  
+          const newArchiveData: ProblemData = {
+            upperBounds: body.response.reachable_ub.map((d:any, i:any) => {
+              return dataArchive[0].upperBounds[i].concat(d)
+            }),
+            lowerBounds: body.response.reachable_lb.map((d:any, i:any) => {
+              return dataArchive[0].lowerBounds[i].concat(d)
+            }),
+            referencePoints: body.response.navigation_point.map((d:any, i:any) => {
+              return dataArchive[0].referencePoints[i].concat(d)
+            }),
+            boundaries: [[Number.NaN], [Number.NaN], [Number.NaN]], // convert to these from the coming nulls.
+            totalSteps: 100,
+            stepsTaken: body.response.step_number,
+          }
+
+
+          SetDataArchive(dataArchive.map(() => dataArchive[0] = newArchiveData))
+          console.log("Iteraatio", dataArchive)
+          SetCurrentData(newArchiveData)
+
+
         } else {
           console.log("Got a response which is not 200");
         }
@@ -376,12 +474,13 @@ function NautilusNavigatorMethod({
             <Col sm={8}>
               {fetchedInfo && (
                 <div className={"mt-5"}>
-                  {console.log("ennen piirtoa", activeProblemInfo)}
+                  {console.log("ennen piirtoa", dataArchive)}
+                  {console.log("ennen piirtoa", currentData)}
                   <NavigationBars
                     problemInfo={activeProblemInfo} // TODO: these correct, its pain
-                    problemData={emptyData}
-                    referencePoints={emptyData.referencePoints}
-                    boundaries={emptyData.boundaries}
+                    problemData={currentData!} // this to have data from back end
+                    referencePoints={currentData!.referencePoints} // these to use back end data
+                    boundaries={currentData!.boundaries}
                     handleReferencePoint={(ref: number[][]) => {
                       SetReferencePoint(ref);
                     }}
