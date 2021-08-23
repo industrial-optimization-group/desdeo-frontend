@@ -93,7 +93,7 @@ function NautilusNavigatorMethod({
   const [currentData, SetCurrentData] = useState<ProblemData>();
   // this has all of the data saved, and you should send the wanted problemData object of these to the navigator
   const [dataArchive, SetDataArchive] = useState<ProblemData[]>([]);
-  const [currentStep, SetCurrentStep] = useState<number>(); // maybe this to set the currentstep to right one and then pick the correct from dataArchive ?
+  const [currentStep, SetCurrentStep] = useState<number>(0); // maybe this to set the currentstep to right one and then pick the correct from dataArchive ?
 
   // apinoidaan nimbuksen classifications logiikka
 
@@ -135,6 +135,7 @@ function NautilusNavigatorMethod({
   const [indexCurrentPoint, SetIndexCurrentPoint] = useState<number>(0);
 
 
+  // is coming here really necessary so this starts properly what ?
   const updateDataArchive = (data: ProblemData, ind: number) => {
     console.log("DAtaa on nyt", dataArchive)
     dataArchive[ind] = data;
@@ -198,6 +199,7 @@ function NautilusNavigatorMethod({
           // lisätään navigaattorille oma info täällä
           
           // set data start from ideal and nadir
+          // INITIALIZE step 0.
           const ogdata: ProblemData = {
             upperBounds: body.nadir.map((d:number) => {
               return [d]
@@ -206,19 +208,19 @@ function NautilusNavigatorMethod({
               return [d]
             }),
             referencePoints: body.minimize.map((_:any,i:number)=>{
-              return [(body.nadir[i] + body.ideal[i])]
+              return [(body.nadir[i] + body.ideal[i])/2]
             }),
             boundaries: [[Number.NaN], [Number.NaN], [Number.NaN]], // convert to these from the coming nulls.
-            totalSteps: 0,
+            totalSteps: 100,
             stepsTaken: 0,
           };
           SetCurrentData(ogdata); 
           SetDataArchive([ogdata]) // should be ok ?
-          updateDataArchive(ogdata, 0)
+          updateDataArchive(ogdata, 0) // apparently we need to call something outside for the method to start properly ?? 
 
+          SetCurrentStep(0);
           //SetDataArchive(ogdata); 
           //SetReferencePoint(body.ideal);
-          //SetCurrentPoint(body.ideal);
         } else {
           //some other code
           console.log(`could not fetch problem, got status code ${res.status}`);
@@ -278,7 +280,7 @@ function NautilusNavigatorMethod({
 
           console.log("Tämä muoto", currdata);
 
-
+          // TODO: unite them, make new object which set to the currentdata and add to the archive at correct position.
           // stupid but kinda the right idea. Now just need to add the currentData values to the dataArchive..
           const newArchiveData = {
             upperBounds: currdata.upperBounds.map((d, i) => {
@@ -302,8 +304,11 @@ function NautilusNavigatorMethod({
           console.log(dataArchive[1])
 
           SetCurrentData(dataArchive[0]);
+          SetCurrentStep(1);
           SetMethodStarted(true);
-          // SetReferencePoint(data.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
+          SetReferencePoint(newArchiveData.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
+
+
           SetFetchedInfo(true);
           SetHelpMessage(
             `Provide a reference point. The current reference point is `
@@ -317,7 +322,11 @@ function NautilusNavigatorMethod({
     startMethod();
   }, [activeProblemInfo, methodStarted]);
 
-  // start nav button click niin, iteroidaan määrätyllä vauhdilla
+
+
+
+
+
   const iterate = async () => {
     // Attempt to iterate
     SetLoading(true);
@@ -334,7 +343,7 @@ function NautilusNavigatorMethod({
           body: JSON.stringify({
             // oikeanmuotoisena navin tiedot
             response: {
-              reference_point: [-2.316, -1.9, -2.6],
+              reference_point: [-2,-2,-2],// TODO: this conversion from number[][] to number[]
               speed: 5,
               go_to_previous: false,
               stop: false,
@@ -379,6 +388,8 @@ function NautilusNavigatorMethod({
           SetDataArchive(dataArchive.map(() => dataArchive[0] = newArchiveData))
           console.log("Iteraatio", dataArchive)
           SetCurrentData(newArchiveData)
+          SetReferencePoint(newArchiveData.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
+          SetCurrentStep(currentStep + 1)
 
 
         } else {
