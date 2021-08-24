@@ -356,8 +356,6 @@ function NautilusNavigatorMethod({
       return;
     }
 
-    console.log(itestateRef.current)
-    console.log(iterateNavi)
 
 
   const iterate = async () => {
@@ -365,13 +363,16 @@ function NautilusNavigatorMethod({
     SetLoading(true);
     console.log("loading...");
 
-    console.log(itestateRef.current)
-    console.log(iterateNavi)
+    console.log("REf point", referencePoint)
 
-      while (itestateRef.current) {
+    console.log(currentStep)
+
+    // tämä joo kusee että miten kutsutaan oikein.. jos stopaa iter, vaihtaa ref niin aloittaa vanhasta,mutta jos stoppaa ja vaihtaa uudestaan, niin sitten näkyy eka vaihto
+    let refe = getRefPoint(referencePoint, currentStep); // täällä kutsutaan tätä refeä ja tietysti jos stopattu ollaan, niin ei lähetetä tätä minnekkään sen myötä
+    let count = 0
+      while (itestateRef.current === true && count < 100) {
         try {
           console.log(`Trying to iterate with ${referencePoint}`);
-          let refe = getRefPoint(referencePoint, currentStep);
           console.log(refe);
           const res = await fetch(`${apiUrl}/method/control`, {
             method: "POST",
@@ -382,7 +383,7 @@ function NautilusNavigatorMethod({
             body: JSON.stringify({
               // oikeanmuotoisena navin tiedot
               response: {
-                reference_point: refe, // TODO: this conversion from number[][] to number[]
+                reference_point: refe, // TODO: täälä kutst
                 speed: 5,
                 go_to_previous: false,
                 stop: false,
@@ -420,10 +421,12 @@ function NautilusNavigatorMethod({
             console.log("Iteraatio", dataArchive);
             SetCurrentData(newArchiveData);
             SetReferencePoint(newArchiveData.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
-            SetCurrentStep(currentStep + 1);
+            console.log(currentData!.stepsTaken)
+            SetCurrentStep(currentData!.stepsTaken); 
 
-            SetIterateNavi(itestateRef.current);
-            console.log("h")
+            //SetIterateNavi(itestateRef.current);
+            count += 1
+            console.log(count)
 
           } else {
             console.log("Got a response which is not 200");
@@ -436,20 +439,17 @@ function NautilusNavigatorMethod({
       }
 
       //itestateRef.current = false
-      //SetIterateNavi(false);
+      SetReferencePoint(currentData!.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
+      SetIterateNavi(false);
+      SetLoading(false);
   }
-
-    SetLoading(false);
     iterate();
-  }, [iterateNavi, SetIterateNavi, itestateRef]);
+  }, [iterateNavi, SetIterateNavi, itestateRef.current]);
 
 
-  function clik() {
-    SetIterateNavi(iterateNavi)
-    if (!iterateNavi) {
-      SetIterateNavi(itestateRef.current!)
-      SetIterateNavi(true)
-    }
+  // TODO: reference lines break when stop. eli jos siirtää, niin ei mene talteen tms..
+  function klik() {
+    SetIterateNavi(iterateNavi => !iterateNavi)
   }
 
 
@@ -462,14 +462,14 @@ function NautilusNavigatorMethod({
           <Row>
             <Col sm={4}>
               {loading && iterateNavi && (
-                <Button block={true} size={"lg"} onClick={ () => clik }>
+                <Button block={true} size={"lg"} onClick={ klik }>
                   Stop
                 </Button>
               )}
             </Col>
             <Col sm={4}>
               {!loading && !iterateNavi && (
-                <Button block={true} size={"lg"} onClick={() => SetIterateNavi(true)}>
+                <Button block={true} size={"lg"} onClick={klik}>
                   Start Navigation
                 </Button>
               )}
