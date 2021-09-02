@@ -83,6 +83,10 @@ const convertData = (data: ProblemData, minimize: number[]) => {
 }
 
 
+/*
+ 
+*/
+
 // TODO: nyt on jo kova aika tehä viksummin kaikki
 
 // temporary way of handling references
@@ -96,6 +100,13 @@ const getRefPoint = (refs: number[][]) => {
 
   return refe;
 };
+
+// dummy for now. Need to convert NaN's to nulls
+const getBounds = (bounds: number[][]) => {
+  return [null, null, null];
+};
+
+const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 interface NautilusNavigatorMethodProps {
   isLoggedIn: boolean;
@@ -141,6 +152,9 @@ function NautilusNavigatorMethod({
   const dRef = useRef<Array<ProblemData>>();
   dRef.current = dataArchive
 
+  const [speed, SetSpeed] = useState<number>(1);
+  const speedRef = useRef<number>();
+  speedRef.current = speed
 
   // tämänlaisete mutta refviivoille / boundareille
   const [referencePoint, SetReferencePoint] = useState<number[][]>(
@@ -320,9 +334,6 @@ function NautilusNavigatorMethod({
             stepsTaken: body.response.step_number,
           };
 
-          // tulisi ottaa kopio viimeisimmästä johon lisätä tämä uusi archiveData perään että tulee historioineen. ja sitten lisätä SetDataArchive een 
-          //const newArchiveDataAll = dataArchive.map(() => (dataArchive[0] = newArchiveData))
-
           SetDataArchive(dataArchive => [...dataArchive, newArchiveData])
 
           //console.log(newArchiveDataAll)
@@ -332,16 +343,14 @@ function NautilusNavigatorMethod({
           //}))
 
           //SetCurrentData(dataArchive[0]);
-          //const convertedData = convertData(dataArchive[0], activeProblemInfo!.minimize)
-          //SetConvertData(convertedData);
+          const convertedData = convertData(dataArchive[0], activeProblemInfo!.minimize)
+          SetConvertData(convertedData);
 
 
-          SetCurrentStep(1);
+          // SetCurrentStep(1);
           SetMethodStarted(true);
-          SetReferencePoint(newArchiveData.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
-
-
-          console.log("Data start method", dataArchive)
+          //SetReferencePoint(newArchiveData.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
+          SetReferencePoint(convertedData!.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
 
           SetFetchedInfo(true);
           SetHelpMessage(
@@ -378,9 +387,10 @@ function NautilusNavigatorMethod({
       // joo askeleet kusee ja pahasti, pitäisi olla cstep 15 kun onkin 12..
       // tämä joo kusee että miten kutsutaan oikein.. jos stopaa iter, vaihtaa ref niin aloittaa vanhasta,mutta jos stoppaa ja vaihtaa uudestaan, niin sitten näkyy eka vaihto
       let refe = getRefPoint(referencePoint!); // täällä kutsutaan tätä refeä ja tietysti jos stopattu ollaan, niin ei lähetetä tätä minnekkään sen myötä
+      let bounds = getBounds(boundaryPoint!)
 
       // sama juttu currentStep menee iteraten ulkopuolella oikein. useRef maybE? 
-      while (itestateRef.current === true && (currentStep < 100)) {
+      while (itestateRef.current === true) {
         try {
           console.log(`Trying to iterate with ${refe}`);
           const res = await fetch(`${apiUrl}/method/control`, {
@@ -393,10 +403,10 @@ function NautilusNavigatorMethod({
               // oikeanmuotoisena navin tiedot
               response: {
                 reference_point: refe, // TODO: täälä kutst
-                speed: 5,
+                speed: speedRef.current,
                 go_to_previous: false,
                 stop: false,
-                user_bounds: [null, null, null],
+                user_bounds: bounds,
               },
             }),
           });
@@ -411,19 +421,20 @@ function NautilusNavigatorMethod({
             let dataArchive = dRef.current;
 
             const newArchiveData: ProblemData = {
-              upperBounds: body.response.reachable_ub.map((d: any, i: any) => {
-                // @ts-ignore
-                return dataArchive[dataArchive.length - 1].upperBounds[i].concat(d);
+              upperBounds: body.response.reachable_ub.map((d: number, i: number) => {
+                return dataArchive![dataArchive!.length - 1].upperBounds[i].concat(d);
               }),
-              lowerBounds: body.response.reachable_lb.map((d: any, i: any) => {
-                // @ts-ignore
-                return dataArchive[dataArchive.length - 1].lowerBounds[i].concat(d);
+              lowerBounds: body.response.reachable_lb.map((d: number, i: number) => {
+                return dataArchive![dataArchive!.length - 1].lowerBounds[i].concat(d);
               }),
-              referencePoints: refe.map((d: any, i: any) => {
-                // @ts-ignore
-                return dataArchive[dataArchive.length - 1].referencePoints[i].concat(d);
+              referencePoints: refe.map((d: number, i: number) => {
+                return dataArchive![dataArchive!.length - 1].referencePoints[i].concat(d);
               }),
-              boundaries: [[Number.NaN], [Number.NaN], [Number.NaN]], // convert to these from the coming nulls.
+              boundaries: body.response.user_bounds.map((d: any, i: any) => {
+                return dataArchive![dataArchive!.length - 1].boundaries[i].concat(parseFloat(d));
+              }),
+
+              //[[Number.NaN], [Number.NaN], [Number.NaN]], // convert to these from the coming nulls.
               totalSteps: 100,
               stepsTaken: body.response.step_number,
             };
@@ -438,11 +449,16 @@ function NautilusNavigatorMethod({
             const convertedData = convertData(newArchiveData, activeProblemInfo!.minimize)
             SetConvertData(convertedData);
 
-            console.log("Data start iter", dataArchive)
-            SetCurrentStep(currentStep => newArchiveData.stepsTaken);
-            console.log("stepit menee", currentStep, newArchiveData.stepsTaken)
+            //console.log("Data start iter", dataArchive)
+            //SetCurrentStep(currentStep => newArchiveData.stepsTaken);
+            //console.log("stepit menee", currentStep, newArchiveData.stepsTaken)
             SetReferencePoint(newArchiveData.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
             //console.log(currentData!.stepsTaken)
+
+            // hacky way to make speed matter
+            if (speedRef.current != 5) {
+              await delay(2000 / speedRef.current!)
+            }
 
             //SetIterateNavi(itestateRef.current);
           } else {
@@ -456,7 +472,7 @@ function NautilusNavigatorMethod({
       }
 
       //itestateRef.current = false
-      //SetReferencePoint(currentData!.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
+      SetReferencePoint(convertedData!.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
       SetIterateNavi(false);
       SetLoading(false);
     };
@@ -483,11 +499,19 @@ function NautilusNavigatorMethod({
                 </Button>
               )}
             </Col>
-            <Col sm={4}>
+            <Col sm={6}>
               {!loading && !iterateNavi && (
-                <Button block={true} size={"lg"} onClick={klik}>
-                  Start Navigation
-                </Button>
+                <>
+                  <Button block={true} size={"lg"} onClick={klik}>
+                    Start Navigation
+                  </Button>
+                  <Col sm={2}>
+                    <Button onClick={() => {
+                      if (speed === 5) { SetSpeed(0) }
+                      (SetSpeed(speed => speed + 1))
+                    }} > Speed {speed}</Button>
+                  </Col>
+                </>
               )}
 
               {loading && (
@@ -511,7 +535,7 @@ function NautilusNavigatorMethod({
           </Row>
           <Row></Row>
           <Row>
-            <Col sm={8}>
+            <Col sm={10}>
               {fetchedInfo && (
                 <div className={"mt-5"}>
                   {console.log("ennen piirtoa problemInfo", activeProblemInfo)}
@@ -538,8 +562,9 @@ function NautilusNavigatorMethod({
             </Col>
           </Row>
         </>
-      )}
-    </Container>
+      )
+      }
+    </Container >
   );
 }
 
