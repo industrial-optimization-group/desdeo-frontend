@@ -54,6 +54,7 @@ const trueProbData = (info: ProblemInfo) => {
     problemName: info.problemName,
     problemType: info.problemType,
     variableNames: info.variableNames,
+    //minimize: info.minimize.map((_, i) => (info.minimize[i] === 1 ? v : -v)), // ei pitäisi tätä kyllä tehdä
     minimize: info.minimize,
   }
   return newInfo;
@@ -119,14 +120,12 @@ function NautilusNavigatorMethod({
   // this has one data object the currently used
   const [currentData, SetCurrentData] = useState<ProblemData>();
   const [convertedData, SetConvertData] = useState<ProblemData>();
-  // this has all of the data saved, and you should send the wanted problemData object of these to the navigator
-  const [dataArchive, SetDataArchive] = useState<ProblemData[]>([]);
+
+  const [dataArchive, SetDataArchive] = useState<Array<ProblemData>>([]);
+
+
   const [currentStep, SetCurrentStep] = useState<number>(0); // maybe this to set the currentstep to right one and then pick the correct from dataArchive ?
 
-  // apinoidaan nimbuksen classifications logiikka
-
-  // this would have every problemData unit as a list
-  //let dataArchive:ProblemData[] = [];
 
   const [helpMessage, SetHelpMessage] = useState<string>(
     "Method not started yet."
@@ -137,6 +136,11 @@ function NautilusNavigatorMethod({
   const [iterateNavi, SetIterateNavi] = useState<boolean>(false);
   const itestateRef = useRef<boolean>();
   itestateRef.current = iterateNavi;
+
+
+  const dRef = useRef<Array<ProblemData>>();
+  dRef.current = dataArchive
+
 
   // tämänlaisete mutta refviivoille / boundareille
   const [referencePoint, SetReferencePoint] = useState<number[][]>(
@@ -162,6 +166,7 @@ function NautilusNavigatorMethod({
   const [indexCurrentPoint, SetIndexCurrentPoint] = useState<number>(0);
 
   // is coming here really necessary so this starts properly what ?
+  // TODO: we needing this to make this work is not good
   const updateDataArchive = (data: ProblemData, ind: number) => {
     console.log("DAtaa on nyt", dataArchive);
     dataArchive[ind] = data;
@@ -241,12 +246,19 @@ function NautilusNavigatorMethod({
             stepsTaken: 0,
           };
           // TODO: here 
+
+
           SetCurrentData(ogdata);
-          SetDataArchive([ogdata]); // should be ok ?
+
+          //SetDataArchive(dataArchive => [...dataArchive, ogdata]); // should be ok ?
           updateDataArchive(ogdata, 0); // apparently we need to call something outside for the method to start properly ??
+          SetDataArchive([ogdata])
+
 
           const convertedData = convertData(ogdata, body.minimize)
           SetConvertData(convertedData);
+
+          console.log("Data fetchissä", dataArchive)
 
           SetCurrentStep(0);
           //SetDataArchive(ogdata);
@@ -289,55 +301,47 @@ function NautilusNavigatorMethod({
 
         if (res.status == 200) {
           const body = await res.json();
-          // TODO: simplify this mess
-
-          const currdata: ProblemData = {
-            upperBounds: body.response.reachable_ub.map((d: number) => {
-              return [d];
-            }),
-            lowerBounds: body.response.reachable_lb.map((d: number) => {
-              return [d];
-            }),
-            referencePoints: body.response.navigation_point.map((d: number) => {
-              // navi point ei tekemistä ref kanssa, ota jostain muusta tämä
-              return [d];
-            }),
-            boundaries: [[Number.NaN], [Number.NaN], [Number.NaN]], // convert to these from the coming nulls.
-            totalSteps: body.response.steps_remaining,
-            stepsTaken: body.response.step_number,
-          };
-
-          console.log("Tämä muoto", currdata);
 
           // TODO: unite them, make new object which set to the currentdata and add to the archive at correct position.
           // stupid but kinda the right idea. Now just need to add the currentData values to the dataArchive..
           const newArchiveData = {
-            upperBounds: currdata.upperBounds.map((d, i) => {
+            upperBounds: body.response.reachable_ub.map((d: number, i: number) => {
               return dataArchive[0].upperBounds[i].concat(d);
             }),
-            lowerBounds: currdata.lowerBounds.map((d, i) => {
+            lowerBounds: body.response.reachable_lb.map((d: number, i: number) => {
               return dataArchive[0].lowerBounds[i].concat(d);
             }),
+            // TODO: fix this too
             referencePoints: dataArchive[0].referencePoints.map((d, i) => {
               return dataArchive[0].referencePoints[i].concat(d);
             }),
             boundaries: [[Number.NaN], [Number.NaN], [Number.NaN]], // convert to these from the coming nulls.
             totalSteps: 100,
-            stepsTaken: currdata.stepsTaken,
+            stepsTaken: body.response.step_number,
           };
 
-          SetDataArchive(
-            dataArchive.map(() => (dataArchive[0] = newArchiveData))
-          );
+          // tulisi ottaa kopio viimeisimmästä johon lisätä tämä uusi archiveData perään että tulee historioineen. ja sitten lisätä SetDataArchive een 
+          //const newArchiveDataAll = dataArchive.map(() => (dataArchive[0] = newArchiveData))
 
-          SetCurrentData(dataArchive[0]);
-          const convertedData = convertData(dataArchive[0], activeProblemInfo!.minimize)
-          SetConvertData(convertedData);
+          SetDataArchive(dataArchive => [...dataArchive, newArchiveData])
+
+          //console.log(newArchiveDataAll)
+          // @ts-ignore
+          //SoetDataArchive(dataArchive => ({
+          //  upperBounds: [...dataArchive.upperBounds, newArchiveDataAll.upperBounds]
+          //}))
+
+          //SetCurrentData(dataArchive[0]);
+          //const convertedData = convertData(dataArchive[0], activeProblemInfo!.minimize)
+          //SetConvertData(convertedData);
 
 
           SetCurrentStep(1);
           SetMethodStarted(true);
           SetReferencePoint(newArchiveData.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
+
+
+          console.log("Data start method", dataArchive)
 
           SetFetchedInfo(true);
           SetHelpMessage(
@@ -404,32 +408,40 @@ function NautilusNavigatorMethod({
             // muutokset
             SetHelpMessage(response.message);
             //console.log("resp", response);
+            let dataArchive = dRef.current;
 
             const newArchiveData: ProblemData = {
               upperBounds: body.response.reachable_ub.map((d: any, i: any) => {
-                return dataArchive[0].upperBounds[i].concat(d);
+                // @ts-ignore
+                return dataArchive[dataArchive.length - 1].upperBounds[i].concat(d);
               }),
               lowerBounds: body.response.reachable_lb.map((d: any, i: any) => {
-                return dataArchive[0].lowerBounds[i].concat(d);
+                // @ts-ignore
+                return dataArchive[dataArchive.length - 1].lowerBounds[i].concat(d);
               }),
               referencePoints: refe.map((d: any, i: any) => {
-                return dataArchive[0].referencePoints[i].concat(d);
+                // @ts-ignore
+                return dataArchive[dataArchive.length - 1].referencePoints[i].concat(d);
               }),
               boundaries: [[Number.NaN], [Number.NaN], [Number.NaN]], // convert to these from the coming nulls.
               totalSteps: 100,
               stepsTaken: body.response.step_number,
             };
 
-            SetDataArchive(
-              dataArchive.map(() => (dataArchive[0] = newArchiveData))
-            );
+            // täällä lähtee aina yhä dataArchive ensimmäiseltä async iteraatio ajolta
+            SetDataArchive(dataArchive => [...dataArchive, newArchiveData])
+
+
+
+            //updateDataArchive(newArchiveData, 0)
             //console.log("Iteraatio", dataArchive);
             const convertedData = convertData(newArchiveData, activeProblemInfo!.minimize)
             SetConvertData(convertedData);
 
+            console.log("Data start iter", dataArchive)
             SetCurrentStep(currentStep => newArchiveData.stepsTaken);
             console.log("stepit menee", currentStep, newArchiveData.stepsTaken)
-            //SetReferencePoint(newArchiveData.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
+            SetReferencePoint(newArchiveData.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
             //console.log(currentData!.stepsTaken)
 
             //SetIterateNavi(itestateRef.current);
@@ -444,7 +456,7 @@ function NautilusNavigatorMethod({
       }
 
       //itestateRef.current = false
-      SetReferencePoint(currentData!.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
+      //SetReferencePoint(currentData!.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
       SetIterateNavi(false);
       SetLoading(false);
     };
@@ -507,7 +519,7 @@ function NautilusNavigatorMethod({
                   {console.log("ennen piirtoa data", currentData)}
                   {console.log("ennen piirtoa conv data", convertedData)}
                   {console.log("ennen piirtoa steps", currentStep)}
-                  {console.log("ennen piirtoa problem", activeProblemInfo)}
+                  {console.log("ennen piirtoa problem", trueProbData(activeProblemInfo!))}
                   <NavigationBars
                     problemInfo={trueProbData(activeProblemInfo!)} // TODO: these correct, its pain
                     problemData={convertedData!} // this to have data from back end
