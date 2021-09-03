@@ -58,11 +58,11 @@ export const Login = ({
 
   const popover = (
     <Popover id="popover-basic">
-      <Popover.Title as="h3">Don't have credentials yet?</Popover.Title>
-      <Popover.Content>
+      <Popover.Header as="h3">Don't have credentials yet?</Popover.Header>
+      <Popover.Body>
         Registration is currently not available and credentials must be
         requested by sending an email to xxx@yyy.zz.
-      </Popover.Content>
+      </Popover.Body>
     </Popover>
   );
 

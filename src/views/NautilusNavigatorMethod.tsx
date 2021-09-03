@@ -5,7 +5,10 @@ import {
 } from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
 //import ReferencePointInputForm from "../components/ReferencePointInputForm";
-import { Table, Container, Row, Col, Button, Form } from "react-bootstrap";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
+import Button from "react-bootstrap/Button";
+import Container from "react-bootstrap/Container";
 import ReactLoading from "react-loading";
 import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
 import {
@@ -14,6 +17,9 @@ import {
 } from "visual-components";
 import SolutionTable from "../components/SolutionTable";
 import { Link } from "react-router-dom";
+
+import Slider from '@material-ui/core/Slider';
+
 
 // välidata
 // Piirtää siis oikein kunhanh data on oikein hyvä juttu
@@ -38,6 +44,7 @@ type ProblemData = {
  *
  */
 
+// TODO: note react bootsrap versiossa ei tueta vielä isoja ruutuja.
 /*
 
 mahtasko toimia jos pitäisi täällä datassa aina saman kun servulla ja vain kun lähettää komponentille niin kääntää? vai pitäisikö vain
@@ -60,6 +67,28 @@ const trueProbData = (info: ProblemInfo) => {
   return newInfo;
 }
 
+const marks = [
+  {
+    value: 1,
+    label: '1',
+  },
+  {
+    value: 2,
+    label: '2',
+  },
+  {
+    value: 3,
+    label: '3',
+  },
+  {
+    value: 4,
+    label: '4',
+  },
+  {
+    value: 5,
+    label: '5',
+  },
+]
 
 // huhhu kun on 2d arrayt tehty vaikeeksi js
 const convertData = (data: ProblemData, minimize: number[]) => {
@@ -77,27 +106,18 @@ const convertData = (data: ProblemData, minimize: number[]) => {
     totalSteps: data.totalSteps,
     stepsTaken: data.stepsTaken,
   }
-  console.log(newData)
+  //console.log(newData)
 
   return newData;
 }
 
-
-/*
- 
-*/
-
 // TODO: nyt on jo kova aika tehä viksummin kaikki
 
 // temporary way of handling references
-// fails now if not moved ref point b4 first iter. Bcc the *-1
 const getRefPoint = (refs: number[][]) => {
-  console.log(refs);
-
   let refe: number[] = [];
   refs.forEach((ref) => refe.push(ref[ref.length - 1] * -1));
   console.log("gotten refe", refe);
-
   return refe;
 };
 
@@ -106,6 +126,7 @@ const getBounds = (bounds: number[][]) => {
   return [null, null, null];
 };
 
+// temp delay function to make the iter speed animation
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 interface NautilusNavigatorMethodProps {
@@ -452,8 +473,16 @@ function NautilusNavigatorMethod({
             //console.log("Data start iter", dataArchive)
             //SetCurrentStep(currentStep => newArchiveData.stepsTaken);
             //console.log("stepit menee", currentStep, newArchiveData.stepsTaken)
-            SetReferencePoint(newArchiveData.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
+            //SetReferencePoint(newArchiveData.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
+            SetReferencePoint(convertedData!.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
             //console.log(currentData!.stepsTaken)
+
+            if (convertedData.stepsTaken === 100) {
+              console.log("Method finished with 100 steps")
+              SetIterateNavi(false);
+              SetLoading(false);
+              return;
+            }
 
             // hacky way to make speed matter
             if (speedRef.current != 5) {
@@ -492,50 +521,9 @@ function NautilusNavigatorMethod({
         <>
           <p>{`Help: ${helpMessage}`}</p>
           <Row>
-            <Col sm={4}>
-              {loading && iterateNavi && (
-                <Button block={true} size={"lg"} onClick={klik}>
-                  Stop
-                </Button>
-              )}
+            <Col xxl={3}>
             </Col>
-            <Col sm={6}>
-              {!loading && !iterateNavi && (
-                <>
-                  <Button block={true} size={"lg"} onClick={klik}>
-                    Start Navigation
-                  </Button>
-                  <Col sm={2}>
-                    <Button onClick={() => {
-                      if (speed === 5) { SetSpeed(0) }
-                      (SetSpeed(speed => speed + 1))
-                    }} > Speed {speed}</Button>
-                  </Col>
-                </>
-              )}
-
-              {loading && (
-                <Button
-                  block={true}
-                  disabled={true}
-                  size={"lg"}
-                  variant={"info"}
-                >
-                  {"Working... "}
-                  <ReactLoading
-                    type={"bubbles"}
-                    color={"#ffffff"}
-                    className={"loading-icon"}
-                    height={28}
-                    width={32}
-                  />
-                </Button>
-              )}
-            </Col>
-          </Row>
-          <Row></Row>
-          <Row>
-            <Col sm={10}>
+            <Col xxl={9}>
               {fetchedInfo && (
                 <div className={"mt-5"}>
                   {console.log("ennen piirtoa problemInfo", activeProblemInfo)}
@@ -558,6 +546,56 @@ function NautilusNavigatorMethod({
                     }}
                   />
                 </div>
+              )}
+            </Col>
+          </Row>
+          <Row>
+            <Col sm={2}>
+              <Slider
+                value={speed}
+                onChange={
+                  (_, val) => {
+                    SetSpeed(val as number)
+                  }}
+                aria-labelledby="discrete-slider"
+                valueLabelDisplay="on"
+                step={1}
+                marks={marks}
+                min={1}
+                max={5}
+              />
+            </Col>
+
+            <Col sm={2}>
+              {loading && (
+                <Button size={"lg"} onClick={klik}>
+                  Stop
+                </Button>
+              )}
+            </Col>
+            <Col sm={2}>
+              {!loading && !iterateNavi && (
+
+                <Button size={"lg"} onClick={klik}>
+                  Start Navigation
+                </Button>
+              )}
+
+              {loading && (
+                <Button
+                  disabled={true}
+                  size={"lg"}
+                  variant={"info"}
+                >
+                  {"Working... "}
+                  <ReactLoading
+                    type={"bubbles"}
+                    color={"#ffffff"}
+                    className={"loading-icon"}
+                    height={28}
+                    width={32}
+                  />
+                </Button>
               )}
             </Col>
           </Row>

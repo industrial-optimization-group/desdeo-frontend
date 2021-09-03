@@ -102,11 +102,10 @@ function ReferencePointMethod({
           body: JSON.stringify({ problem_id: activeProblemId }),
         });
 
-        console.log(res.body)
         if (res.status == 200) {
           // ok!
           const body = await res.json();
-          console.log(body)
+          console.log("here", body.ideal, body.nadir)
           SetActiveProblemInfo({
             problemId: body.problem_id,
             problemName: body.problem_name,
@@ -160,7 +159,6 @@ function ReferencePointMethod({
         if (res.status == 200) {
           const body = await res.json();
 
-          console.log("Act prob infoi", activeProblemInfo)
           // To begin, just show something neutral
           const datum: ObjectiveDatum = {
             selected: false,
@@ -178,7 +176,6 @@ function ReferencePointMethod({
             nadir: activeProblemInfo.nadir,
           };
 
-          console.log("Data", data)
           SetData(data);
           SetMethodStarted(true);
           SetReferencePoint(datum.value);
@@ -288,18 +285,17 @@ function ReferencePointMethod({
             <Col sm={4}></Col>
             <Col sm={4}>
               {!loading && !satisfied && (
-                <Button block={true} size={"lg"} onClick={iterate}>
+                <Button size={"lg"} onClick={iterate}>
                   Iterate
                 </Button>
               )}
               {!loading && satisfied && (
-                <Button block={true} size={"lg"} onClick={iterate}>
+                <Button size={"lg"} onClick={iterate}>
                   Stop
                 </Button>
               )}
               {loading && (
                 <Button
-                  block={true}
                   disabled={true}
                   size={"lg"}
                   variant={"info"}
@@ -462,7 +458,7 @@ function ReferencePointMethod({
               </tr>
             </tbody>
           </Table>
-          <Button as={Link} to="/">
+          <Button variant="link" href="/">
             {"Back to index"}
           </Button>
         </>

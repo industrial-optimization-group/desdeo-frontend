@@ -531,7 +531,6 @@ function NimbusMethod({
         <Col sm={4}>
           {!loading && nimbusState !== "stop" && (
             <Button
-              block={true}
               size={"lg"}
               onClick={iterate}
               disabled={
@@ -585,7 +584,7 @@ function NimbusMethod({
             </Button>
           )}
           {loading && (
-            <Button block={true} disabled={true} size={"lg"} variant={"info"}>
+            <Button disabled={true} size={"lg"} variant={"info"}>
               {"Working... "}
               <ReactLoading
                 type={"bubbles"}
@@ -871,7 +870,7 @@ function NimbusMethod({
               </tr>
             </tbody>
           </Table>
-          <Button as={Link} to="/">
+          <Button variant="link" href="/">
             {"Back to index"}
           </Button>
         </>
