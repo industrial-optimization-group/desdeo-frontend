@@ -528,6 +528,25 @@ function NautilusNavigatorMethod({
                 />
               )}
             </Col>
+
+
+    let testi: number[][] = [
+      [0, 1], [0, 1], [0, 1]
+    ]
+    console.log("testi", testi)
+
+    let yks = testi[0].length - 1
+
+    let val = testi.flatMap((d) => [d[yks]])
+    console.log("nyk val", val)
+
+    const lis = [2, 2, 2]
+
+    testi.map((d, i) => d[yks] = lis[i])
+
+
+    console.log("testi after", testi)
+
   */
   const refp: number[][] = [[0, 0, 0], [1, 1, 1]]
 
