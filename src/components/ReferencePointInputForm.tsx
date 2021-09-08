@@ -49,6 +49,7 @@ function ReferencePointInputForm({
   }, [referencePoint]);
 
   const onSubmit = (data: FormData) => {
+    console.log("dataa", data)
     setReferencePoint(directions.map((d, i) => d * data.values[i]));
   };
 

@@ -99,7 +99,7 @@ export const Login = ({
                     ref={register({ required: true })}
                   />
                 </Form.Group>
-                <Button type="submit">Submit</Button>
+                <Button className="mt-1" type="submit">Submit</Button>
               </Form>
               <OverlayTrigger
                 trigger="click"

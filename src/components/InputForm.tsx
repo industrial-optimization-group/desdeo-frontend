@@ -17,9 +17,17 @@ interface FormData {
   values: number[];
 }
 
+/*
+handleReferencePoint:
+    | React.Dispatch<React.SetStateAction<number[]>>
+    | ((x: number[]) => void);
+*/
+
 // järkevämpää olisi täällä vain käsitellä yhtä pistettä eikä historiaa, mutta saa nhädä miten pelaa sitten yhteen.,
 interface InputFormProps {
-  setReferencePoint: React.Dispatch<React.SetStateAction<number[]>>;
+  setReferencePoint:
+  | React.Dispatch<React.SetStateAction<number[]>>
+  | ((x: number[]) => void);
   setBoundaryPoint: React.Dispatch<React.SetStateAction<number[]>>;
   referencePoint: number[];
   boundary: number[];
@@ -54,8 +62,9 @@ function InputForm({
   }, [referencePoint, boundary]);
 
   const onSubmit = (data: FormData) => {
+    console.log("dataa", data)
     setReferencePoint(directions.map((d, i) => d * data.values[i]));
-    setBoundaryPoint(directions.map((d, i) => d * data.values[i]));
+    //setBoundaryPoint(directions.map((d, i) => d * data.values[i]));
   };
 
   console.log("called form", JSON.stringify(referencePoint));
@@ -122,50 +131,6 @@ function InputForm({
                         name={`values.${i}`}
                         render={({ message }) => <p>{message}</p>}
                       />
-                    </Col>
-                    <Col>
-                      <Form.Control
-                        key={`controlof${name}`}
-                        name={`bounds.${i}`}
-                        defaultValue={`${directions[i] === 1
-                          ? boundary[i].toPrecision(4)
-                          : -boundary[i].toPrecision(4)
-                          }`}
-                        ref={register({
-                          required: true,
-                          pattern: {
-                            value: /[+-]?([0-9]*[.])?[0-9]+/,
-                            message: "Input not recognized as float.",
-                          },
-                          valueAsNumber: true,
-                          validate: {
-                            isFloat: (v) =>
-                              !Number.isNaN(parseFloat(v)) ||
-                              "Input must be float",
-                          },
-                          min: {
-                            value: directions[i] === 1 ? ideal[i] : -nadir[i],
-                            message: `Value too small. Must be greater than ${directions[i] === 1 ? ideal[i] : -nadir[i]
-                              }`,
-                          },
-                          max: {
-                            value: directions[i] === -1 ? -ideal[i] : nadir[i],
-                            message: `Value too too large. Must be less than ${directions[i] === -1 ? -ideal[i] : nadir[i]
-                              }`,
-                          },
-                        })}
-                      />
-                      <ErrorMessage
-                        errors={errors}
-                        name={`values.${i}`}
-                        render={({ message }) => <p>{message}</p>}
-                      />
-                    </Col>
-                    <Col sm={3}>
-                      {(directions[i] === -1
-                        ? -ideal[i]
-                        : nadir[i]
-                      ).toPrecision(4)}
                     </Col>
                   </Row>
                 </div>

@@ -213,6 +213,8 @@ function NautilusNavigatorMethod({
     console.log("DAtaa on nyt2", dataArchive);
   };
 
+
+
   // use effectejä vaan
   useEffect(() => {
     if (alternatives !== undefined) {
@@ -548,7 +550,11 @@ function NautilusNavigatorMethod({
     console.log("testi after", testi)
 
   */
-  const refp: number[][] = [[0, 0, 0], [1, 1, 1]]
+
+  const updateRefPoint = (ref: number[]) => {
+    const newRefPoint = convertedData!.referencePoints.map((d, i) => d[convertedData!.referencePoints[0].length - 1] = ref[i])
+    console.log("uusi pisteen", newRefPoint)
+  }
 
   return (
     <Container>
@@ -560,7 +566,7 @@ function NautilusNavigatorMethod({
             <Col xxl={3} className="mt-5">
               {fetchedInfo && (
                 <InputForm
-                  setReferencePoint={SetCurrentPoint}
+                  setReferencePoint={(ref: number[]) => { updateRefPoint(ref) }}
                   setBoundaryPoint={() => [2, 2, 2]}
                   referencePoint={currentPoint}
                   boundary={[2, 2, 2]}
