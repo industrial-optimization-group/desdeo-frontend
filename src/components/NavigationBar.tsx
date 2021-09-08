@@ -13,7 +13,7 @@ function NavigationBar({
   return (
     <Container>
       <Navbar bg="light" expand="lg">
-        <Container fluid="xxl">
+        <Container fluid="xl">
           <Navbar.Brand as={Link} to="/">
             <img
               alt=""

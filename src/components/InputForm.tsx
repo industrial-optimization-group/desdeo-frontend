@@ -17,9 +17,12 @@ interface FormData {
   values: number[];
 }
 
-interface ReferencePointInputFormProps {
+// järkevämpää olisi täällä vain käsitellä yhtä pistettä eikä historiaa, mutta saa nhädä miten pelaa sitten yhteen.,
+interface InputFormProps {
   setReferencePoint: React.Dispatch<React.SetStateAction<number[]>>;
+  setBoundaryPoint: React.Dispatch<React.SetStateAction<number[]>>;
   referencePoint: number[];
+  boundary: number[];
   nObjectives: number;
   objectiveNames: string[];
   ideal: number[];
@@ -27,15 +30,17 @@ interface ReferencePointInputFormProps {
   directions: MinOrMax[];
 }
 
-function ReferencePointInputForm({
+function InputForm({
   setReferencePoint,
+  setBoundaryPoint,
   referencePoint,
+  boundary,
   nObjectives,
   objectiveNames,
   ideal,
   nadir,
   directions,
-}: ReferencePointInputFormProps) {
+}: InputFormProps) {
   const {
     register,
     formState: { errors },
@@ -46,13 +51,15 @@ function ReferencePointInputForm({
   });
   useEffect(() => {
     reset();
-  }, [referencePoint]);
+  }, [referencePoint, boundary]);
 
   const onSubmit = (data: FormData) => {
     setReferencePoint(directions.map((d, i) => d * data.values[i]));
+    setBoundaryPoint(directions.map((d, i) => d * data.values[i]));
   };
 
   console.log("called form", JSON.stringify(referencePoint));
+  console.log("called form", JSON.stringify(boundary));
 
   return (
     <Form action="" onSubmit={handleSubmit(onSubmit)}>
@@ -83,8 +90,46 @@ function ReferencePointInputForm({
                         key={`controlof${name}`}
                         name={`values.${i}`}
                         defaultValue={`${directions[i] === 1
-                            ? referencePoint[i].toPrecision(4)
-                            : -referencePoint[i].toPrecision(4)
+                          ? referencePoint[i].toPrecision(4)
+                          : -referencePoint[i].toPrecision(4)
+                          }`}
+                        ref={register({
+                          required: true,
+                          pattern: {
+                            value: /[+-]?([0-9]*[.])?[0-9]+/,
+                            message: "Input not recognized as float.",
+                          },
+                          valueAsNumber: true,
+                          validate: {
+                            isFloat: (v) =>
+                              !Number.isNaN(parseFloat(v)) ||
+                              "Input must be float",
+                          },
+                          min: {
+                            value: directions[i] === 1 ? ideal[i] : -nadir[i],
+                            message: `Value too small. Must be greater than ${directions[i] === 1 ? ideal[i] : -nadir[i]
+                              }`,
+                          },
+                          max: {
+                            value: directions[i] === -1 ? -ideal[i] : nadir[i],
+                            message: `Value too too large. Must be less than ${directions[i] === -1 ? -ideal[i] : nadir[i]
+                              }`,
+                          },
+                        })}
+                      />
+                      <ErrorMessage
+                        errors={errors}
+                        name={`values.${i}`}
+                        render={({ message }) => <p>{message}</p>}
+                      />
+                    </Col>
+                    <Col>
+                      <Form.Control
+                        key={`controlof${name}`}
+                        name={`bounds.${i}`}
+                        defaultValue={`${directions[i] === 1
+                          ? boundary[i].toPrecision(4)
+                          : -boundary[i].toPrecision(4)
                           }`}
                         ref={register({
                           required: true,
@@ -134,4 +179,4 @@ function ReferencePointInputForm({
   );
 }
 
-export default ReferencePointInputForm;
+export default InputForm;

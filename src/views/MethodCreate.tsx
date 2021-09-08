@@ -180,7 +180,7 @@ function MethodCreate({
                   </Form.Group>
                 </Col>
               </Row>
-              <Row>
+              <Row className="mt-2">
                 <Col>
                   <Button
                     type="submit"

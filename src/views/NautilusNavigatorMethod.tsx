@@ -5,6 +5,7 @@ import {
 } from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
 //import ReferencePointInputForm from "../components/ReferencePointInputForm";
+import Form from "react-bootstrap/Form";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import Button from "react-bootstrap/Button";
@@ -20,6 +21,9 @@ import { Link } from "react-router-dom";
 
 import Slider from '@material-ui/core/Slider';
 
+
+import ReferencePointInputForm from "../components/ReferencePointInputForm";
+import InputForm from "../components/InputForm";
 
 // välidata
 // Piirtää siis oikein kunhanh data on oikein hyvä juttu
@@ -44,8 +48,9 @@ type ProblemData = {
  *
  */
 
-// TODO: note react bootsrap versiossa ei tueta vielä isoja ruutuja.
 /*
+
+TODO: mahd. bugi kun siirtää ref pointtia ja jatkaa iter, näyttää vähän että siirtää askeleen verran siirron aikana eteenpäin.
 
 mahtasko toimia jos pitäisi täällä datassa aina saman kun servulla ja vain kun lähettää komponentille niin kääntää? vai pitäisikö vain
 komponentin kääntää ne ?
@@ -150,7 +155,7 @@ function NautilusNavigatorMethod({
   const [activeProblemInfo, SetActiveProblemInfo] = useState<ProblemInfo>();
   const [methodStarted, SetMethodStarted] = useState<boolean>(false);
   // this has one data object the currently used
-  const [currentData, SetCurrentData] = useState<ProblemData>();
+  const [currentData, SetCurrentData] = useState<ProblemData>(); // not used rn 
   const [convertedData, SetConvertData] = useState<ProblemData>();
 
   const [dataArchive, SetDataArchive] = useState<Array<ProblemData>>([]);
@@ -207,16 +212,6 @@ function NautilusNavigatorMethod({
     dataArchive[ind] = data;
     console.log("DAtaa on nyt2", dataArchive);
   };
-
-  // TODO: check this useEff
-  useEffect(() => {
-    console.log(referencePoint, " ReferencePoint -  has changed");
-    if (referencePoint !== undefined) {
-      SetReferencePoint(referencePoint);
-      // jotenkin currentSTep + 1 jos liikutetaan
-      SetCurrentPoint(referencePoint[currentStep]);
-    }
-  }, [referencePoint, currentStep]);
 
   // use effectejä vaan
   useEffect(() => {
@@ -297,7 +292,7 @@ function NautilusNavigatorMethod({
 
           SetCurrentStep(0);
           //SetDataArchive(ogdata);
-          //SetReferencePoint(body.ideal);
+          SetReferencePoint(convertedData.referencePoints);
         } else {
           //some other code
           console.log(`could not fetch problem, got status code ${res.status}`);
@@ -372,6 +367,12 @@ function NautilusNavigatorMethod({
           SetMethodStarted(true);
           //SetReferencePoint(newArchiveData.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
           SetReferencePoint(convertedData!.referencePoints); // mites tupla taulukon kanssa, miten toimii nav comp nyt.
+          // dumb but works
+          const len = convertedData!.referencePoints[0].length
+          const curr = convertedData!.referencePoints.flatMap((d, _) => [d[len - 1]])
+          SetCurrentPoint(curr)
+          console.log("currPoint", currentPoint)
+
 
           SetFetchedInfo(true);
           SetHelpMessage(
@@ -454,8 +455,6 @@ function NautilusNavigatorMethod({
               boundaries: body.response.user_bounds.map((d: any, i: any) => {
                 return dataArchive![dataArchive!.length - 1].boundaries[i].concat(parseFloat(d));
               }),
-
-              //[[Number.NaN], [Number.NaN], [Number.NaN]], // convert to these from the coming nulls.
               totalSteps: 100,
               stepsTaken: body.response.step_number,
             };
@@ -509,19 +508,50 @@ function NautilusNavigatorMethod({
     iterate()
   }, [iterateNavi, SetIterateNavi, itestateRef.current]);
 
-  function klik() {
+  function toggleIteration() {
     SetLoading((loading) => !loading);
     SetIterateNavi((iterateNavi) => !iterateNavi);
   }
 
+  /*
+
+            <Col xxl={3} className="mt-5">
+              {fetchedInfo && (
+                <ReferencePointInputForm
+                  setReferencePoint={() => [2, 2, 2]}
+                  referencePoint={[2, 2, 2]}
+                  nObjectives={activeProblemInfo!.nObjectives}
+                  objectiveNames={activeProblemInfo!.objectiveNames}
+                  ideal={activeProblemInfo!.ideal}
+                  nadir={activeProblemInfo!.nadir}
+                  directions={activeProblemInfo!.minimize}
+                />
+              )}
+            </Col>
+  */
+  const refp: number[][] = [[0, 0, 0], [1, 1, 1]]
+
   return (
     <Container>
-      <h3 className="mb-3">{"NAUTILUS Navigator method"}</h3>
+      <h3 className="mb-2">{"NAUTILUS Navigator method"}</h3>
       {!showFinal && (
         <>
-          <p>{`Help: ${helpMessage}`}</p>
+          <p className="mb-0">{`Help: ${helpMessage}`}</p>
           <Row>
-            <Col xxl={3}>
+            <Col xxl={3} className="mt-5">
+              {fetchedInfo && (
+                <InputForm
+                  setReferencePoint={SetCurrentPoint}
+                  setBoundaryPoint={() => [2, 2, 2]}
+                  referencePoint={currentPoint}
+                  boundary={[2, 2, 2]}
+                  nObjectives={activeProblemInfo!.nObjectives}
+                  objectiveNames={activeProblemInfo!.objectiveNames}
+                  ideal={activeProblemInfo!.ideal}
+                  nadir={activeProblemInfo!.nadir}
+                  directions={activeProblemInfo!.minimize}
+                />
+              )}
             </Col>
             <Col xxl={9}>
               {fetchedInfo && (
@@ -568,7 +598,7 @@ function NautilusNavigatorMethod({
 
             <Col sm={2}>
               {loading && (
-                <Button size={"lg"} onClick={klik}>
+                <Button size={"lg"} onClick={toggleIteration}>
                   Stop
                 </Button>
               )}
@@ -576,7 +606,7 @@ function NautilusNavigatorMethod({
             <Col sm={2}>
               {!loading && !iterateNavi && (
 
-                <Button size={"lg"} onClick={klik}>
+                <Button size={"lg"} onClick={toggleIteration}>
                   Start Navigation
                 </Button>
               )}
