@@ -22,7 +22,6 @@ import { Link } from "react-router-dom";
 import Slider from '@material-ui/core/Slider';
 
 
-import ReferencePointInputForm from "../components/ReferencePointInputForm";
 import InputForm from "../components/InputForm";
 
 // välidata
@@ -72,6 +71,7 @@ const trueProbData = (info: ProblemInfo) => {
   return newInfo;
 }
 
+// get rid of this
 const marks = [
   {
     value: 1,
@@ -95,7 +95,6 @@ const marks = [
   },
 ]
 
-// huhhu kun on 2d arrayt tehty vaikeeksi js
 const convertData = (data: ProblemData, minimize: number[]) => {
 
   const newlowB: number[][] = data.lowerBounds.map((d, i) => d.map((v) => minimize[i] === 1 ? v : -v))
@@ -111,7 +110,6 @@ const convertData = (data: ProblemData, minimize: number[]) => {
     totalSteps: data.totalSteps,
     stepsTaken: data.stepsTaken,
   }
-  //console.log(newData)
 
   return newData;
 }
@@ -152,29 +150,36 @@ function NautilusNavigatorMethod({
   methodCreated,
   activeProblemId,
 }: NautilusNavigatorMethodProps) {
-  const [activeProblemInfo, SetActiveProblemInfo] = useState<ProblemInfo>();
-  const [methodStarted, SetMethodStarted] = useState<boolean>(false);
-  // this has one data object the currently used
-  const [currentData, SetCurrentData] = useState<ProblemData>(); // not used rn 
-  const [convertedData, SetConvertData] = useState<ProblemData>();
 
-  const [dataArchive, SetDataArchive] = useState<Array<ProblemData>>([]);
-
-
-  const [currentStep, SetCurrentStep] = useState<number>(0); // maybe this to set the currentstep to right one and then pick the correct from dataArchive ?
-
-
+  // for sure used and needed
   const [helpMessage, SetHelpMessage] = useState<string>(
     "Method not started yet."
   );
 
-  // navigaattorille
+  // holds active problem info, server form
+  const [activeProblemInfo, SetActiveProblemInfo] = useState<ProblemInfo>();
+  // boolean to contain method state
+  const [methodStarted, SetMethodStarted] = useState<boolean>(false);
+  // Data in user form to be sent to NavigationBars. 
+  const [convertedData, SetConvertData] = useState<ProblemData>();
+  // All steps taken, all data in server form. To be used when taking steps back etc.
+  const [dataArchive, SetDataArchive] = useState<Array<ProblemData>>([]);
+
+
+  // currently holds the latest referencePoint for iterate in server/navibar form and then gets converted by custom func 
+  // to be sent to server or the opposite
+  const [referencePoint, SetReferencePoint] = useState<number[][]>(
+  );
+  const [boundaryPoint, SetBoundaryPoint] = useState<number[][]>(
+  );
+
+  // These have point, could possibly do nicer but works and needed
   const [endNavigating, SetEndNavigating] = useState<boolean>(false); // navigaatio stepit täynnä ja loppu.
   const [iterateNavi, SetIterateNavi] = useState<boolean>(false);
   const itestateRef = useRef<boolean>();
   itestateRef.current = iterateNavi;
 
-
+  // track dataArch change during iterate
   const dRef = useRef<Array<ProblemData>>();
   dRef.current = dataArchive
 
@@ -182,13 +187,13 @@ function NautilusNavigatorMethod({
   const speedRef = useRef<number>();
   speedRef.current = speed
 
-  // tämänlaisete mutta refviivoille / boundareille
-  const [referencePoint, SetReferencePoint] = useState<number[][]>(
-  );
-  const [boundaryPoint, SetBoundaryPoint] = useState<number[][]>(
-  );
+  // maybe needed, could help
+  const [currentData, SetCurrentData] = useState<ProblemData>(); // not used rn 
+  const [currentStep, SetCurrentStep] = useState<number>(0);
 
-  // this could be the new point, just moved. To be added to refpoints.
+
+
+  // right now acts as the refe point to sent to the InputForm. Could/should be used better 
   const [currentPoint, SetCurrentPoint] = useState<number[]>([]);
 
   // yleiset
@@ -198,29 +203,11 @@ function NautilusNavigatorMethod({
   // ei ehkä navigaattorille, mutta vastaavat voi olla hyvä
   //const [satisfied, SetSatisfied] = useState<boolean>(false);
   const [showFinal, SetShowFinal] = useState<boolean>(false);
-  const [alternatives, SetAlternatives] = useState<ObjectiveData>();
+  //const [alternatives, SetAlternatives] = useState<ObjectiveData>();
   //const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
   //const [finalVariables, SetFinalVariables] = useState<number[]>([]);
 
-  // ei olleenkaan / en ole varma
-  const [indexCurrentPoint, SetIndexCurrentPoint] = useState<number>(0);
 
-  // is coming here really necessary so this starts properly what ?
-  // TODO: we needing this to make this work is not good
-  const updateDataArchive = (data: ProblemData, ind: number) => {
-    console.log("DAtaa on nyt", dataArchive);
-    dataArchive[ind] = data;
-    console.log("DAtaa on nyt2", dataArchive);
-  };
-
-
-
-  // use effectejä vaan
-  useEffect(() => {
-    if (alternatives !== undefined) {
-      SetCurrentPoint(alternatives.values[indexCurrentPoint].value);
-    }
-  }, [indexCurrentPoint]);
 
   // fetch current problem info
   useEffect(() => {
@@ -277,22 +264,12 @@ function NautilusNavigatorMethod({
             totalSteps: 100,
             stepsTaken: 0,
           };
-          // TODO: here 
-
-
-          SetCurrentData(ogdata);
-
-          //SetDataArchive(dataArchive => [...dataArchive, ogdata]); // should be ok ?
-          updateDataArchive(ogdata, 0); // apparently we need to call something outside for the method to start properly ??
-          SetDataArchive([ogdata])
-
-
+          SetDataArchive([ogdata]); // no idea why this doenst work and i need to do the under onee. 
+          dataArchive[0] = ogdata
           const convertedData = convertData(ogdata, body.minimize)
           SetConvertData(convertedData);
-
           console.log("Data fetchissä", dataArchive)
-
-          SetCurrentStep(0);
+          //SetCurrentStep(0);
           //SetDataArchive(ogdata);
           SetReferencePoint(convertedData.referencePoints);
         } else {
@@ -551,9 +528,26 @@ function NautilusNavigatorMethod({
 
   */
 
+  // ok basic idea works. TODO: better
   const updateRefPoint = (ref: number[]) => {
-    const newRefPoint = convertedData!.referencePoints.map((d, i) => d[convertedData!.referencePoints[0].length - 1] = ref[i])
+    // the minus got to be done elsewhere tho.
+    const newRefPoint = convertedData!.referencePoints.map((d, i) => d[convertedData!.referencePoints[0].length - 1] = -ref[i])
+
+    // TODO: fix the minuses thingy again 
+    dataArchive[convertedData!.stepsTaken].referencePoints.map((d, i) => d[convertedData!.stepsTaken] = ref[i])
+
+    // need to create new object
+    const newData: ProblemData = {
+      upperBounds: convertedData!.upperBounds,
+      lowerBounds: convertedData!.lowerBounds,
+      referencePoints: convertedData!.referencePoints,
+      boundaries: convertedData!.boundaries,
+      totalSteps: convertedData!.totalSteps,
+      stepsTaken: convertedData!.stepsTaken,
+    }
+    SetConvertData(newData)
     console.log("uusi pisteen", newRefPoint)
+
   }
 
   return (
