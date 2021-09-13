@@ -63,7 +63,8 @@ function InputForm({
 
   const onSubmit = (data: FormData) => {
     console.log("dataa", data)
-    setReferencePoint(directions.map((d, i) => d * data.values[i]));
+    //setReferencePoint(directions.map((d, i) => d * data.values[i]));
+    setReferencePoint(directions.map((d, i) => 1 * data.values[i]));
     //setBoundaryPoint(directions.map((d, i) => d * data.values[i]));
   };
 
@@ -98,10 +99,7 @@ function InputForm({
                       <Form.Control
                         key={`controlof${name}`}
                         name={`values.${i}`}
-                        defaultValue={`${directions[i] === 1
-                          ? referencePoint[i].toPrecision(4)
-                          : -referencePoint[i].toPrecision(4)
-                          }`}
+                        defaultValue={`${referencePoint[i].toPrecision(5)}`}
                         ref={register({
                           required: true,
                           pattern: {
