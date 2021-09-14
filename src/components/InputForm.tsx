@@ -28,9 +28,7 @@ interface InputFormProps {
   setReferencePoint:
   | React.Dispatch<React.SetStateAction<number[]>>
   | ((x: number[]) => void);
-  setBoundaryPoint: React.Dispatch<React.SetStateAction<number[]>>;
   referencePoint: number[];
-  boundary: number[];
   nObjectives: number;
   objectiveNames: string[];
   ideal: number[];
@@ -40,9 +38,7 @@ interface InputFormProps {
 
 function InputForm({
   setReferencePoint,
-  setBoundaryPoint,
   referencePoint,
-  boundary,
   nObjectives,
   objectiveNames,
   ideal,
@@ -59,26 +55,24 @@ function InputForm({
   });
   useEffect(() => {
     reset();
-  }, [referencePoint, boundary]);
+  }, [referencePoint]);
 
   const onSubmit = (data: FormData) => {
     console.log("dataa", data)
     //setReferencePoint(directions.map((d, i) => d * data.values[i]));
     setReferencePoint(directions.map((d, i) => 1 * data.values[i]));
-    //setBoundaryPoint(directions.map((d, i) => d * data.values[i]));
   };
 
   console.log("called form", JSON.stringify(referencePoint));
-  console.log("called form", JSON.stringify(boundary));
 
   return (
     <Form action="" onSubmit={handleSubmit(onSubmit)}>
       <ListGroup>
         <ListGroup.Item variant="dark">
           <Row>
-            <Col sm={3}>Min</Col>
+            <Col sm={2}>Min</Col>
             <Col>Value</Col>
-            <Col sm={3}>Max</Col>
+            <Col sm={2}>Max</Col>
           </Row>
         </ListGroup.Item>
         <ListGroup.Item>
@@ -90,7 +84,7 @@ function InputForm({
                     {name}
                   </Form.Label>
                   <Row>
-                    <Col sm={3}>
+                    <Col sm={2}>
                       {(directions[i] === 1 ? ideal[i] : -nadir[i]).toPrecision(
                         4
                       )}
