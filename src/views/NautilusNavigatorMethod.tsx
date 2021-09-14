@@ -49,8 +49,6 @@ type ProblemData = {
 
 /*
 
-TODO: mahd. bugi kun siirtää ref pointtia ja jatkaa iter, näyttää vähän että siirtää askeleen verran siirron aikana eteenpäin.
-
 mahtasko toimia jos pitäisi täällä datassa aina saman kun servulla ja vain kun lähettää komponentille niin kääntää? vai pitäisikö vain
 komponentin kääntää ne ?
 */
@@ -385,13 +383,10 @@ function NautilusNavigatorMethod({
       console.log("REf point", referencePoint);
       console.log(currentStep);
 
-      // joo askeleet kusee ja pahasti, pitäisi olla cstep 15 kun onkin 12..
-      // tämä joo kusee että miten kutsutaan oikein.. jos stopaa iter, vaihtaa ref niin aloittaa vanhasta,mutta jos stoppaa ja vaihtaa uudestaan, niin sitten näkyy eka vaihto
-      // make these 1d arrays, for ease of use and smart
-      //let refe = getRefPoint(referencePoint!); // täällä kutsutaan tätä refeä ja tietysti jos stopattu ollaan, niin ei lähetetä tätä minnekkään sen myötä
       // kääännä
-      let ref = currentPoint;
-      let refe = ref.map((d) => -d)
+      const refe = currentPoint!.map((d, i) => activeProblemInfo?.minimize[i] === 1 ? d : -d)
+
+
       let bounds = getBounds(boundaryPoint!)
 
       // sama juttu currentStep menee iteraten ulkopuolella oikein. useRef maybE? 
@@ -502,11 +497,6 @@ function NautilusNavigatorMethod({
 
     // this should be here but the minuses are wrong
     SetCurrentPoint(newRefPoint)
-
-    // need to change reference point here aswell, or make smarter
-    //SetReferencePoint()
-
-    // TODO: fix the minuses thingy again 
     // TODO: possibly fix the steps with conv data.
     dataArchive[convertedData!.stepsTaken].referencePoints.map((d, i) => d[convertedData!.stepsTaken] = -ref[i])
 
@@ -561,13 +551,17 @@ function NautilusNavigatorMethod({
                     referencePoints={convertedData!.referencePoints} // these to use back end data
                     boundaries={convertedData!.boundaries}
                     handleReferencePoint={(ref: number[][]) => {
+                      // kun steps, niin sitten steps -1 tms
+                      let len = convertedData!.referencePoints[0].length
+                      let refe = ref.map((d) => d[len - 1])
+                      updateRefPoint(refe)
 
                       // this to 1d too 
                       //SetReferencePoint(ref);
                       // TODO: to be done cleaner
-                      const len = convertedData!.referencePoints[0].length
-                      const curr = convertedData!.referencePoints.flatMap((d, _) => [d[len - 1]])
-                      SetCurrentPoint(curr)
+                      //const len = convertedData!.referencePoints[0].length
+                      //const curr = convertedData!.referencePoints.flatMap((d, _) => [d[len - 1]])
+                      //SetCurrentPoint(curr)
                     }}
                     handleBound={(bound: number[][]) => {
                       SetBoundaryPoint(bound);
