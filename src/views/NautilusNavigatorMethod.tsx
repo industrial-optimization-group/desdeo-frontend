@@ -17,12 +17,10 @@ import { Link } from "react-router-dom";
 
 import Slider from '@material-ui/core/Slider';
 
-
 import InputForm from "../components/InputForm";
 
-// välidata
-// Piirtää siis oikein kunhanh data on oikein hyvä juttu
 
+// TODO: should be imported
 type ProblemData = {
   upperBounds: number[][];
   lowerBounds: number[][];
@@ -32,11 +30,6 @@ type ProblemData = {
   stepsTaken: number;
 };
 
-/* TODO:
- Stupid bug to be fixed. Because the async useEffects with fetchProblemInfo and startMethod I have to get some data for navbars already in fetchProblemInfo.
- That means I take one step there, which ends up navigationbars not getting to draw the last step since its in index 101.
- *
- */
 type RectDimensions = {
   chartWidth: number;
   chartHeight: number;
@@ -46,52 +39,6 @@ type RectDimensions = {
   marginBottom: number;
 };
 
-const dims: RectDimensions = {
-  chartHeight: 800,
-  chartWidth: 1200,
-  marginLeft: 80,
-  marginRight: 0,
-  marginTop: 50,
-  marginBottom: 0,
-};
-
-
-
-const trueProbData = (info: ProblemInfo) => {
-  const newInfo: ProblemInfo = {
-    ideal: info.ideal.map((v, i) => (info.minimize[i] === 1 ? v : -v)),
-    nadir: info.nadir.map((v, i) => (info.minimize[i] === 1 ? v : -v)),
-    nObjectives: info.nObjectives,
-    objectiveNames: info.objectiveNames,
-    problemId: info.problemId,
-    problemName: info.problemName,
-    problemType: info.problemType,
-    variableNames: info.variableNames,
-    minimize: info.minimize,
-  }
-  return newInfo;
-}
-
-
-const convertData = (data: ProblemData, minimize: number[]) => {
-  const newlowU: number[][] = data.upperBounds.map((d, i) => d.map((v) => minimize[i] === 1 ? v : -v))
-  const newlowB: number[][] = data.lowerBounds.map((d, i) => d.map((v) => minimize[i] === 1 ? v : -v))
-  const newReferencePoints: number[][] = data.referencePoints.map((d, i) => d.map((v) => minimize[i] === 1 ? v : -v))
-  const newBounds: number[][] = data.boundaries.map((d, i) => d.map((v) => minimize[i] === 1 ? v : -v))
-
-  const newData: ProblemData = {
-    upperBounds: newlowU,
-    lowerBounds: newlowB,
-    referencePoints: newReferencePoints,
-    boundaries: newBounds,
-    totalSteps: data.totalSteps,
-    stepsTaken: data.stepsTaken,
-  }
-  return newData;
-}
-
-// temp delay function to make the iter speed animation
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 interface NautilusNavigatorMethodProps {
   isLoggedIn: boolean;
@@ -126,7 +73,7 @@ function NautilusNavigatorMethod({
   // All steps taken, all data in server form. To be used when taking steps back etc.
   const [dataArchive, SetDataArchive] = useState<Array<ProblemData>>([]);
   // right now acts as the refe point to sent to the InputForm. Could/should be used better 
-  const [currentPoint, SetCurrentPoint] = useState<number[]>([]);
+  const [referencePoint, SetReferencePoint] = useState<number[]>([]);
   const [boundaryPoint, SetBoundaryPoint] = useState<number[]>([]);
 
   // These have point, could possibly do nicer but works and needed
@@ -155,6 +102,87 @@ function NautilusNavigatorMethod({
   const [alternatives, SetAlternatives] = useState<ObjectiveData>();
   const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
   const [finalVariables, SetFinalVariables] = useState<number[]>([]);
+
+  // default dims
+  const dims: RectDimensions = {
+    chartHeight: 800,
+    chartWidth: 1200,
+    marginLeft: 80,
+    marginRight: 0,
+    marginTop: 30,
+    marginBottom: 0,
+  };
+
+
+  // FUNCTIONS to handle stuff
+
+  const trueProbData = (info: ProblemInfo) => {
+    const newInfo: ProblemInfo = {
+      ideal: info.ideal.map((v, i) => (info.minimize[i] === 1 ? v : -v)),
+      nadir: info.nadir.map((v, i) => (info.minimize[i] === 1 ? v : -v)),
+      nObjectives: info.nObjectives,
+      objectiveNames: info.objectiveNames,
+      problemId: info.problemId,
+      problemName: info.problemName,
+      problemType: info.problemType,
+      variableNames: info.variableNames,
+      minimize: info.minimize,
+    }
+    return newInfo;
+  }
+
+  const convertData = (data: ProblemData, minimize: number[]) => {
+    const newlowU: number[][] = data.upperBounds.map((d, i) => d.map((v) => minimize[i] === 1 ? v : -v))
+    const newlowB: number[][] = data.lowerBounds.map((d, i) => d.map((v) => minimize[i] === 1 ? v : -v))
+    const newReferencePoints: number[][] = data.referencePoints.map((d, i) => d.map((v) => minimize[i] === 1 ? v : -v))
+    const newBounds: number[][] = data.boundaries.map((d, i) => d.map((v) => minimize[i] === 1 ? v : -v))
+
+    const newData: ProblemData = {
+      upperBounds: newlowU,
+      lowerBounds: newlowB,
+      referencePoints: newReferencePoints,
+      boundaries: newBounds,
+      totalSteps: data.totalSteps,
+      stepsTaken: data.stepsTaken,
+    }
+    return newData;
+  }
+
+  // ok basic idea works. TODO: better
+  const updateRefPoint = (point: number[], refPoint: boolean) => {
+    if (refPoint === true) {
+      const newRefPoint = convertedData!.referencePoints.map((d, i) => d[convertedData!.referencePoints[0].length - 1] = point[i])
+      SetReferencePoint(newRefPoint)
+      dataArchive[convertedData!.stepsTaken - 1].referencePoints.map((d, i) => d[convertedData!.stepsTaken] = -point[i])
+    }
+    else {
+      const newBound = convertedData!.boundaries.map((d, i) => d[convertedData!.boundaries[0].length - 1] = point[i])
+      SetBoundaryPoint(newBound)
+      dataArchive[convertedData!.stepsTaken - 1].boundaries.map((d, i) => d[convertedData!.stepsTaken] = -point[i])
+    }
+    // need to create new object
+    const newData: ProblemData = {
+      upperBounds: convertedData!.upperBounds,
+      lowerBounds: convertedData!.lowerBounds,
+      referencePoints: convertedData!.referencePoints,
+      boundaries: convertedData!.boundaries,
+      totalSteps: convertedData!.totalSteps,
+      stepsTaken: convertedData!.stepsTaken,
+    }
+    SetConvertData(newData)
+  }
+
+  // temp delay function to make the iter speed animation
+  const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+  const toggleIteration = () => {
+    SetLoading((loading) => !loading);
+    SetIterateNavi((iterateNavi) => !iterateNavi);
+  };
+
+
+
+  // COMPONENT ACTIVITIES
 
 
   // fetch current problem info
@@ -196,8 +224,6 @@ function NautilusNavigatorMethod({
             nadir: body.nadir,
             minimize: body.minimize,
           });
-          // set data start from ideal and nadir
-          // INITIALIZE step 0.
           const ogdata: ProblemData = {
             upperBounds: body.minimize.map((_: number, i: number) => {
               return [body.ideal[i]]
@@ -218,8 +244,7 @@ function NautilusNavigatorMethod({
           dataArchive[0] = ogdata
           //const convertedData = convertData(ogdata, body.minimize)
           //SetConvertData(convertedData);
-          console.log("Data fetchissä", dataArchive)
-          //SetCurrentStep(0);
+          SetCurrentStep(0);
           //SetDataArchive(ogdata);
           //SetReferencePoint(convertedData.referencePoints); to 1d
         } else {
@@ -285,18 +310,18 @@ function NautilusNavigatorMethod({
           //SetCurrentData(dataArchive[0]);
           const convertedData = convertData(newArchiveData, activeProblemInfo!.minimize)
           SetConvertData(convertedData);
-          // SetCurrentStep(1);
+          SetCurrentStep(currentStep => currentStep + 1);
           SetMethodStarted(true);
           // SetReferencePoint(convertedData!.referencePoints); //TODO: mites tupla taulukon kanssa, miten toimii nav comp nyt.
           // dumb but works
           const len = convertedData!.referencePoints[0].length
           const curr = convertedData!.referencePoints.flatMap((d, _) => [d[len - 1]])
-          SetCurrentPoint(curr)
+          SetReferencePoint(curr)
 
           const len2 = convertedData!.boundaries[0].length
           const bound = convertedData!.boundaries.flatMap((d, _) => [d[len2 - 1]])
           SetBoundaryPoint(bound)
-          console.log("currPoint", currentPoint)
+          console.log("currPoint", referencePoint)
 
           SetFetchedInfo(true);
           SetHelpMessage(
@@ -326,7 +351,7 @@ function NautilusNavigatorMethod({
       console.log("loading...");
       console.log(currentStep);
       // kääännä
-      const refe = currentPoint.map((d, i) => activeProblemInfo?.minimize[i] === 1 ? d : -d)
+      const refe = referencePoint.map((d, i) => activeProblemInfo?.minimize[i] === 1 ? d : -d)
       const bounds = boundaryPoint.map((d, i) => activeProblemInfo?.minimize[i] === 1 ? d : -d)
       console.log(refe)
       console.log(bounds)
@@ -385,6 +410,7 @@ function NautilusNavigatorMethod({
 
             const convertedData = convertData(newArchiveData, activeProblemInfo!.minimize)
             SetConvertData(convertedData);
+            SetCurrentStep(convertedData.stepsTaken)
 
             if (convertedData.stepsTaken === 100) {
               console.log("Method finished with 100 steps")
@@ -422,36 +448,6 @@ function NautilusNavigatorMethod({
     iterate()
   }, [iterateNavi, SetIterateNavi, itestateRef.current]);
 
-  function toggleIteration() {
-    SetLoading((loading) => !loading);
-    SetIterateNavi((iterateNavi) => !iterateNavi);
-  }
-
-  // ok basic idea works. TODO: better
-  const updateRefPoint = (point: number[], refPoint: boolean) => {
-
-    if (refPoint === true) {
-      const newRefPoint = convertedData!.referencePoints.map((d, i) => d[convertedData!.referencePoints[0].length - 1] = point[i])
-      SetCurrentPoint(newRefPoint)
-      dataArchive[convertedData!.stepsTaken - 1].referencePoints.map((d, i) => d[convertedData!.stepsTaken] = -point[i])
-    }
-    else {
-      const newBound = convertedData!.boundaries.map((d, i) => d[convertedData!.boundaries[0].length - 1] = point[i])
-      SetBoundaryPoint(newBound)
-      dataArchive[convertedData!.stepsTaken - 1].boundaries.map((d, i) => d[convertedData!.stepsTaken] = -point[i])
-    }
-
-    // need to create new object
-    const newData: ProblemData = {
-      upperBounds: convertedData!.upperBounds,
-      lowerBounds: convertedData!.lowerBounds,
-      referencePoints: convertedData!.referencePoints,
-      boundaries: convertedData!.boundaries,
-      totalSteps: convertedData!.totalSteps,
-      stepsTaken: convertedData!.stepsTaken,
-    }
-    SetConvertData(newData)
-  }
 
   return (
     <Container>
@@ -460,17 +456,18 @@ function NautilusNavigatorMethod({
         <>
           <p className="mb-0">{`Help: ${helpMessage}`}</p>
           <Row>
-            <Col xs={3} className="mt-5">
+            <Col md={2} className="mt-5">
               {fetchedInfo && (
                 <>
                   <InputForm
                     setReferencePoint={(ref: number[]) => { updateRefPoint(ref, true) }}
-                    referencePoint={currentPoint}
+                    referencePoint={referencePoint}
                     nObjectives={activeProblemInfo!.nObjectives}
                     objectiveNames={activeProblemInfo!.objectiveNames}
                     ideal={activeProblemInfo!.ideal}
                     nadir={activeProblemInfo!.nadir}
                     directions={activeProblemInfo!.minimize}
+                    name={"Reference"}
                   />
                   <InputForm
                     setReferencePoint={(bound: number[]) => { updateRefPoint(bound, false) }}
@@ -480,11 +477,12 @@ function NautilusNavigatorMethod({
                     ideal={activeProblemInfo!.ideal}
                     nadir={activeProblemInfo!.nadir}
                     directions={activeProblemInfo!.minimize}
+                    name={"Boundary"}
                   />
                 </>
               )}
             </Col>
-            <Col xxl={9} className="mr-auto">
+            <Col xxl={10} className="mr-auto">
               {fetchedInfo && (
                 <div className={"mt-5"}>
                   {console.log("ennen piirtoa problemInfo", activeProblemInfo)}

@@ -17,13 +17,7 @@ interface FormData {
   values: number[];
 }
 
-/*
-handleReferencePoint:
-    | React.Dispatch<React.SetStateAction<number[]>>
-    | ((x: number[]) => void);
-*/
 
-// järkevämpää olisi täällä vain käsitellä yhtä pistettä eikä historiaa, mutta saa nhädä miten pelaa sitten yhteen.,
 interface InputFormProps {
   setReferencePoint:
   | React.Dispatch<React.SetStateAction<number[]>>
@@ -34,6 +28,7 @@ interface InputFormProps {
   ideal: number[];
   nadir: number[];
   directions: MinOrMax[];
+  name: string;
 }
 
 function InputForm({
@@ -44,6 +39,7 @@ function InputForm({
   ideal,
   nadir,
   directions,
+  name,
 }: InputFormProps) {
   const {
     register,
@@ -59,8 +55,7 @@ function InputForm({
 
   const onSubmit = (data: FormData) => {
     console.log("dataa", data)
-    //setReferencePoint(directions.map((d, i) => d * data.values[i]));
-    setReferencePoint(directions.map((d, i) => 1 * data.values[i]));
+    setReferencePoint(data.values);
   };
 
   console.log("called form", JSON.stringify(referencePoint));
@@ -70,9 +65,7 @@ function InputForm({
       <ListGroup>
         <ListGroup.Item variant="dark">
           <Row>
-            <Col sm={2}>Min</Col>
-            <Col>Value</Col>
-            <Col sm={2}>Max</Col>
+            <Col>{name}</Col>
           </Row>
         </ListGroup.Item>
         <ListGroup.Item>
@@ -84,11 +77,6 @@ function InputForm({
                     {name}
                   </Form.Label>
                   <Row>
-                    <Col sm={2}>
-                      {(directions[i] === 1 ? ideal[i] : -nadir[i]).toPrecision(
-                        4
-                      )}
-                    </Col>
                     <Col>
                       <Form.Control
                         key={`controlof${name}`}
