@@ -5,7 +5,7 @@ import {
 } from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
 //import ReferencePointInputForm from "../components/ReferencePointInputForm";
-import { Table, Container, Row, Col, Button, Form } from "react-bootstrap";
+import { Table, Container, Row, Col, Button, Form, InputGroup } from "react-bootstrap";
 import ReactLoading from "react-loading";
 import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
 import {
@@ -19,6 +19,7 @@ import Slider from '@material-ui/core/Slider';
 
 import InputForm from "../components/InputForm";
 
+import { useForm } from "react-hook-form";
 
 // TODO: should be imported
 type ProblemData = {
@@ -89,9 +90,17 @@ function NautilusNavigatorMethod({
   const speedRef = useRef<number>();
   speedRef.current = speed
 
+  const [currentStep, SetCurrentStep] = useState<number>(0);
+
+  //const stepRef = useRef<number>();
+  //stepRef.current = currentStep
+  const [goPrevious, SetPrevious] = useState<boolean>(false);
+  const prevRef = useRef<boolean>(false);
+  prevRef.current = goPrevious
+
+
   // maybe needed, could help
   const [currentData, SetCurrentData] = useState<ProblemData>(); // not used rn 
-  const [currentStep, SetCurrentStep] = useState<number>(0);
 
   // yleiset
   const [fetchedInfo, SetFetchedInfo] = useState<boolean>(false);
@@ -181,6 +190,24 @@ function NautilusNavigatorMethod({
   };
 
 
+  //Kun osaan tehdä ...***### buttonin ja inputin jolla sitä vaihtaaa
+  const goBack = () => {
+
+    // temp steppi, tulisi tulla käyttäjältä 
+    let step = 3
+
+    // luodaan uusi dataArch johon kopioidaan vanha steppiin asti
+    dataArchive.splice(step, dataArchive.length - 1)
+    console.log(dataArchive)
+    const newConData = convertData(dataArchive[step - 1], activeProblemInfo!.minimize)
+    console.log(newConData)
+    SetConvertData(newConData)
+    SetPrevious(true);
+  }
+
+  const updatePrev = () => {
+    SetPrevious(false)
+  }
 
   // COMPONENT ACTIVITIES
 
@@ -304,15 +331,12 @@ function NautilusNavigatorMethod({
             stepsTaken: 1,
           };
 
-          //SetDataArchive(dataArchive => [...dataArchive, newArchiveData])
-
           dataArchive[0] = newArchiveData
-          //SetCurrentData(dataArchive[0]);
           const convertedData = convertData(newArchiveData, activeProblemInfo!.minimize)
           SetConvertData(convertedData);
-          SetCurrentStep(currentStep => currentStep + 1);
+          SetCurrentStep(1);
+          console.log(currentStep)
           SetMethodStarted(true);
-          // SetReferencePoint(convertedData!.referencePoints); //TODO: mites tupla taulukon kanssa, miten toimii nav comp nyt.
           // dumb but works
           const len = convertedData!.referencePoints[0].length
           const curr = convertedData!.referencePoints.flatMap((d, _) => [d[len - 1]])
@@ -359,6 +383,40 @@ function NautilusNavigatorMethod({
 
       // sama juttu currentStep menee iteraten ulkopuolella oikein. useRef maybE? 
       while (itestateRef.current === true) {
+        let resp;
+        if (prevRef.current === false) {
+          const respContinue = {
+            reference_point: refe,
+            speed: speedRef.current,
+            go_to_previous: false,
+            stop: !itestateRef.current,
+            user_bounds: bounds,
+          }
+
+          resp = respContinue;
+        }
+        if (prevRef.current === true) {
+          const respGoPrev = {
+            ideal: activeProblemInfo!.ideal,
+            nadir: activeProblemInfo!.nadir,
+            reachable_ub: dataArchive[2].lowerBounds.flatMap((d, _) => [d[2]]),
+            reachable_lb: dataArchive[2].upperBounds.flatMap((d, _) => [d[2]]),
+            reference_point: refe,
+            speed: speedRef.current,
+            go_to_previous: true,
+            stop: !itestateRef.current,
+            user_bounds: bounds,
+            step_number: 3,
+            reachable_idx: 97,
+            steps_remaining: 97,
+            distance: 3,
+            allowed_speeds: [1, 2, 3, 4, 5],
+            current_speed: speedRef.current,
+            navigation_point: [2.32, 2.0, 2.0] // TODO: get from data
+          }
+          resp = respGoPrev;
+        }
+
         try {
           console.log(`Trying to iterate with ${refe}`);
           const res = await fetch(`${apiUrl}/method/control`, {
@@ -369,15 +427,14 @@ function NautilusNavigatorMethod({
             },
             body: JSON.stringify({
               // oikeanmuotoisena navin tiedot
-              response: {
-                reference_point: refe, // TODO: täälä kutst
-                speed: speedRef.current,
-                go_to_previous: false,
-                stop: false,
-                user_bounds: bounds,
-              },
+              response:
+                resp,
+
             }),
           });
+          console.log(res)
+          updatePrev()
+          //SetPrevious(false); // should be true only once maximum
 
           if (res.status === 200) {
             // ok
@@ -405,12 +462,15 @@ function NautilusNavigatorMethod({
               stepsTaken: body.response.step_number,
             };
 
+
             // täällä lähtee aina yhä dataArchive ensimmäiseltä async iteraatio ajolta
             SetDataArchive(dataArchive => [...dataArchive, newArchiveData])
 
             const convertedData = convertData(newArchiveData, activeProblemInfo!.minimize)
             SetConvertData(convertedData);
             SetCurrentStep(convertedData.stepsTaken)
+            console.log(currentStep)
+            //console.log(stepRef.current)
 
             if (convertedData.stepsTaken === 100) {
               console.log("Method finished with 100 steps")
@@ -447,6 +507,7 @@ function NautilusNavigatorMethod({
 
     iterate()
   }, [iterateNavi, SetIterateNavi, itestateRef.current]);
+
 
 
   return (
@@ -584,6 +645,9 @@ function NautilusNavigatorMethod({
                 </Button>
               )}
             </Col>
+            <Col sm={1}>
+              <Button onClick={goBack}> Go Back </Button>
+            </Col>
             <Col>
               {showFinal && (
                 <>
@@ -594,37 +658,39 @@ function NautilusNavigatorMethod({
         </>
       )
       }
-      {showFinal && (
-        <>
-          <SolutionTable
-            objectiveData={ParseSolutions([finalObjectives!], activeProblemInfo!)}
-            setIndex={() => console.log("nothing happens...")}
-            selectedIndex={0}
-            tableTitle={"Final objective values"}
-          />
-          <p>{"Final decision variable values:"}</p>
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                {finalVariables.map((_, i) => {
-                  return <th>{`x${i + 1}`}</th>;
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                {finalVariables.map((v) => {
-                  return <td>{`${v.toFixed(4)}`}</td>;
-                })}
-              </tr>
-            </tbody>
-          </Table>
-          <Button variant="link" href="/">
-            {"Back to index"}
-          </Button>
-        </>
-      )}
-    </Container>
+      {
+        showFinal && (
+          <>
+            <SolutionTable
+              objectiveData={ParseSolutions([finalObjectives!], activeProblemInfo!)}
+              setIndex={() => console.log("nothing happens...")}
+              selectedIndex={0}
+              tableTitle={"Final objective values"}
+            />
+            <p>{"Final decision variable values:"}</p>
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  {finalVariables.map((_, i) => {
+                    return <th>{`x${i + 1}`}</th>;
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {finalVariables.map((v) => {
+                    return <td>{`${v.toFixed(4)}`}</td>;
+                  })}
+                </tr>
+              </tbody>
+            </Table>
+            <Button variant="link" href="/">
+              {"Back to index"}
+            </Button>
+          </>
+        )
+      }
+    </Container >
   );
 }
 
