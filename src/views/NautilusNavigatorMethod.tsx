@@ -145,6 +145,7 @@ function NautilusNavigatorMethod({
     return newInfo;
   }
 
+  // TODO: refactor make simpler 
   const convertData = (data: ProblemData, minimize: number[]) => {
     const newlowU: number[][] = data.upperBounds.map((d, i) => d.map((v) => minimize[i] === 1 ? v : -v))
     const newlowB: number[][] = data.lowerBounds.map((d, i) => d.map((v) => minimize[i] === 1 ? v : -v))
@@ -499,14 +500,13 @@ function NautilusNavigatorMethod({
 
             if (newArchiveData.distance === 100) {
               console.log("Method finished with 100 steps")
-              console.log("Dis here", convertedData.upperBounds[convertedData.stepsTaken - 1])
               SetIterateNavi(false);
               SetLoading(false);
-              console.log(response.navigation_point)
+              SetFinalObjectives(response.navigation_point.map((v: number) => [-v]))
               // TODO: here get solutions, like in referenceMethod
               //SetFinalObjectives()
               //SetFinalVariables()
-              //SetShowFinal(true)
+              SetShowFinal(true);
               return;
             }
 
@@ -538,7 +538,7 @@ function NautilusNavigatorMethod({
   return (
     <Container>
       <h3 className="mb-2">{"NAUTILUS Navigator method"}</h3>
-      {!showFinal && (
+      {!satisfied && (
         <>
           <p className="mb-0">{`Help: ${helpMessage}`}</p>
           <Row>
@@ -678,45 +678,12 @@ function NautilusNavigatorMethod({
             </Col>
             <Col>
               {showFinal && (
-                <>
-                </>
+                <p> Final Objective Values {finalObjectives} </p>
               )}
             </Col>
           </Row>
         </>
       )
-      }
-      {
-        showFinal && (
-          <>
-            <SolutionTable
-              objectiveData={ParseSolutions([finalObjectives!], activeProblemInfo!)}
-              setIndex={() => console.log("nothing happens...")}
-              selectedIndex={0}
-              tableTitle={"Final objective values"}
-            />
-            <p>{"Final decision variable values:"}</p>
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  {finalVariables.map((_, i) => {
-                    return <th>{`x${i + 1}`}</th>;
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  {finalVariables.map((v) => {
-                    return <td>{`${v.toFixed(4)}`}</td>;
-                  })}
-                </tr>
-              </tbody>
-            </Table>
-            <Button variant="link" href="/">
-              {"Back to index"}
-            </Button>
-          </>
-        )
       }
     </Container >
   );
