@@ -18,6 +18,7 @@ import { Link } from "react-router-dom";
 import Slider from '@material-ui/core/Slider';
 
 import InputForm from "../components/InputForm";
+import InputButton from "../components/InputButton";
 
 import { useForm } from "react-hook-form";
 
@@ -29,6 +30,10 @@ type ProblemData = {
   boundaries: number[][];
   totalSteps: number;
   stepsTaken: number;
+  distance?: number;
+  reachableIdx?: number[];
+  stepsRemaining?: number;
+  navigationPoint?: number[];
 };
 
 type RectDimensions = {
@@ -160,14 +165,14 @@ function NautilusNavigatorMethod({
   // ok basic idea works. TODO: better
   const updateRefPoint = (point: number[], refPoint: boolean) => {
     if (refPoint === true) {
-      const newRefPoint = convertedData!.referencePoints.map((d, i) => d[convertedData!.referencePoints[0].length - 1] = point[i])
+      const newRefPoint = convertedData!.referencePoints.map((d, i) => d[currentStep - 1] = point[i])
       SetReferencePoint(newRefPoint)
-      dataArchive[convertedData!.stepsTaken - 1].referencePoints.map((d, i) => d[convertedData!.stepsTaken] = -point[i])
+      dataArchive[currentStep - 1].referencePoints.map((d, i) => d[currentStep] = -point[i])
     }
     else {
-      const newBound = convertedData!.boundaries.map((d, i) => d[convertedData!.boundaries[0].length - 1] = point[i])
+      const newBound = convertedData!.boundaries.map((d, i) => d[currentStep - 1] = point[i])
       SetBoundaryPoint(newBound)
-      dataArchive[convertedData!.stepsTaken - 1].boundaries.map((d, i) => d[convertedData!.stepsTaken] = -point[i])
+      dataArchive[currentStep - 1].boundaries.map((d, i) => d[currentStep] = -point[i])
     }
     // need to create new object
     const newData: ProblemData = {
@@ -191,10 +196,11 @@ function NautilusNavigatorMethod({
 
 
   //Kun osaan tehdä ...***### buttonin ja inputin jolla sitä vaihtaaa
-  const goBack = () => {
+  const goBack = (step: number) => {
 
     // temp steppi, tulisi tulla käyttäjältä 
-    let step = 3
+    //let step = 3
+    SetCurrentStep(step)
 
     // luodaan uusi dataArch johon kopioidaan vanha steppiin asti
     dataArchive.splice(step, dataArchive.length - 1)
@@ -327,8 +333,12 @@ function NautilusNavigatorMethod({
             boundaries: dataArchive[0].boundaries.map((d, i) => {
               return dataArchive[0].boundaries[i].concat(d);
             }), // convert to these from the coming nulls.
-            totalSteps: 100,
+            totalSteps: 100, // this has to be 100, since step 1 is the first step according to the server.
             stepsTaken: 1,
+            distance: body.response.distance, // check for possible float errors
+            reachableIdx: body.response.reachable_idx,
+            stepsRemaining: body.response.steps_remaining,
+            navigationPoint: body.response.navigation_point,
           };
 
           dataArchive[0] = newArchiveData
@@ -399,20 +409,20 @@ function NautilusNavigatorMethod({
           const respGoPrev = {
             ideal: activeProblemInfo!.ideal,
             nadir: activeProblemInfo!.nadir,
-            reachable_ub: dataArchive[2].lowerBounds.flatMap((d, _) => [d[2]]),
-            reachable_lb: dataArchive[2].upperBounds.flatMap((d, _) => [d[2]]),
+            reachable_ub: dataArchive[currentStep - 1].lowerBounds.flatMap((d, _) => [d[currentStep - 1]]),
+            reachable_lb: dataArchive[currentStep - 1].upperBounds.flatMap((d, _) => [d[currentStep - 1]]),
             reference_point: refe,
             speed: speedRef.current,
             go_to_previous: true,
             stop: !itestateRef.current,
             user_bounds: bounds,
-            step_number: 3,
-            reachable_idx: 97,
-            steps_remaining: 97,
-            distance: 3,
+            step_number: dataArchive[currentStep - 1].stepsTaken,
+            reachable_idx: dataArchive[currentStep - 1].reachableIdx, // to dataArc
+            steps_remaining: dataArchive[currentStep - 1].stepsRemaining,
+            distance: dataArchive[currentStep - 1].distance,
             allowed_speeds: [1, 2, 3, 4, 5],
             current_speed: speedRef.current,
-            navigation_point: [2.32, 2.0, 2.0] // TODO: get from data
+            navigation_point: dataArchive[currentStep - 1].navigationPoint, // to dataArc 
           }
           resp = respGoPrev;
         }
@@ -445,6 +455,13 @@ function NautilusNavigatorMethod({
             //console.log("resp", response);
             let dataArchive = dRef.current;
 
+            // hacky trick to prevent setting the same data twice if backtracking
+            if (body.response.steps_number === dataArchive![dataArchive!.length - 1].stepsTaken) {
+              dataArchive!.pop()
+              //SetDataArchive(dataArchive!);
+            }
+
+
             const newArchiveData: ProblemData = {
               upperBounds: body.response.reachable_lb.map((d: number, i: number) => {
                 return dataArchive![dataArchive!.length - 1].upperBounds[i].concat(d);
@@ -460,10 +477,18 @@ function NautilusNavigatorMethod({
               }),
               totalSteps: 100,
               stepsTaken: body.response.step_number,
+              distance: body.response.distance, // check for possible float errors
+              reachableIdx: body.response.reachable_idx,
+              stepsRemaining: body.response.steps_remaining,
+              navigationPoint: body.response.navigation_point,
             };
 
+            // hacky trick to prevent setting the same data twice if backtracking
+            if (newArchiveData.stepsTaken === dataArchive![dataArchive!.length - 1].stepsTaken) {
+              dataArchive!.pop()
+              //SetDataArchive(dataArchive!);
+            }
 
-            // täällä lähtee aina yhä dataArchive ensimmäiseltä async iteraatio ajolta
             SetDataArchive(dataArchive => [...dataArchive, newArchiveData])
 
             const convertedData = convertData(newArchiveData, activeProblemInfo!.minimize)
@@ -472,7 +497,7 @@ function NautilusNavigatorMethod({
             console.log(currentStep)
             //console.log(stepRef.current)
 
-            if (convertedData.stepsTaken === 100) {
+            if (newArchiveData.distance === 100) {
               console.log("Method finished with 100 steps")
               console.log("Dis here", convertedData.upperBounds[convertedData.stepsTaken - 1])
               SetIterateNavi(false);
@@ -646,7 +671,10 @@ function NautilusNavigatorMethod({
               )}
             </Col>
             <Col sm={1}>
-              <Button onClick={goBack}> Go Back </Button>
+              <InputButton
+                stepNumber={currentStep}
+                handleChange={(step: number) => { goBack(step) }}
+              />
             </Col>
             <Col>
               {showFinal && (
