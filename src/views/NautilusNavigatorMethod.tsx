@@ -66,9 +66,9 @@ function NautilusNavigatorMethod({
 }: NautilusNavigatorMethodProps) {
 
   // for sure used and needed
-  const [helpMessage, SetHelpMessage] = useState<string>(
-    "Method not started yet."
-  );
+  // const [helpMessage, SetHelpMessage] = useState<string>(
+  //  "Method not started yet."
+  //);
 
   // holds active problem info, server form
   const [activeProblemInfo, SetActiveProblemInfo] = useState<ProblemInfo>();
@@ -122,10 +122,12 @@ function NautilusNavigatorMethod({
     chartHeight: 800,
     chartWidth: 1200,
     marginLeft: 80,
-    marginRight: 0,
-    marginTop: 30,
+    marginRight: 10,
+    marginTop: 40,
     marginBottom: 0,
   };
+
+  // TODO: bug with going back we somehow still get atleast 1 more point we dont want to upper and lowerbounds but also to ref/bounds
 
 
   // FUNCTIONS to handle stuff
@@ -164,14 +166,15 @@ function NautilusNavigatorMethod({
   }
 
   // ok basic idea works. TODO: better
+  // TODO: Fix possible bug with ref points/ bounds. 
   const updateRefPoint = (point: number[], refPoint: boolean) => {
     if (refPoint === true) {
-      const newRefPoint = convertedData!.referencePoints.map((d, i) => d[currentStep - 1] = point[i])
+      const newRefPoint = convertedData!.referencePoints.map((d, i) => d[currentStep] = point[i])
       SetReferencePoint(newRefPoint)
       dataArchive[currentStep - 1].referencePoints.map((d, i) => d[currentStep] = -point[i])
     }
     else {
-      const newBound = convertedData!.boundaries.map((d, i) => d[currentStep - 1] = point[i])
+      const newBound = convertedData!.boundaries.map((d, i) => d[currentStep] = point[i])
       SetBoundaryPoint(newBound)
       dataArchive[currentStep - 1].boundaries.map((d, i) => d[currentStep] = -point[i])
     }
@@ -359,9 +362,9 @@ function NautilusNavigatorMethod({
           console.log("currPoint", referencePoint)
 
           SetFetchedInfo(true);
-          SetHelpMessage(
-            `Provide a reference point. The current reference point is `
-          );
+          //SetHelpMessage(
+          //  `Provide a reference point. The current reference point is `
+          //);
         }
       } catch (e) {
         console.log("not ok, could not start the method");
@@ -452,7 +455,7 @@ function NautilusNavigatorMethod({
             const body = await res.json();
             const response = body.response;
             // muutokset
-            SetHelpMessage(response.message);
+            //SetHelpMessage(response.message);
             //console.log("resp", response);
             let dataArchive = dRef.current;
 
@@ -511,7 +514,7 @@ function NautilusNavigatorMethod({
             }
 
             // hacky way to make speed matter
-            await delay(5000 / speedRef.current!)
+            await delay(4000 / speedRef.current!)
 
 
             //SetIterateNavi(itestateRef.current);
@@ -540,7 +543,6 @@ function NautilusNavigatorMethod({
       <h3 className="mb-2">{"NAUTILUS Navigator method"}</h3>
       {!satisfied && (
         <>
-          <p className="mb-0">{`Help: ${helpMessage}`}</p>
           <Row>
             <Col md={2} className="mt-5">
               {fetchedInfo && (
@@ -678,7 +680,7 @@ function NautilusNavigatorMethod({
             </Col>
             <Col>
               {showFinal && (
-                <p> Final Objective Values {finalObjectives} </p>
+                <p> Objective values: {finalObjectives[0]}, {finalObjectives[1]}, {finalObjectives[2]} </p>
               )}
             </Col>
           </Row>
