@@ -14,13 +14,12 @@ import {
 } from "visual-components";
 import SolutionTable from "../components/SolutionTable";
 import { Link } from "react-router-dom";
-
 import Slider from '@material-ui/core/Slider';
-
 import InputForm from "../components/InputForm";
 import InputButton from "../components/InputButton";
-
 import { useForm } from "react-hook-form";
+
+
 
 // TODO: should be imported
 type ProblemData = {
@@ -457,18 +456,31 @@ function NautilusNavigatorMethod({
             //console.log("resp", response);
             let dataArchive = dRef.current;
 
-            // hacky trick to prevent setting the same data twice if backtracking
-            if (body.response.steps_number === dataArchive![dataArchive!.length - 1].stepsTaken) {
-              dataArchive!.pop()
-              SetDataArchive(dataArchive!);
-            }
             if (prevRef.current === true) {
               console.log("kissa")
               // TODO: keksi tapa tässä 
+              dataArchive![dataArchive!.length - 1].upperBounds.map((d) => {
+                d.pop()
+              })
+
+              dataArchive![dataArchive!.length - 1].lowerBounds.map((d) => {
+                d.pop()
+              })
+
+              dataArchive![dataArchive!.length - 1].referencePoints.map((d) => {
+                d.pop()
+              })
+
+              dataArchive![dataArchive!.length - 1].boundaries.map((d) => {
+                d.pop()
+              })
+              dataArchive!.pop();
+              SetDataArchive(dataArchive!);
+
             }
             updatePrev()
 
-            // BUG here. Poppin last dataArchive wont matter bc here we concant it together anyway
+            // TODO: figure out the fix for bug. BUG here. Poppin last dataArchive wont matter bc here we concant it together anyway
             const newArchiveData: ProblemData = {
               upperBounds: body.response.reachable_lb.map((d: number, i: number) => {
                 return dataArchive![dataArchive!.length - 1].upperBounds[i].concat(d);
@@ -490,11 +502,7 @@ function NautilusNavigatorMethod({
               navigationPoint: body.response.navigation_point,
             };
 
-            // hacky trick to prevent setting the same data twice if backtracking
-            //if (newArchiveData.stepsTaken === dataArchive![dataArchive!.length - 1].stepsTaken) {
-            //  dataArchive!.pop()
-            //SetDataArchive(dataArchive!);
-            // }
+
 
             SetDataArchive(dataArchive => [...dataArchive, newArchiveData])
 
