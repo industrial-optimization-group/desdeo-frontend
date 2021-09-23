@@ -199,14 +199,14 @@ function NautilusNavigatorMethod({
   };
 
 
-  //Kun osaan tehdä ...***### buttonin ja inputin jolla sitä vaihtaaa
+  // tulee yksi askel lisää jossain 
   const goBack = (step: number) => {
 
     // temp steppi, tulisi tulla käyttäjältä 
     //let step = 3
     SetCurrentStep(step)
 
-    // luodaan uusi dataArch johon kopioidaan vanha steppiin asti
+    // poistetaan stepistä loppuun
     dataArchive.splice(step, dataArchive.length - 1)
     console.log(dataArchive)
     const newConData = convertData(dataArchive[step - 1], activeProblemInfo!.minimize)
@@ -336,7 +336,7 @@ function NautilusNavigatorMethod({
             }),
             boundaries: dataArchive[0].boundaries.map((d, i) => {
               return dataArchive[0].boundaries[i].concat(d);
-            }), // convert to these from the coming nulls.
+            }),
             totalSteps: 100, // this has to be 100, since step 1 is the first step according to the server.
             stepsTaken: 1,
             distance: body.response.distance, // check for possible float errors
@@ -440,14 +440,12 @@ function NautilusNavigatorMethod({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              // oikeanmuotoisena navin tiedot
               response:
                 resp,
 
             }),
           });
           console.log(res)
-          updatePrev()
           //SetPrevious(false); // should be true only once maximum
 
           if (res.status === 200) {
@@ -462,10 +460,15 @@ function NautilusNavigatorMethod({
             // hacky trick to prevent setting the same data twice if backtracking
             if (body.response.steps_number === dataArchive![dataArchive!.length - 1].stepsTaken) {
               dataArchive!.pop()
-              //SetDataArchive(dataArchive!);
+              SetDataArchive(dataArchive!);
             }
+            if (prevRef.current === true) {
+              console.log("kissa")
+              // TODO: keksi tapa tässä 
+            }
+            updatePrev()
 
-
+            // BUG here. Poppin last dataArchive wont matter bc here we concant it together anyway
             const newArchiveData: ProblemData = {
               upperBounds: body.response.reachable_lb.map((d: number, i: number) => {
                 return dataArchive![dataArchive!.length - 1].upperBounds[i].concat(d);
@@ -488,10 +491,10 @@ function NautilusNavigatorMethod({
             };
 
             // hacky trick to prevent setting the same data twice if backtracking
-            if (newArchiveData.stepsTaken === dataArchive![dataArchive!.length - 1].stepsTaken) {
-              dataArchive!.pop()
-              //SetDataArchive(dataArchive!);
-            }
+            //if (newArchiveData.stepsTaken === dataArchive![dataArchive!.length - 1].stepsTaken) {
+            //  dataArchive!.pop()
+            //SetDataArchive(dataArchive!);
+            // }
 
             SetDataArchive(dataArchive => [...dataArchive, newArchiveData])
 
@@ -505,6 +508,10 @@ function NautilusNavigatorMethod({
               console.log("Method finished with 100 steps")
               SetIterateNavi(false);
               SetLoading(false);
+
+              SetConvertData(convertedData);
+              SetCurrentStep(convertedData.stepsTaken + 1)
+
               SetFinalObjectives(response.navigation_point.map((v: number) => [-v]))
               // TODO: here get solutions, like in referenceMethod
               //SetFinalObjectives()
@@ -514,7 +521,7 @@ function NautilusNavigatorMethod({
             }
 
             // hacky way to make speed matter
-            await delay(4000 / speedRef.current!)
+            await delay(2500 / speedRef.current!)
 
 
             //SetIterateNavi(itestateRef.current);
@@ -595,6 +602,7 @@ function NautilusNavigatorMethod({
                       let boundy = bound.map((d) => d[len - 1])
                       updateRefPoint(boundy, false)
                     }}
+                    stepNumber={currentStep}
                     dimensionsMaybe={dims}
                   />
                 </div>
