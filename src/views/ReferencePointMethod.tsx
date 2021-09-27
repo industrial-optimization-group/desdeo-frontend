@@ -1,5 +1,4 @@
-import React from "react";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import {
   ProblemInfo,
   ObjectiveData,
@@ -10,9 +9,8 @@ import ReferencePointInputForm from "../components/ReferencePointInputForm";
 import { Table, Container, Row, Col, Button, Form } from "react-bootstrap";
 import ReactLoading from "react-loading";
 import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
-import { HorizontalBars, ParallelAxes } from "visual-components";
+import { HorizontalBars, ParallelAxes } from "desdeo-components";
 import SolutionTable from "../components/SolutionTable";
-import { Link } from "react-router-dom";
 
 interface ReferencePointMethodProps {
   isLoggedIn: boolean;
@@ -105,7 +103,6 @@ function ReferencePointMethod({
         if (res.status == 200) {
           // ok!
           const body = await res.json();
-          console.log("here", body.ideal, body.nadir)
           SetActiveProblemInfo({
             problemId: body.problem_id,
             problemName: body.problem_name,

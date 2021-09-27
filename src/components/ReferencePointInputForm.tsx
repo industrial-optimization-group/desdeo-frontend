@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 
 import { useForm } from "react-hook-form";
 import {
   Form,
   Button,
-  Container,
   Row,
   Col,
   ListGroup,
-  ListGroupItem,
 } from "react-bootstrap";
 import { MinOrMax } from "../types/ProblemTypes";
 import { ErrorMessage } from "@hookform/error-message";
@@ -49,11 +47,8 @@ function ReferencePointInputForm({
   }, [referencePoint]);
 
   const onSubmit = (data: FormData) => {
-    console.log("dataa", data)
     setReferencePoint(directions.map((d, i) => d * data.values[i]));
   };
-
-  console.log("called form", JSON.stringify(referencePoint));
 
   return (
     <Form action="" onSubmit={handleSubmit(onSubmit)}>

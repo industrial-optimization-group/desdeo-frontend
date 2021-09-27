@@ -8,7 +8,7 @@ import { Container, Row, Col, Button } from "react-bootstrap";
 import ReactLoading from "react-loading";
 import {
   NavigationBars,
-} from "visual-components";
+} from "desdeo-components";
 import Slider from '@material-ui/core/Slider';
 import InputForm from "../components/InputForm";
 import InputButton from "../components/InputButton";
@@ -338,11 +338,11 @@ function NautilusNavigatorMethod({
 
   useEffect(() => {
     if (itestateRef.current === false) {
-      console.log("lopeta iter");
+      // console.log("lopeta iter");
       return;
     }
     if (itestateRef.current === true) {
-      console.log("iteroidaan")
+      // console.log("iteroidaan")
     }
     const iterate = async () => {
       // Attempt to iterate

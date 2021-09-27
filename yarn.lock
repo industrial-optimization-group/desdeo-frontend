@@ -2210,10 +2210,15 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-16.6.1.tgz#aee62c7b966f55fc66c7b6dfa1d58db2a616da61"
   integrity sha512-Sr7BhXEAer9xyGuCN3Ek9eg9xPviCF2gfu9kTfuU2HkTVAMYSDeX40fvpmo72n5nansg3nsBjuQBrsS28r+NUw==
 
-"@types/node@^12.20.5", "@types/node@^12.20.7":
+"@types/node@^12.20.5":
   version "12.20.19"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.20.19.tgz#538e61fc220f77ae4a4663c3d8c3cb391365c209"
   integrity sha512-niAuZrwrjKck4+XhoCw6AAVQBENHftpXw9F4ryk66fTgYaKQ53R4FI7c9vUGGw5vQis1HKBHDR1gcYI/Bq1xvw==
+
+"@types/node@^12.20.7":
+  version "12.20.26"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.20.26.tgz#a6db0d0577e40844f0b28c2a9289c09e5b44b541"
+  integrity sha512-gIt+h4u2uTho2bsH1K250fUv5fHU71ET1yWT7bM4523zV/XrFb9jlWBOV4DO8FpscY+Sz/WEr1EEjIP2H4yumQ==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.1"
@@ -5207,6 +5212,37 @@ des.js@^1.0.0:
   dependencies:
     inherits "^2.0.1"
     minimalistic-assert "^1.0.0"
+
+desdeo-components@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/desdeo-components/-/desdeo-components-0.3.2.tgz#1c1f6bb618b7c6da15d1b214d085d266da4be11a"
+  integrity sha512-s8xS9hE9RgzkqieyTKtylACVH6YgO2SzpFaGuLueFFiva6kSkLV4sM/CUFYOdluaWFQZvhS3Yv7zeh2c71i6lQ==
+  dependencies:
+    "@types/d3-array" "^2.9.0"
+    "@types/d3-axis" "^2.0.0"
+    "@types/d3-drag" "^3.0.1"
+    "@types/d3-ease" "^2.0.0"
+    "@types/d3-force" "^2.1.1"
+    "@types/d3-format" "^2.0.0"
+    "@types/d3-scale" "^3.2.2"
+    "@types/d3-selection" "^2.0.0"
+    "@types/d3-shape" "^2.0.0"
+    "@types/d3-transition" "^2.0.0"
+    "@types/jest" "^26.0.22"
+    "@types/node" "^12.20.7"
+    "@types/randomstring" "^1.1.6"
+    d3-array "^2.12.1"
+    d3-axis "^2.1.0"
+    d3-drag "^3.0.0"
+    d3-ease "^2.0.0"
+    d3-force "^3.0.0"
+    d3-format "^3.0.1"
+    d3-scale "^3.2.4"
+    d3-selection "^2.0.0"
+    d3-shape "^2.1.0"
+    d3-transition "^2.0.0"
+    randomstring "^1.1.5"
+    web-vitals "^1.1.1"
 
 destroy@~1.0.4:
   version "1.0.4"
@@ -14237,35 +14273,6 @@ vendors@^1.0.0:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/vendors/-/vendors-1.0.4.tgz#e2b800a53e7a29b93506c3cf41100d16c4c4ad8e"
   integrity sha512-/juG65kTL4Cy2su4P8HjtkTxk6VmJDiOPBufWniqQ6wknac6jNiXS9vU+hO3wgusiyqWlzTbVHi0dyJqRONg3w==
-
-"visual-components@file:../visual-components":
-  version "0.1.0"
-  dependencies:
-    "@types/d3-array" "^2.9.0"
-    "@types/d3-axis" "^2.0.0"
-    "@types/d3-drag" "^3.0.1"
-    "@types/d3-ease" "^2.0.0"
-    "@types/d3-force" "^2.1.1"
-    "@types/d3-format" "^2.0.0"
-    "@types/d3-scale" "^3.2.2"
-    "@types/d3-selection" "^2.0.0"
-    "@types/d3-shape" "^2.0.0"
-    "@types/d3-transition" "^2.0.0"
-    "@types/jest" "^26.0.22"
-    "@types/node" "^12.20.7"
-    "@types/randomstring" "^1.1.6"
-    d3-array "^2.12.1"
-    d3-axis "^2.1.0"
-    d3-drag "^3.0.0"
-    d3-ease "^2.0.0"
-    d3-force "^3.0.0"
-    d3-format "^3.0.1"
-    d3-scale "^3.2.4"
-    d3-selection "^2.0.0"
-    d3-shape "^2.1.0"
-    d3-transition "^2.0.0"
-    randomstring "^1.1.5"
-    web-vitals "^1.1.1"
 
 vm-browserify@^1.0.1:
   version "1.1.2"

@@ -1,17 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 
 import { useForm } from "react-hook-form";
 import {
   Form,
   Button,
-  Container,
-  Row,
-  Col,
-  ListGroup,
-  ListGroupItem,
 } from "react-bootstrap";
-import { MinOrMax } from "../types/ProblemTypes";
-import { ErrorMessage } from "@hookform/error-message";
 
 interface FormData {
   values: number;
@@ -41,7 +34,6 @@ function InputButton({
   }, [stepNumber]);
 
   const onSubmit = (data: FormData) => {
-    console.log("dataa", data)
     handleChange(data.values);
     //handleChange(stepNumber);
   };
