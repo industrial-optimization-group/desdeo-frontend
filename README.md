@@ -1,6 +1,6 @@
 # desdeo-frontend
 
-## About
+# About
 
 `desdeo-frontend` is a graphical user interface (GUI) for various interactive multiobjective
 optimization methods found in [DESDEO](https://desdeo.it.jyu.fi/).
@@ -12,9 +12,9 @@ interactive visualizations implemented in [desdeo-components](https://github.com
 may be used, and how the [desdeo-webapi](https://github.com/gialmisi/desdeo-webapi)
 API can be utilized in practice.
 
-## Installation and usage
+# Installation and usage
 
-### Installation
+## Installation
 
 Before installing `desdeo-frontend`, make sure a server with
 [desdeo-webapi](https://github.com/gialmisi/desdeo-webapi) is first
@@ -45,7 +45,36 @@ $> yarn run start
 
 This should launch the GUI application in a new tab in your web browser.
 
-### Usage
+## Usage
 
 To use the GUI, a username and password are required. For locally running the GUI, a dummy user(s) with a password(s) can
 be set readily by utilzing the utilities provided in [desdeo-webapi](git@github.com:gialmisi/desdeo-frontend.git).
+After logging in, the navigation bar will update with menus to access various features of the GUI.
+
+![login](./resources/login.gif)
+
+
+# Features
+
+## General
+
+## Supported problem types
+
+Currently, only a dummy problem can be defined through the interface. However, the intractive methods support
+solving problems with both analytical formualtions and/or discrete formulations. Problems must currently be added
+manually to the databse in `desdeo-webapi`. See its documentation for additiona details. 
+
+## Supported interactive methods
+Currently interfaces for the following multiobjective optimization methods have been implemented:
+
+### Reference point method
+
+![reference-point-method](./resources/rpm.gif)
+
+### Synchronous NIMBUS
+
+![synchronous-nimbus](./resources/nimbus.gif)
+
+### NAUTILUS Navigator
+
+![nautilus-navigator](./resources/nautnav.gif)
