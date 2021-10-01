@@ -56,8 +56,6 @@ After logging in, the navigation bar will update with menus to access various fe
 
 # Features
 
-## General
-
 ## Supported problem types
 
 Currently, only a dummy problem can be defined through the interface. However, the intractive methods support
@@ -78,3 +76,9 @@ Currently interfaces for the following multiobjective optimization methods have 
 ### NAUTILUS Navigator
 
 ![nautilus-navigator](./resources/nautnav.gif)
+
+# Contributors
+
+Below are listed the major contributors to `desdeo-frontend`. If you feel you should be part of this list, make a PR.
+- [Giovanni Misitano](https://github.com/gialmisi) - **maintainer**
+- [Juuso Pajasmaa](https://github.com/jpajasmaa)
