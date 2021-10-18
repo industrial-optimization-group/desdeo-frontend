@@ -58,7 +58,7 @@ function InputButton({
                 !Number.isNaN(parseFloat(v)) ||
                 "Input must be float",
             },
-            min: 1,
+            min: 2,
             max: 100
           },
           )}
