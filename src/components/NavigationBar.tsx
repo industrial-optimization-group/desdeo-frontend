@@ -1,5 +1,3 @@
-import React from "react";
-
 import { Container, Navbar, Nav, NavDropdown } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
@@ -29,52 +27,56 @@ function NavigationBar({
             <Nav className="me-auto">
               {!isLoggedIn && (
                 <>
-                  <Nav.Link as={Link} to="/login">
-                    Login
-                  </Nav.Link>
-                  <Nav.Link as={Link} to="/register">
-                    Register
-                  </Nav.Link>
+                  <Nav.Item>
+                    <Link to="/login" className="nav-link"> Login </Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Link to="/register" className="nav-link"> Register </Link>
+                  </Nav.Item>
                 </>
               )}
               {isLoggedIn && (
                 <>
                   <NavDropdown title="Problem" id="basic-nav-dropdown">
                     <NavDropdown.Item>
-                      <Nav.Link as={Link} to="/problem/create">
+                      <Link to="/problem/create" className="nav-link">
                         Define new
-                      </Nav.Link>
+                      </Link>
                     </NavDropdown.Item>
                     <NavDropdown.Item>
-                      <Nav.Link as={Link} to="/problem/explore">
+                      <Link to="/problem/explore" className="nav-link">
                         Explore existing
-                      </Nav.Link>
+                      </Link>
                     </NavDropdown.Item>
                   </NavDropdown>
                   <NavDropdown title="Solve" id="basic-nav-dropdown">
                     <NavDropdown.Item>
-                      <Nav.Link as={Link} to="/method/create">
+                      <Link to="/method/create" className="nav-link">
                         Define method
-                      </Nav.Link>
+                      </Link>
                     </NavDropdown.Item>
                     <NavDropdown.Item>
-                      <Nav.Link as={Link} to="/method/optimize">
+                      <Link to="/method/optimize" className="nav-link">
                         Optimize
-                      </Nav.Link>
+                      </Link>
                     </NavDropdown.Item>
                   </NavDropdown>
-                  <Nav.Link as={Link} to="/questionnaire">
-                    Questionnaire
-                  </Nav.Link>
+                  <Nav.Item>
+                    <Link to="/questionnaire" className="nav-link">
+                      Questionaire
+                    </Link>
+                  </Nav.Item>
                 </>
               )}
             </Nav>
             {isLoggedIn && (
               <>
                 {`Logged in as user: ${loggedAs}`}{" "}
-                <Nav.Link as={Link} to="/logout">
-                  Logout
-                </Nav.Link>
+                <Nav.Item>
+                  <Link to="/logout" className="nav-link">
+                    Logout
+                  </Link>
+                </Nav.Item>
               </>
             )}
             {!isLoggedIn && "You are not currently logged in"}

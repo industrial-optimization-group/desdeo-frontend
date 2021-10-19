@@ -9,6 +9,7 @@ import { Container, Button, Form } from "react-bootstrap";
 import { useDropzone } from 'react-dropzone';
 import { useCallback } from "react";
 import parse from "csv-parse";
+import Dropzone from "react-dropzone";
 
 interface ProblemDefinitionProps {
   isLoggedIn: boolean;
@@ -72,6 +73,7 @@ function ProblemDefinition({
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]; // only single files are handled
+    const name = file.name;
     const reader = new FileReader()
 
     reader.onabort = () => console.log('file reading was aborted')
@@ -115,7 +117,7 @@ function ProblemDefinition({
             // Set the data
             const problemData: DiscreteProblemData = {
               problem_type: "Discrete",
-              name: "placeholder name",
+              name: name,
               objectives: objData,
               objective_names: objNames,
               variables: varData,
@@ -177,11 +179,13 @@ function ProblemDefinition({
   const onSubmit = async (data: ProblemData | DiscreteProblemData) => {
     console.log(typeof (data));
 
-    /*
     function isDiscreteProblemData(data: ProblemData | DiscreteProblemData): data is ProblemData {
       return (data as DiscreteProblemData).objectives !== undefined;
     }
-    */
+
+    if (!isDiscreteProblemData(data)) {
+      data = dummyProblem;
+    }
 
     try {
       const res = await fetch(`${apiUrl}/problem/create`, {
@@ -238,10 +242,10 @@ function ProblemDefinition({
           <Form action="" onSubmit={handleSubmit(onSubmit)}>
             <Button type="submit">Define dummy problem</Button>
           </Form>
-          <section className="container">
-            <div {...getRootProps({ className: 'dropzone' })}>
+          <section className="container border border-dark mt-2 rounded-pill">
+            <div {...getRootProps()} className="align-middle">
               <input {...getInputProps()} />
-              <p>Drag 'n' drop files here, or click to select files</p>
+              <p>Drag 'n' drop files here, or click to select files to define a discrete problem</p>
             </div>
           </section>
           {discreteProblemLoaded && (
