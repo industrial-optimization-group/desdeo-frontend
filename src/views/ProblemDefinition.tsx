@@ -5,8 +5,9 @@ import { useState } from "react";
 
 import { Tokens } from "../types/AppTypes";
 
-import { Container, Button, Form } from "react-bootstrap";
-import { TupleType } from "typescript";
+import { Alert, Container, Button, Form } from "react-bootstrap";
+import { useDropzone } from 'react-dropzone';
+import { useCallback } from "react";
 
 interface ProblemDefinitionProps {
   isLoggedIn: boolean;
@@ -46,6 +47,28 @@ function ProblemDefinition({
     SetProblemNameAndType,
   ] = useState<ProblemNameAndType>({ name: "", type: "" });
   const { register, handleSubmit, errors } = useForm<ProblemData>();
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    acceptedFiles.forEach((file) => {
+      const reader = new FileReader()
+
+      reader.onabort = () => console.log('file reading was aborted')
+      reader.onerror = () => console.log('file reading has failed')
+      reader.onload = () => {
+      // Do whatever you want with the file contents
+        const textStr = reader.result
+        console.log(textStr)
+      }
+      reader.readAsText(file)
+    })
+  }, [])
+
+  const {acceptedFiles, getRootProps, getInputProps } = useDropzone({
+    accept: ".csv",
+    maxFiles: 1,
+    onDropRejected: (fileRejection, event) => alert("File not accepted!"),
+    onDrop: onDrop
+  });
 
   if (!isLoggedIn) {
     return (
@@ -109,6 +132,12 @@ function ProblemDefinition({
           <Form action="" onSubmit={handleSubmit(onSubmit)}>
             <Button type="submit">Define dummy problem</Button>
           </Form>
+          <section className="container">
+            <div {...getRootProps({className: 'dropzpne'})}>
+              <input {...getInputProps()}/>
+              <p>Drag 'n' drop files here, or click to select files</p>
+            </div>
+          </section>
         </Container>
       )}
       {problemDefined && (
