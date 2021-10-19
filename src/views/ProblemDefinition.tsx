@@ -5,9 +5,10 @@ import { useState } from "react";
 
 import { Tokens } from "../types/AppTypes";
 
-import { Alert, Container, Button, Form } from "react-bootstrap";
+import { Container, Button, Form } from "react-bootstrap";
 import { useDropzone } from 'react-dropzone';
 import { useCallback } from "react";
+import parse from "csv-parse";
 
 interface ProblemDefinitionProps {
   isLoggedIn: boolean;
@@ -47,23 +48,57 @@ function ProblemDefinition({
     SetProblemNameAndType,
   ] = useState<ProblemNameAndType>({ name: "", type: "" });
   const { register, handleSubmit, errors } = useForm<ProblemData>();
+  const [message, SetMessage] = useState<string>("");
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    acceptedFiles.forEach((file) => {
-      const reader = new FileReader()
+    const file = acceptedFiles[0]; // only single files are handled
+    const reader = new FileReader()
 
-      reader.onabort = () => console.log('file reading was aborted')
-      reader.onerror = () => console.log('file reading has failed')
-      reader.onload = () => {
-      // Do whatever you want with the file contents
-        const textStr = reader.result
-        console.log(textStr)
-      }
-      reader.readAsText(file)
-    })
+    reader.onabort = () => console.log('file reading was aborted')
+    reader.onerror = () => console.log('file reading has failed')
+    reader.onload = () => {
+      const textStr = reader.result as string
+      parse(textStr, { comment: '#', trim: true, skipEmptyLines: true }, (err, output) => {
+        if (err != undefined) {
+          SetMessage(`Error parsing csv file: ${err.message}`);
+        } else {
+          // Output should contain at least 3 rows
+          if (output.length < 3) {
+            SetMessage("The csv data should contain at least three rows. Less than three rows provided.");
+            return;
+          }
+          // First row should be names
+          const names = output[0];
+          // Second row directions: 'min' or 'max' for objectives, 'var' for variables
+          const objOrVar = output[1];
+          const nObjectives = objOrVar.filter((x: string) => x.toLowerCase() === "min" || x.toLowerCase() === "max").length
+          const nVars = objOrVar.filter((x: string) => x.toLowerCase() === "var").length
+          if (nObjectives + nVars !== objOrVar.length) {
+            SetMessage("The second row in the csv file contains unsupported symbols. Supported symbols are 'min', 'max', and 'var'.")
+            return;
+          }
+          const objNames = names.slice(0, nObjectives);
+          const varNames = names.slice(nObjectives);
+
+          console.log(`Objective names are ${objNames}`);
+          console.log(`Variable names are ${varNames}`);
+
+          // Rest should be the data
+          const data = output.slice(2);
+          const objData = data.map((x: string[]) => x.slice(0, nObjectives).map((y: string) => parseFloat(y)));
+          const varData = data.map((x: string[]) => x.slice(nObjectives).map((y: string) => parseFloat(y)));
+
+          console.log(`Objective data:`, objData)
+          console.log(`Variable data:`, varData)
+
+          console.log("all ok!")
+        }
+      })
+    }
+    reader.readAsText(file)
   }, [])
 
-  const {acceptedFiles, getRootProps, getInputProps } = useDropzone({
+  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     accept: ".csv",
     maxFiles: 1,
     onDropRejected: (fileRejection, event) => alert("File not accepted!"),
@@ -127,14 +162,15 @@ function ProblemDefinition({
 
   return (
     <>
+      <p>{`${message}`}</p>
       {!problemDefined && (
         <Container>
           <Form action="" onSubmit={handleSubmit(onSubmit)}>
             <Button type="submit">Define dummy problem</Button>
           </Form>
           <section className="container">
-            <div {...getRootProps({className: 'dropzpne'})}>
-              <input {...getInputProps()}/>
+            <div {...getRootProps({ className: 'dropzpne' })}>
+              <input {...getInputProps()} />
               <p>Drag 'n' drop files here, or click to select files</p>
             </div>
           </section>
