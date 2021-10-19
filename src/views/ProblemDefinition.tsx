@@ -31,6 +31,16 @@ interface ProblemData {
   minimize: number[];
 }
 
+interface DiscreteProblemData {
+  problem_type: string;
+  name: string;
+  objectives: number[][];
+  objective_names: string[];
+  variables: number[][];
+  variable_names: string[];
+  minimize: number[];
+}
+
 interface ProblemNameAndType {
   name: string;
   type: string;
@@ -49,6 +59,16 @@ function ProblemDefinition({
   ] = useState<ProblemNameAndType>({ name: "", type: "" });
   const { register, handleSubmit, errors } = useForm<ProblemData>();
   const [message, SetMessage] = useState<string>("");
+  const [discreteData, SetDiscreteData] = useState<DiscreteProblemData>({
+    problem_type: "",
+    name: "",
+    objectives: [[]],
+    objective_names: [],
+    variables: [[]],
+    variable_names: [],
+    minimize: []
+  });
+  const [discreteProblemLoaded, SetDiscretePoblemLoaded] = useState<boolean>(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]; // only single files are handled
@@ -61,42 +81,61 @@ function ProblemDefinition({
       parse(textStr, { comment: '#', trim: true, skipEmptyLines: true }, (err, output) => {
         if (err != undefined) {
           SetMessage(`Error parsing csv file: ${err.message}`);
+          return;
         } else {
           // Output should contain at least 3 rows
           if (output.length < 3) {
             SetMessage("The csv data should contain at least three rows. Less than three rows provided.");
             return;
           }
-          // First row should be names
-          const names = output[0];
-          // Second row directions: 'min' or 'max' for objectives, 'var' for variables
-          const objOrVar = output[1];
-          const nObjectives = objOrVar.filter((x: string) => x.toLowerCase() === "min" || x.toLowerCase() === "max").length
-          const nVars = objOrVar.filter((x: string) => x.toLowerCase() === "var").length
-          if (nObjectives + nVars !== objOrVar.length) {
-            SetMessage("The second row in the csv file contains unsupported symbols. Supported symbols are 'min', 'max', and 'var'.")
+          try {
+            // First row should be names
+            const names = output[0];
+            // Second row directions: 'min' or 'max' for objectives, 'var' for variables
+            const objOrVar = output[1];
+            const nObjectives = objOrVar.filter((x: string) => x.toLowerCase() === "min" || x.toLowerCase() === "max").length
+            const nVars = objOrVar.filter((x: string) => x.toLowerCase() === "var").length
+            // Check for proper number of symbols on second row
+            if (nObjectives + nVars !== objOrVar.length) {
+              SetMessage("The second row in the csv file contains unsupported symbols. Supported symbols are 'min', 'max', and 'var'.")
+              return;
+            }
+            // Get directions: 1 == minimize, -1 == maximize
+            const directions = objOrVar.slice(0, nObjectives).map((x: string) => x === "min" ? 1 : -1);
+            const objNames = names.slice(0, nObjectives);
+            const varNames = names.slice(nObjectives);
+
+            // Rest should be the data
+            const data = output.slice(2);
+            // When parsing the objectives, also check the direction and convert maximization objectives to minimization by multiplying
+            // them with -1.
+            const objData = data.map((x: string[]) => x.slice(0, nObjectives).map((y: string, i) => directions[i] === 1 ? parseFloat(y) : -1.0 * parseFloat(y)));
+            const varData = data.map((x: string[]) => x.slice(nObjectives).map((y: string) => parseFloat(y)));
+
+            // Set the data
+            const problemData: DiscreteProblemData = {
+              problem_type: "Discrete",
+              name: "placeholder name",
+              objectives: objData,
+              objective_names: objNames,
+              variables: varData,
+              variable_names: varNames,
+              minimize: directions
+            }
+
+            SetDiscreteData(problemData);
+            SetDiscretePoblemLoaded(true);
+            return;
+          } catch (err) {
+            SetMessage("Something went wrong when parsing the csv file.")
             return;
           }
-          const objNames = names.slice(0, nObjectives);
-          const varNames = names.slice(nObjectives);
 
-          console.log(`Objective names are ${objNames}`);
-          console.log(`Variable names are ${varNames}`);
-
-          // Rest should be the data
-          const data = output.slice(2);
-          const objData = data.map((x: string[]) => x.slice(0, nObjectives).map((y: string) => parseFloat(y)));
-          const varData = data.map((x: string[]) => x.slice(nObjectives).map((y: string) => parseFloat(y)));
-
-          console.log(`Objective data:`, objData)
-          console.log(`Variable data:`, varData)
-
-          console.log("all ok!")
         }
       })
     }
     reader.readAsText(file)
-  }, [])
+  }, [SetMessage, SetDiscreteData, SetDiscretePoblemLoaded])
 
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     accept: ".csv",
@@ -135,8 +174,14 @@ function ProblemDefinition({
     minimize: [1, 1, 1, 1],
   };
 
-  const onSubmit = async (data: ProblemData) => {
-    console.log(JSON.stringify(dummyProblem));
+  const onSubmit = async (data: ProblemData | DiscreteProblemData) => {
+    console.log(typeof (data));
+
+    /*
+    function isDiscreteProblemData(data: ProblemData | DiscreteProblemData): data is ProblemData {
+      return (data as DiscreteProblemData).objectives !== undefined;
+    }
+    */
 
     try {
       const res = await fetch(`${apiUrl}/problem/create`, {
@@ -145,7 +190,7 @@ function ProblemDefinition({
           "Content-type": "application/json",
           Authorization: `Bearer ${tokens.access}`,
         },
-        body: JSON.stringify(dummyProblem),
+        body: JSON.stringify(data),
       });
       if (res.status == 201) {
         //status ok
@@ -160,6 +205,31 @@ function ProblemDefinition({
     }
   };
 
+  /*
+    const submitDiscrete = async (data: DiscreteProblemData) => {
+      console.log(JSON.stringify(data));
+      try {
+        const res = await fetch(`${apiUrl}/problem/create`, {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+            Authorization: `Bearer ${tokens.access}`,
+          },
+          body: JSON.stringify()
+        })
+  
+        // lastly
+        SetDiscretePoblemLoaded(false);
+        SetProblemDefined(true);
+      } catch (e) {
+        console.log("not ok");
+        console.log(e);
+        // do nothing!
+      }
+  
+    }
+    */
+
   return (
     <>
       <p>{`${message}`}</p>
@@ -169,17 +239,23 @@ function ProblemDefinition({
             <Button type="submit">Define dummy problem</Button>
           </Form>
           <section className="container">
-            <div {...getRootProps({ className: 'dropzpne' })}>
+            <div {...getRootProps({ className: 'dropzone' })}>
               <input {...getInputProps()} />
               <p>Drag 'n' drop files here, or click to select files</p>
             </div>
           </section>
+          {discreteProblemLoaded && (
+            <>
+              <p>Discrete problem loaded!</p>
+              <Button onClick={() => { onSubmit(discreteData) }}>Send</Button>
+            </>
+          )}
         </Container>
       )}
       {problemDefined && (
         <Container>
           <p>{`Problem '${problemNameAndType.name}' of type '${problemNameAndType.type}' successfully defined!`}</p>
-          <Button onClick={() => SetProblemDefined(false)}>
+          <Button onClick={() => { SetProblemDefined(false); SetDiscretePoblemLoaded(false) }}>
             Define a new problem
           </Button>
         </Container>
