@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { ProblemInfo, ObjectiveData } from "../types/ProblemTypes";
+import { ProblemInfo, ObjectiveData, NavigationData } from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import ReactLoading from "react-loading";
@@ -8,20 +8,12 @@ import Slider from "@material-ui/core/Slider";
 import InputForm from "../components/InputForm";
 import InputButton from "../components/InputButton";
 
-// TODO: should be imported, and need to update the ProblemData type in NavigationBars /types
-type ProblemData = {
-  upperBounds: number[][];
-  lowerBounds: number[][];
-  referencePoints: number[][];
-  boundaries: number[][];
-  totalSteps: number;
-  stepsTaken: number;
-  distance?: number;
-  reachableIdx?: number[];
-  stepsRemaining?: number;
-  navigationPoint?: number[];
-};
+// test1
+// lugapd
 
+// TODO: should be imported, and need to update the NavigationData type in NavigationBars /types
+//
+// this for navigationProblems
 type RectDimensions = {
   chartWidth: number;
   chartHeight: number;
@@ -54,9 +46,9 @@ function NautilusNavigatorMethod({
   // boolean to contain method state
   const [methodStarted, SetMethodStarted] = useState<boolean>(false);
   // Data in user form to be sent to NavigationBars.
-  const [convertedData, SetConvertData] = useState<ProblemData>();
+  const [convertedData, SetConvertData] = useState<NavigationData>();
   // All steps taken, all data in server form. To be used when taking steps back etc.
-  const [dataArchive, SetDataArchive] = useState<Array<ProblemData>>([]);
+  const [dataArchive, SetDataArchive] = useState<Array<NavigationData>>([]);
   // right now acts as the refe point to sent to the InputForm. Could/should be used better
   const [referencePoint, SetReferencePoint] = useState<number[]>([]);
   const [boundaryPoint, SetBoundaryPoint] = useState<number[]>([]);
@@ -67,7 +59,7 @@ function NautilusNavigatorMethod({
   itestateRef.current = iterateNavi;
 
   // track dataArch change during iterate
-  const dRef = useRef<Array<ProblemData>>();
+  const dRef = useRef<Array<NavigationData>>();
   dRef.current = dataArchive;
 
   // handles speed.
@@ -123,7 +115,7 @@ function NautilusNavigatorMethod({
   };
 
   // NavigationBars needs stuff converted. Logic, ideal is top, maximizing and upperBound is on top.
-  const convertData = (data: ProblemData, minimize: number[]) => {
+  const convertData = (data: NavigationData, minimize: number[]) => {
     return {
       upperBounds: data.upperBounds.map((d, i) =>
         d.map((v) => (minimize[i] === 1 ? v : -v))
@@ -162,7 +154,7 @@ function NautilusNavigatorMethod({
       );
     }
     // need to create new object
-    const newData: ProblemData = {
+    const newData: NavigationData = {
       upperBounds: convertedData!.upperBounds,
       lowerBounds: convertedData!.lowerBounds,
       referencePoints: convertedData!.referencePoints,
@@ -189,11 +181,12 @@ function NautilusNavigatorMethod({
       console.log("cant go back to the future");
       return;
     }
+
+    /*
     if (step === 1) {
       console.log("step 2 first step allowed")
       return;
     } 
-    /*
     // this fixes it but somewhere here we add one extra
     // TODO: fix this buggy mess
     if (step === 1) {
@@ -210,6 +203,7 @@ function NautilusNavigatorMethod({
     else {
      */
       dataArchive.splice(step, dataArchive.length - 1);
+
       const newConData = convertData(
         dataArchive[step - 1],
         activeProblemInfo!.minimize
@@ -224,6 +218,7 @@ function NautilusNavigatorMethod({
  //     activeProblemInfo!.minimize
   //  );
    // SetConvertData(newConData);
+    // dumb does not work here
     SetReferencePoint(
       convertedData!.referencePoints.flatMap((d, _) => [
         d[convertedData!.referencePoints[0].length - 1],
@@ -286,7 +281,7 @@ function NautilusNavigatorMethod({
             nadir: body.nadir,
             minimize: body.minimize,
           });
-          const ogdata: ProblemData = {
+          const ogdata: NavigationData = {
             upperBounds: body.minimize.map((_: number, i: number) => {
               return [body.ideal[i]];
             }),
@@ -505,7 +500,7 @@ function NautilusNavigatorMethod({
             updatePrev();
 
             // TODO: concatting here brings the above issue, so if done otherway could be avoided.
-            const newArchiveData: ProblemData = {
+            const newArchiveData: NavigationData = {
               upperBounds: body.response.reachable_lb.map(
                 (d: number, i: number) => {
                   return dataArchive![dataArchive!.length - 1].upperBounds[
