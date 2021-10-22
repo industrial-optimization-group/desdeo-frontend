@@ -1,5 +1,9 @@
 import { useEffect, useState, useRef } from "react";
-import { ProblemInfo, ObjectiveData, NavigationData } from "../types/ProblemTypes";
+import {
+  ProblemInfo,
+  ObjectiveData,
+  NavigationData,
+} from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import ReactLoading from "react-loading";
@@ -8,10 +12,8 @@ import Slider from "@material-ui/core/Slider";
 import InputForm from "../components/InputForm";
 import InputButton from "../components/InputButton";
 
-// test1
-// lugapd
-
 // TODO: should be imported, and need to update the NavigationData type in NavigationBars /types
+// Test with 7 maximizable objectives.. only possible to test the drawing I guess..
 //
 // this for navigationProblems
 type RectDimensions = {
@@ -30,7 +32,6 @@ interface NautilusNavigatorMethodProps {
   apiUrl: string;
   methodCreated: boolean;
   activeProblemId: number | null;
-  // muuta?
 }
 
 function NautilusNavigatorMethod({
@@ -63,6 +64,7 @@ function NautilusNavigatorMethod({
   dRef.current = dataArchive;
 
   // handles speed.
+  const speedo = 2500 // in ms. speedo / speed, is the current speed of iteration 
   const [speed, SetSpeed] = useState<number>(1);
   const speedRef = useRef<number>();
   speedRef.current = speed;
@@ -86,9 +88,9 @@ function NautilusNavigatorMethod({
   const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
   const [finalVariables, SetFinalVariables] = useState<number[]>([]);
 
-  // default dims
+  // default dims. Change height to fit objectives better, currently no adaptive chartdims.
   const dims: RectDimensions = {
-    chartHeight: 800,
+    chartHeight: 1200,
     chartWidth: 1200,
     marginLeft: 80,
     marginRight: 10,
@@ -181,44 +183,15 @@ function NautilusNavigatorMethod({
       console.log("cant go back to the future");
       return;
     }
+    dataArchive.splice(step, dataArchive.length - 1);
 
-    /*
-    if (step === 1) {
-      console.log("step 2 first step allowed")
-      return;
-    } 
-    // this fixes it but somewhere here we add one extra
-    // TODO: fix this buggy mess
-    if (step === 1) {
-      // this splice needs to have 1 or we get too mcuh...
-      // TODO: solve mikä on edes step 1. Alunperin se on nollatilanne, mutta takaisin mennessä ei.
-      dataArchive.splice(2, dataArchive.length - 1);
-      const dlen = dataArchive.length - 1;
-      const newConData = convertData(
-        dataArchive[step],
-        activeProblemInfo!.minimize
-      );
-      SetConvertData(newConData);
-    }
-    else {
-     */
-      dataArchive.splice(step, dataArchive.length - 1);
+    const newConData = convertData(
+      dataArchive[step - 1],
+      activeProblemInfo!.minimize
+    );
+    SetConvertData(newConData);
 
-      const newConData = convertData(
-        dataArchive[step - 1],
-        activeProblemInfo!.minimize
-      );
-      SetConvertData(newConData);
-    //}
-    // remove from the step to the end of the list
-    // convert new last index to the convertedData to draw.
-//    const dlen = dataArchive.length - 1;
-//    const newConData = convertData(
-//      dataArchive[dlen],
- //     activeProblemInfo!.minimize
-  //  );
-   // SetConvertData(newConData);
-    // dumb does not work here
+    // dunno if needed
     SetReferencePoint(
       convertedData!.referencePoints.flatMap((d, _) => [
         d[convertedData!.referencePoints[0].length - 1],
@@ -476,7 +449,8 @@ function NautilusNavigatorMethod({
             console.log("vastaus", response);
 
             const dataArchive = dRef.current;
-            if (prevRef.current === true) {
+            // bug with step 1 fixed. TODO: make non hacky way so no dumb bugs
+            if (prevRef.current === true && currentStep != 1) {
               // hacky way to remove the last indexes of all the sublists and then pop the last index of dataArchive aswell.
               // have to be done when backtracking to avoid having same two steps (with same distance etc) in a row.
               dataArchive![dataArchive!.length - 1].upperBounds.map((d) => {
@@ -500,7 +474,7 @@ function NautilusNavigatorMethod({
             updatePrev();
 
             // TODO: concatting here brings the above issue, so if done otherway could be avoided.
-            const newArchiveData: NavigationData = {
+            let newArchiveData: NavigationData = {
               upperBounds: body.response.reachable_lb.map(
                 (d: number, i: number) => {
                   return dataArchive![dataArchive!.length - 1].upperBounds[
@@ -535,7 +509,14 @@ function NautilusNavigatorMethod({
               navigationPoint: body.response.navigation_point,
             };
 
-            SetDataArchive((dataArchive) => [...dataArchive, newArchiveData]);
+            // TODO: refactor, another hacky fix for hacky code.
+            if (body.response.step_number != 1) {
+              SetDataArchive((dataArchive) => [...dataArchive, newArchiveData]);
+            }
+            if (body.response.step_number === 1) { // TODO: ^^
+              newArchiveData = dataArchive![0];
+            }
+
             const convertedData = convertData(
               newArchiveData,
               activeProblemInfo!.minimize
@@ -547,16 +528,7 @@ function NautilusNavigatorMethod({
               console.log("Method finished with 100 steps");
               SetIterateNavi(false);
               SetLoading(false);
-              // copy the last object and add it so drawing makes sense
-              /*
-              SetDataArchive((dataArchive) => [...dataArchive, newArchiveData]);
-               */
-              // copy the last object and add it so drawing makes sense
-              //const newArchiveData2 = {...newArchiveData, newArchiveData[0].stepsTaken: 101 }
-              //const convertedData = convertData(
-              //  newArchiveData2,
-              //  activeProblemInfo!.minimize
-              //);
+
               //SetCurrentStep(convertedData.stepsTaken + 1);
               SetFinalObjectives(
                 response.navigation_point.map((v: number) => [-v])
@@ -565,7 +537,7 @@ function NautilusNavigatorMethod({
               return;
             }
             // hacky way to make speed matter
-            await delay(2500 / speedRef.current!);
+            await delay(speedo / speedRef.current!);
           } else {
             console.log("Got a response which is not 200");
           }
@@ -620,14 +592,8 @@ function NautilusNavigatorMethod({
             <Col xxl={10} className="mr-auto">
               {fetchedInfo && (
                 <div className={"mt-5"}>
-                  {console.log("ennen piirtoa problemInfo", activeProblemInfo)}
                   {console.log("ennen piirtoa archive", dataArchive)}
                   {console.log("ennen piirtoa conv data", convertedData)}
-                  {console.log("ennen piirtoa steps", currentStep)}
-                  {console.log(
-                    "ennen piirtoa problem",
-                    trueProbData(activeProblemInfo!)
-                  )}
                   <NavigationBars
                     problemInfo={trueProbData(activeProblemInfo!)}
                     problemData={convertedData!}
