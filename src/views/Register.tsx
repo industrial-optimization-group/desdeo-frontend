@@ -2,6 +2,7 @@ import { Button, Container, Col, Form, FormControl, Row } from "react-bootstrap"
 import { Link } from "react-router-dom";
 import { appendErrors, useForm } from "react-hook-form";
 import { formatDiagnosticsWithColorAndContext } from "typescript";
+import { useState } from "react";
 
 interface FormData {
   username: string;
@@ -11,11 +12,36 @@ interface FormData {
 
 function Register({ apiUrl }: { apiUrl: string }) {
   const { register, handleSubmit, errors, getValues } = useForm<FormData>({ mode: "all" });
+  const [registered, SetRegistered] = useState<boolean>(false);
+  const [badUsername, SetBadUsername] = useState<boolean>(false);
+  const [errorMessage, SetErrorMessage] = useState<string>("");
 
-  const onSubmit = (data: FormData) => {
-    console.log("lol")
-    console.log(getValues("password"));
-    console.log(getValues("passwordConfirm"));
+  const onSubmit = async (data: FormData) => {
+    const credentials = { username: data.username, password: data.password }
+    try {
+      const res = await fetch(`${apiUrl}/registration`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials),
+      });
+
+      if (res.status == 200) {
+        // OK
+        SetRegistered(true);
+        SetBadUsername(false);
+      }
+
+      else if (res.status == 400) {
+        // Username invalid or taken
+        // try another one
+        const body = await res.json();
+        SetErrorMessage(body.message);
+        SetBadUsername(true);
+      }
+    } catch (e) {
+      console.log(e);
+      // Do nothing
+    }
   };
 
   return (
@@ -23,7 +49,8 @@ function Register({ apiUrl }: { apiUrl: string }) {
       <Row><Col><h2>Register a new user</h2></Col></Row>
       <Row>
         <Col md={{ span: 6, offset: 3 }}>
-          <Form
+          {badUsername && <p className="text-danger">{`${errorMessage}`}</p>}
+          {!registered && <Form
             className="mx-6"
             action=""
             onSubmit={handleSubmit(onSubmit)}
@@ -61,7 +88,8 @@ function Register({ apiUrl }: { apiUrl: string }) {
                 <Form.Control.Feedback type="invalid">{`${errors.passwordConfirm.message}`}</Form.Control.Feedback>}
             </Form.Group>
             <Button className="mt-1" type="submit">Register</Button>
-          </Form>
+          </Form>}
+          {registered && <Link to="/Login">Proceed to login</Link>}
         </Col>
       </Row>
     </Container>
