@@ -88,16 +88,21 @@ export const Login = ({
                     type="username"
                     placeholder="username"
                     name="username"
-                    ref={register({ required: true })}
+                    ref={register({ required: { value: true, message: "Username is required." } })}
+                    isInvalid={errors.username !== undefined}
                   />
-                  {errors.username && <p>{`Username is required!`}</p>}
+                  {errors.username &&
+                    <Form.Control.Feedback type="invalid">{`${errors.username.message}`}</Form.Control.Feedback>}
                   <Form.Label>Password</Form.Label>
                   <Form.Control
                     type="password"
                     placeholder="password"
                     name="password"
-                    ref={register({ required: true })}
+                    ref={register({ required: { value: true, message: "Password is required." } })}
+                    isInvalid={errors.password !== undefined}
                   />
+                  {errors.password &&
+                    <Form.Control.Feedback type="invalid">{`${errors.password.message}`}</Form.Control.Feedback>}
                 </Form.Group>
                 <Button className="mt-1" type="submit">Submit</Button>
               </Form>
