@@ -75,7 +75,9 @@ function App() {
             />
           </Route>
           <Route path="/register" exact>
-            <Register />
+            <Register
+              apiUrl={API_URL}
+            />
           </Route>
           <Route path="/problem/create" exact>
             <ProblemDefinition

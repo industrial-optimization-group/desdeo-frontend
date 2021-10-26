@@ -90,7 +90,7 @@ export const Login = ({
                     name="username"
                     ref={register({ required: true })}
                   />
-                  {errors.username && "Username is required!"}
+                  {errors.username && <p>{`Username is required!`}</p>}
                   <Form.Label>Password</Form.Label>
                   <Form.Control
                     type="password"
