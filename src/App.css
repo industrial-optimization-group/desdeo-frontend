@@ -126,3 +126,44 @@ body {
   border: 2px black solid;
   border-radius: 1%;
 }
+
+#menu-button {
+  color: gray;
+  background: transparent;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  display: block;
+  float: left;
+}
+
+#menu-button:hover {
+  background-color: whitesmoke;
+}
+
+#menu {
+  color: whitesmoke;
+  background-color: navy;
+}
+
+#menu-list {
+  list-style-type: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+#menu-list>li {
+  font-size: large;
+  padding-bottom: 20px;
+}
+
+.menu-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.menu-link:hover {
+  padding-left: 10px;
+  color: white;
+  font-weight: bold;
+}

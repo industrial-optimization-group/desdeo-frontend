@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { Tokens } from "../types/AppTypes";
 
-import { Container, Button, Form } from "react-bootstrap";
+import { Container, Button, Form, Row } from "react-bootstrap";
 import { useDropzone } from 'react-dropzone';
 import { useCallback } from "react";
 import parse from "csv-parse";
@@ -235,36 +235,38 @@ function ProblemDefinition({
     */
 
   return (
-    <>
-      <p>{`${message}`}</p>
-      {!problemDefined && (
-        <Container>
-          <Form action="" onSubmit={handleSubmit(onSubmit)}>
-            <Button type="submit">Define dummy problem</Button>
-          </Form>
-          <section className="container border border-dark mt-2 rounded-pill">
-            <div {...getRootProps()} className="align-middle">
-              <input {...getInputProps()} />
-              <p>Drag 'n' drop files here, or click to select files to define a discrete problem</p>
-            </div>
-          </section>
-          {discreteProblemLoaded && (
-            <>
-              <p>Discrete problem loaded!</p>
-              <Button onClick={() => { onSubmit(discreteData) }}>Send</Button>
-            </>
-          )}
-        </Container>
-      )}
-      {problemDefined && (
-        <Container>
-          <p>{`Problem '${problemNameAndType.name}' of type '${problemNameAndType.type}' successfully defined!`}</p>
-          <Button onClick={() => { SetProblemDefined(false); SetDiscretePoblemLoaded(false) }}>
-            Define a new problem
-          </Button>
-        </Container>
-      )}
-    </>
+    <Container>
+      <Row>
+        <p>{`${message}`}</p>
+        {!problemDefined && (
+          <>
+            <Form action="" onSubmit={handleSubmit(onSubmit)}>
+              <Button type="submit">Define dummy problem</Button>
+            </Form>
+            <section className="container border border-dark mt-2 rounded-pill">
+              <div {...getRootProps()} className="align-middle">
+                <input {...getInputProps()} />
+                <p>Drag 'n' drop files here, or click to select files to define a discrete problem</p>
+              </div>
+            </section>
+            {discreteProblemLoaded && (
+              <>
+                <p>Discrete problem loaded!</p>
+                <Button onClick={() => { onSubmit(discreteData) }}>Send</Button>
+              </>
+            )}
+          </>
+        )}
+        {problemDefined && (
+          <>
+            <p>{`Problem '${problemNameAndType.name}' of type '${problemNameAndType.type}' successfully defined!`}</p>
+            <Button onClick={() => { SetProblemDefined(false); SetDiscretePoblemLoaded(false) }}>
+              Define a new problem
+            </Button>
+          </>
+        )}
+      </Row>
+    </Container>
   );
 }
 
