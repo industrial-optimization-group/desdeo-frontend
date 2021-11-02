@@ -127,6 +127,21 @@ body {
   border-radius: 1%;
 }
 
+#navigation-bar {
+  background-color: whitesmoke;
+}
+
+#login-name {
+  display: flex;
+  margin-left: auto;
+  align-items: center;
+}
+
+#logout-button {
+  text-decoration: none;
+  margin-left: 10px;
+}
+
 #menu-button {
   color: gray;
   background: transparent;
@@ -138,7 +153,7 @@ body {
 }
 
 #menu-button:hover {
-  background-color: whitesmoke;
+  background-color: gainsboro;
 }
 
 #menu {
@@ -152,7 +167,7 @@ body {
   padding-left: 0;
 }
 
-#menu-list>li {
+#menu-list > li {
   font-size: large;
   padding-bottom: 20px;
 }
@@ -169,16 +184,24 @@ body {
 }
 
 .card {
-  width: 200px;
-  margin:auto;
+  height: 200px;
+  width: 100%;
+  margin: auto;
   margin-top: 20px;
   text-decoration: none;
   color: inherit;
 }
 
 .card:hover {
-  box-shadow: 0 0 11px rgba(33,33,33,.2); 
+  box-shadow: 0 0 11px rgba(33, 33, 33, 0.2);
   font-weight: bold;
   background-color: whitesmoke;
   color: inherit;
+}
+
+.card-image {
+  display: block;
+  width: 100px;
+  height: 100%;
+  object-fit: cover;
 }

@@ -1,4 +1,4 @@
-import { Button, Offcanvas, Container, Row } from "react-bootstrap";
+import { Button, Col, Offcanvas, Container, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { AiOutlineMenu, AiFillHome, AiFillControl, AiFillThunderbolt, AiFillPlusCircle, AiFillFastForward } from "react-icons/ai";
@@ -16,10 +16,15 @@ function NavigationBar({
   const handleClose = () => SetShow(false);
 
   return (
-    <>
+    <Container id="navigation-bar" fluid>
+      <Row>
+      <Col xs= "auto" lg="auto">
       <Button onClick={handleShow} size="lg" id="menu-button">
         <AiOutlineMenu />
       </Button>
+      </Col>
+      <Col xs="auto" lg="auto" id="login-name">{isLoggedIn ? (<>{`Logged in as ${loggedAs}`}<Link id="logout-button" to="/logout"> (logout)</Link></>) : "Not logged in"}</Col>
+      </Row>
       <Container>
       </Container>
       <Offcanvas show={show} onHide={handleClose} id="menu">
@@ -49,7 +54,7 @@ function NavigationBar({
           }
         </Offcanvas.Body>
       </Offcanvas>
-    </>
+    </Container>
   );
   /*
   <Container>

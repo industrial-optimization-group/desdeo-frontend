@@ -54,7 +54,9 @@ function App() {
         <NavigationBar isLoggedIn={isLoggedIn} loggedAs={loggedAs} />
         <Switch>
           <Route path="/" exact>
-            <LandingPage />
+            <LandingPage
+              isLoggedIn={isLoggedIn}
+            />
           </Route>
           <Route path="/login" exact>
             <Login
