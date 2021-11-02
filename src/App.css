@@ -167,3 +167,18 @@ body {
   color: white;
   font-weight: bold;
 }
+
+.card {
+  width: 200px;
+  margin:auto;
+  margin-top: 20px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.card:hover {
+  box-shadow: 0 0 11px rgba(33,33,33,.2); 
+  font-weight: bold;
+  background-color: whitesmoke;
+  color: inherit;
+}
