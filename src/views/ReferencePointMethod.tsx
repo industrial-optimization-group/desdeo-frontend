@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   ProblemInfo,
   ObjectiveData,
@@ -455,9 +456,9 @@ function ReferencePointMethod({
               </tr>
             </tbody>
           </Table>
-          <Button variant="link" href="/">
+          <Link to="/">
             {"Back to index"}
-          </Button>
+          </Link>
         </>
       )}
     </Container>

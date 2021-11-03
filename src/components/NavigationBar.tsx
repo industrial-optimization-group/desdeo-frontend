@@ -1,7 +1,7 @@
 import { Button, Col, Offcanvas, Container, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { AiOutlineMenu, AiFillHome, AiFillControl, AiFillThunderbolt, AiFillPlusCircle, AiFillFastForward } from "react-icons/ai";
+import { AiOutlineMenu, AiFillHome, AiFillControl, AiOutlinePlusSquare, AiFillPlusCircle, AiOutlineFunction, AiOutlineLogout, AiOutlineLogin, AiOutlineSearch } from "react-icons/ai";
 
 function NavigationBar({
   isLoggedIn,
@@ -18,12 +18,12 @@ function NavigationBar({
   return (
     <Container id="navigation-bar" fluid>
       <Row>
-      <Col xs= "auto" lg="auto">
-      <Button onClick={handleShow} size="lg" id="menu-button">
-        <AiOutlineMenu />
-      </Button>
-      </Col>
-      <Col xs="auto" lg="auto" id="login-name">{isLoggedIn ? (<>{`Logged in as ${loggedAs}`}<Link id="logout-button" to="/logout"> (logout)</Link></>) : "Not logged in"}</Col>
+        <Col xs="auto" lg="auto">
+          <Button onClick={handleShow} size="lg" id="menu-button">
+            <AiOutlineMenu />
+          </Button>
+        </Col>
+        <Col xs="auto" lg="auto" id="login-name">{isLoggedIn ? (<>{`Logged in as ${loggedAs}`}<Link id="logout-button" to="/logout"> (logout)</Link></>) : "Not logged in"}</Col>
       </Row>
       <Container>
       </Container>
@@ -42,13 +42,17 @@ function NavigationBar({
           {isLoggedIn &&
             <ul id="menu-list">
               <li><Link to="/" className="menu-link" onClick={handleClose}><AiFillHome />{"\tHome"}</Link></li>
-              <li><Link to="/problem/create" className="menu-link" onClick={handleClose}><AiFillThunderbolt />{"\tProblems"}</Link></li>
-              <li><Link to="/method/create" className="menu-link" onClick={handleClose}><AiFillControl />{"\tInteractive methods"}</Link></li>
+              <li><Link to="/problem/create" className="menu-link" onClick={handleClose}><AiOutlineFunction />{"\tCreate problems"}</Link></li>
+              <li><Link to="/problem/explore" className="menu-link" onClick={handleClose}><AiOutlineSearch />{"\tExplore problems"}</Link></li>
+              <li><Link to="/method/create" className="menu-link" onClick={handleClose}><AiOutlinePlusSquare />{"\tInitialize a new method"}</Link></li>
+              <li><Link to="/method/optimize" className="menu-link" onClick={handleClose}><AiFillControl />{"\tStart optimizing"}</Link></li>
+              <li></li>
+              <li><Link to="/logout" className="menu-link" onClick={handleClose}><AiOutlineLogout />{"\tLogout"}</Link></li>
             </ul>
           }
           {!isLoggedIn &&
             <ul id="menu-list">
-              <li><Link to="/login" className="menu-link" onClick={handleClose}><AiFillFastForward />{"\tLogin"}</Link></li>
+              <li><Link to="/login" className="menu-link" onClick={handleClose}><AiOutlineLogin />{"\tLogin"}</Link></li>
               <li><Link to="/register" className="menu-link" onClick={handleClose}><AiFillPlusCircle />{"\tRegister"}</Link></li>
             </ul>
           }
