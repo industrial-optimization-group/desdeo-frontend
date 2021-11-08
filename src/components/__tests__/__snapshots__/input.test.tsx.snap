@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`matches snapshot 1`] = `
+<form
+  action=""
+  className=""
+  data-testid="inputbutton"
+  onSubmit={[Function]}
+>
+  <div>
+    <input
+      className="form-control"
+      defaultValue={1}
+      name="values"
+    />
+  </div>
+  <button
+    className="btn btn-primary"
+    disabled={false}
+    type="submit"
+  >
+    Set
+  </button>
+</form>
+`;

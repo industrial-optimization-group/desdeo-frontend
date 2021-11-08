@@ -179,6 +179,7 @@ function NautilusNavigatorMethod({
     // TODO: basic idea works, to be done better.
     // reset Form components aswell.
     // Going back to step 1, splices properly but means that we lose createStep which means wont work.
+    // some bug here with ref points
     const goBack = (step: number) => {
         if (step > currentStep) {
             console.log("cant go back to the future");
@@ -192,16 +193,7 @@ function NautilusNavigatorMethod({
         );
         SetConvertData(newConData);
         // dumb but works
-        SetReferencePoint(
-            convertedData!.referencePoints.flatMap((d, _) => [
-                d[convertedData!.referencePoints[0].length - 1],
-            ])
-        );
-        SetBoundaryPoint(
-            convertedData!.boundaries.flatMap((d, _) => [
-                d[convertedData!.boundaries[0].length - 1],
-            ])
-        );
+
         SetCurrentStep(step);
         SetPrevious(true); // state to true so iterate works properly
         SetShowFinal(false);
@@ -244,7 +236,7 @@ function NautilusNavigatorMethod({
                     const body = await res.json();
 
                     if (activeProblemInfo === undefined) {
-                        const actprob = {
+                        SetActiveProblemInfo({
                             problemId: body.problem_id,
                             problemName: body.problem_name,
                             problemType: body.problem_type,
@@ -254,34 +246,8 @@ function NautilusNavigatorMethod({
                             ideal: body.ideal,
                             nadir: body.nadir,
                             minimize: body.minimize,
-                        };
-                        SetActiveProblemInfo(actprob);
+                        });
                     }
-
-
-                    const ogdata: NavigationData = {
-                        upperBounds: body.minimize.map((_: number, i: number) => {
-                            return [body.ideal[i]];
-                        }),
-                        lowerBounds: body.minimize.map((_: number, i: number) => {
-                            return [body.nadir[i]];
-                        }),
-                        referencePoints: body.minimize.map((_: any, i: number) => {
-                            return [(body.nadir[i] + body.ideal[i]) / 2];
-                        }),
-                        boundaries: body.minimize.map((_: any, i: number) => {
-                            return [body.nadir[i]];
-                        }),
-                        totalSteps: 100,
-                        stepsTaken: 0,
-                    };
-                    //dRef.current = dataArchive;
-                    SetDataArchive((dataArchive) => [...dataArchive!, ogdata]);
-                    // some reason I have to do it this way, probably so NavigationBars state wont get affected, we are not ready to draw yet.
-                    //dataArchive[0] = ogdata;
-                    //SetDataArchive(d1)
-                    //updateStart(ogdata);
-
                     //SetMethodStarted(true);
                     SetReady(true);
                 } else {
@@ -326,30 +292,8 @@ function NautilusNavigatorMethod({
                 if (res.status == 200) {
                     const body = await res.json();
 
-
-                    /*
-                    const ogdata: NavigationData = {
-                        upperBounds: body.minimize.map((_: number, i: number) => {
-                            return [body.ideal[i]];
-                        }),
-                        lowerBounds: body.minimize.map((_: number, i: number) => {
-                            return [body.nadir[i]];
-                        }),
-                        referencePoints: body.minimize.map((_: any, i: number) => {
-                            return [(body.nadir[i] + body.ideal[i]) / 2];
-                        }),
-                        boundaries: body.minimize.map((_: any, i: number) => {
-                            return [body.nadir[i]];
-                        }),
-                        totalSteps: 100,
-                        stepsTaken: 0,
-                    };
-                    dataArchive[0] = ogdata;
-                    */
-                    //SetDataArchive((dataArchive) => [...dataArchive!, ogdata]);
-                    //SetDataArchive((dataArchive) => [...dataArchive!, dataArchive!.concat(ogdata)]);
-
-
+                    const ideal = activeProblemInfo.ideal;
+                    const nadir = activeProblemInfo.nadir;
                     // NOTE: server sends in different logic than we use here. upperBound is thought as the visual upperbound.
                     const newArchiveData = {
                         upperBounds: body.response.reachable_lb.map((d: number) => {
@@ -358,11 +302,11 @@ function NautilusNavigatorMethod({
                         lowerBounds: body.response.reachable_ub.map((d: number) => {
                             return [d];
                         }),
-                        referencePoints: dataArchive![0].referencePoints.map((d, i) => {
-                            return dataArchive![0].referencePoints[i].concat(d);
+                        referencePoints: activeProblemInfo.minimize.map((_: any, i: number) => {
+                            return [(nadir[i] + ideal[i]) / 2].concat((nadir[i] + ideal[i]) / 2);
                         }),
-                        boundaries: dataArchive![0].boundaries.map((d, i) => {
-                            return dataArchive![0].boundaries[i].concat(d);
+                        boundaries: activeProblemInfo.minimize.map((d, i) => {
+                            return [nadir[i]].concat(nadir[i]);
                         }),
                         totalSteps: 100, // this has to be 100, since step 1 is the first step according to the server.
                         stepsTaken: 1,
@@ -373,8 +317,6 @@ function NautilusNavigatorMethod({
                     };
 
                     // put over the old one since we want the steps go along with the drawing, drawing needs more than one point to work
-                    //dataArchive[0] = newArchiveData;
-                    console.log("gets here")
                     SetDataArchive((dataArchive) => [...dataArchive!, newArchiveData]);
                     const convertedData = convertData(
                         newArchiveData,
@@ -382,6 +324,7 @@ function NautilusNavigatorMethod({
                     );
                     SetConvertData(convertedData);
                     SetCurrentStep(1);
+                    // TODO: do we need thse
                     // dumb but works
                     SetReferencePoint(
                         convertedData!.referencePoints.flatMap((d, _) => [
@@ -514,6 +457,8 @@ function NautilusNavigatorMethod({
                         updatePrev();
 
                         // TODO: concatting here brings the above issue, so if done otherway could be avoided.
+                        // nyt tullaan aina tänne..
+                        // Miks täällä refe instead of server refe??
                         let newArchiveData: NavigationData = {
                             upperBounds: body.response.reachable_lb.map(
                                 (d: number, i: number) => {
@@ -556,6 +501,7 @@ function NautilusNavigatorMethod({
                         if (body.response.step_number === 1) {
                             // TODO: ^^
                             newArchiveData = dataArchive![0];
+                            SetDataArchive(dataArchive => [...dataArchive, newArchiveData])
                         }
 
                         const convertedData = convertData(
