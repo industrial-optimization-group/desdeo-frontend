@@ -51,6 +51,7 @@ function NautilusNavigatorMethod({
     const [convertedData, SetConvertData] = useState<NavigationData>();
     // All steps taken, all data in server form. To be used when taking steps back etc.
     const [dataArchive, SetDataArchive] = useState<Array<NavigationData>>([]);
+    const [startArchive, SetStartArchive] = useState<NavigationData>();
     // right now acts as the refe point to sent to the InputForm. Could/should be used better
     const [referencePoint, SetReferencePoint] = useState<number[]>([]);
     const [boundaryPoint, SetBoundaryPoint] = useState<number[]>([]);
@@ -65,12 +66,11 @@ function NautilusNavigatorMethod({
     dRef.current = dataArchive;
 
     // handles speed.
-    const speedo = 2500; // in ms. speedo / speed, is the current speed of iteration
+    const speedo = 500; // in ms. speedo / speed, is the current speed of iteration
     const [speed, SetSpeed] = useState<number>(1);
     const speedRef = useRef<number>();
     speedRef.current = speed;
 
-    // TODO: possible bug(s) when sending this currentStep as a prob to NavigationBars. Has use but maybe too risky
     const [currentStep, SetCurrentStep] = useState<number>(1);
 
     //const stepRef = useRef<number>();
@@ -168,6 +168,25 @@ function NautilusNavigatorMethod({
         SetConvertData(newData);
     };
 
+    // TODO: make tests
+    const popLast = (dataArchive: any[]) => {
+        dataArchive[dataArchive.length - 1].upperBounds.map((d: number[]) => {
+            d.pop();
+        });
+
+        dataArchive[dataArchive.length - 1].lowerBounds.map((d: number[]) => {
+            d.pop();
+        });
+
+        dataArchive[dataArchive.length - 1].referencePoints.map((d: number[]) => {
+            d.pop();
+        });
+
+        dataArchive[dataArchive.length - 1].boundaries.map((d: number[]) => {
+            d.pop();
+        });
+    }
+
     // temp delay function to make the iter speed animation
     const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -192,16 +211,11 @@ function NautilusNavigatorMethod({
             activeProblemInfo!.minimize
         );
         SetConvertData(newConData);
-        // dumb but works
 
+        //SetDataArchive(dataArchive)
         SetCurrentStep(step);
         SetPrevious(true); // state to true so iterate works properly
         SetShowFinal(false);
-    };
-
-    // small func to update previous when wanted, probably could do without it
-    const updatePrev = () => {
-        SetPrevious(false);
     };
 
 
@@ -309,7 +323,8 @@ function NautilusNavigatorMethod({
                             return [nadir[i]].concat(nadir[i]);
                         }),
                         totalSteps: 100, // this has to be 100, since step 1 is the first step according to the server.
-                        stepsTaken: 1,
+                        stepsTaken: body.response.step_number,
+                        //stepsTaken: 0,
                         distance: body.response.distance, // check for possible float errors
                         reachableIdx: body.response.reachable_idx,
                         stepsRemaining: body.response.steps_remaining,
@@ -317,23 +332,24 @@ function NautilusNavigatorMethod({
                     };
 
                     // put over the old one since we want the steps go along with the drawing, drawing needs more than one point to work
-                    SetDataArchive((dataArchive) => [...dataArchive!, newArchiveData]);
+                    //SetDataArchive((dataArchive) => [...dataArchive!, newArchiveData]);
+                    SetStartArchive(newArchiveData)
                     const convertedData = convertData(
                         newArchiveData,
                         activeProblemInfo!.minimize
                     );
                     SetConvertData(convertedData);
-                    SetCurrentStep(1);
+                    // TODO: this is needed right now, but it creates another archive later for iterations. So this should not be needed.
+                    SetDataArchive([newArchiveData]);
                     // TODO: do we need thse
-                    // dumb but works
                     SetReferencePoint(
-                        convertedData!.referencePoints.flatMap((d, _) => [
-                            d[convertedData!.referencePoints[0].length - 1],
+                        convertedData.referencePoints.flatMap((d: number[]) => [
+                            d[convertedData.referencePoints[0].length - 1],
                         ])
                     );
                     SetBoundaryPoint(
-                        convertedData!.boundaries.flatMap((d, _) => [
-                            d[convertedData!.boundaries[0].length - 1],
+                        convertedData.boundaries.flatMap((d: number[]) => [
+                            d[convertedData.boundaries[0].length - 1],
                         ])
                     );
 
@@ -353,9 +369,11 @@ function NautilusNavigatorMethod({
             // console.log("lopeta iter");
             return;
         }
-        if (itestateRef.current === true) {
-            // console.log("iteroidaan")
+
+        if (dataArchive.length === 0) {
+            SetDataArchive([startArchive!]);
         }
+
         const iterate = async () => {
             // Attempt to iterate
             SetLoading(true);
@@ -364,18 +382,32 @@ function NautilusNavigatorMethod({
 
             // turn these for the server
             console.log("refe", referencePoint);
-            //if (referencePoint ==)
-
+            // TODO: handle these better. Should never fire though.
+            if (activeProblemInfo === undefined) {
+                console.log("not ok, activeProblem not defined");
+                return;
+            }
+            if (startArchive === undefined) {
+                console.log("not ok, startArchive not defined")
+                return;
+            }
             const refe = referencePoint.map((d, i) =>
-                activeProblemInfo?.minimize[i] === 1 ? d : -d
+                activeProblemInfo.minimize[i] === 1 ? d : -d
             );
             const bounds = boundaryPoint.map((d, i) =>
-                activeProblemInfo?.minimize[i] === 1 ? d : -d
+                activeProblemInfo.minimize[i] === 1 ? d : -d
             );
 
-            // TODO: better, this is very bug friendly territory
             while (itestateRef.current === true) {
-                let resp; // since 2 responses depending are we backtracking or not
+
+                //const dataArchive = dRef.current;
+                if (dataArchive === undefined) {
+                    return;
+                }
+                if (dataArchive.length === 0) {
+                    return;
+                }
+                let resp: any; // since 2 responses depending are we backtracking or not
                 if (prevRef.current === false) {
                     const respContinue = {
                         reference_point: refe,
@@ -388,32 +420,37 @@ function NautilusNavigatorMethod({
                 }
                 if (prevRef.current === true) {
                     const respGoPrev = {
-                        ideal: activeProblemInfo!.ideal,
-                        nadir: activeProblemInfo!.nadir,
-                        reachable_ub: dataArchive![currentStep - 1].lowerBounds.flatMap(
-                            (d, _) => [d[currentStep - 1]]
+                        ideal: activeProblemInfo.ideal,
+                        nadir: activeProblemInfo.nadir,
+                        reachable_ub: dataArchive[currentStep - 1].lowerBounds.flatMap(
+                            (d: number[]) => [d[currentStep - 1]]
                         ),
-                        reachable_lb: dataArchive![currentStep - 1].upperBounds.flatMap(
-                            (d, _) => [d[currentStep - 1]]
+                        reachable_lb: dataArchive[currentStep - 1].upperBounds.flatMap(
+                            (d: number[]) => [d[currentStep - 1]]
                         ),
                         reference_point: refe,
                         speed: speedRef.current,
                         go_to_previous: true,
                         stop: !itestateRef.current,
                         user_bounds: bounds,
-                        step_number: dataArchive![currentStep - 1].stepsTaken,
-                        reachable_idx: dataArchive![currentStep - 1].reachableIdx, // to dataArc
-                        steps_remaining: dataArchive![currentStep - 1].stepsRemaining,
-                        distance: dataArchive![currentStep - 1].distance,
+                        step_number: dataArchive[currentStep - 1].stepsTaken,
+                        reachable_idx: dataArchive[currentStep - 1].reachableIdx, // to dataArc
+                        steps_remaining: dataArchive[currentStep - 1].stepsRemaining, // TODO: does it need to come from archive + possible bug with not being 0
+                        distance: dataArchive[currentStep - 1].distance,
                         allowed_speeds: [1, 2, 3, 4, 5],
                         current_speed: speedRef.current,
-                        navigation_point: dataArchive![currentStep - 1].navigationPoint, // to dataArc
+                        navigation_point: dataArchive[currentStep - 1].navigationPoint, // to dataArc
                     };
                     resp = respGoPrev;
                 }
 
+                // Guess im ok until this
                 try {
                     console.log(`Trying to iterate with ${refe}`);
+                    if (resp === undefined) {
+                        console.log(`Trying to iterate with undefined ${resp}`);
+                        return;
+                    }
                     const res = await fetch(`${apiUrl}/method/control`, {
                         method: "POST",
                         headers: {
@@ -431,57 +468,45 @@ function NautilusNavigatorMethod({
                         const response = body.response;
                         console.log("vastaus", response);
 
+                        // TODO: 
                         const dataArchive = dRef.current;
-                        // bug with step 1 fixed. TODO: make non hacky way so no dumb bugs
+                        if (dataArchive === undefined) {
+                            console.log("not ok, dataArchive not defined")
+                            return;
+                        }
+                        // hacky way to remove the last indexes of all the sublists and then pop the last index of dataArchive aswell.
+                        // have to be done when backtracking to avoid having same two steps (with same distance etc) in a row.
                         if (prevRef.current === true && currentStep != 1) {
-                            // hacky way to remove the last indexes of all the sublists and then pop the last index of dataArchive aswell.
-                            // have to be done when backtracking to avoid having same two steps (with same distance etc) in a row.
-                            dataArchive![dataArchive!.length - 1].upperBounds.map((d) => {
-                                d.pop();
-                            });
-
-                            dataArchive![dataArchive!.length - 1].lowerBounds.map((d) => {
-                                d.pop();
-                            });
-
-                            dataArchive![dataArchive!.length - 1].referencePoints.map((d) => {
-                                d.pop();
-                            });
-
-                            dataArchive![dataArchive!.length - 1].boundaries.map((d) => {
-                                d.pop();
-                            });
-                            dataArchive!.pop();
+                            popLast(dataArchive); // pop last of arrays
+                            dataArchive.pop(); // pop last data array
                             //SetDataArchive(dataArchive!); // not sure if does anything, not needed
                         }
-                        updatePrev();
 
+                        SetPrevious(false)
                         // TODO: concatting here brings the above issue, so if done otherway could be avoided.
-                        // nyt tullaan aina tänne..
-                        // Miks täällä refe instead of server refe??
-                        let newArchiveData: NavigationData = {
+                        const newArchiveData: NavigationData = {
                             upperBounds: body.response.reachable_lb.map(
                                 (d: number, i: number) => {
-                                    return dataArchive![dataArchive!.length - 1].upperBounds[
+                                    return dataArchive[dataArchive.length - 1].upperBounds[
                                         i
                                     ].concat(d);
                                 }
                             ),
                             lowerBounds: body.response.reachable_ub.map(
                                 (d: number, i: number) => {
-                                    return dataArchive![dataArchive!.length - 1].lowerBounds[
+                                    return dataArchive[dataArchive.length - 1].lowerBounds[
                                         i
                                     ].concat(d);
                                 }
                             ),
                             referencePoints: refe.map((d: number, i: number) => {
-                                return dataArchive![dataArchive!.length - 1].referencePoints[
+                                return dataArchive[dataArchive.length - 1].referencePoints[
                                     i
                                 ].concat(d);
                             }),
                             boundaries: body.response.user_bounds.map(
                                 (d: number, i: number) => {
-                                    return dataArchive![dataArchive!.length - 1].boundaries[
+                                    return dataArchive[dataArchive.length - 1].boundaries[
                                         i
                                     ].concat(d);
                                 }
@@ -495,17 +520,22 @@ function NautilusNavigatorMethod({
                         };
 
                         // TODO: refactor, another hacky fix for hacky code.
-                        if (body.response.step_number != 1) {
-                            SetDataArchive((dataArchive) => [...dataArchive!, newArchiveData]);
-                        }
-                        if (body.response.step_number === 1) {
-                            // TODO: ^^
-                            newArchiveData = dataArchive![0];
-                            SetDataArchive(dataArchive => [...dataArchive, newArchiveData])
-                        }
+                        // TODO: this has more idea but now since dataARch[0] has step 0, it does weird thing.
+                        // 
+                        //if (body.response.step_number === 1) {
+                        // TODO: ^^
+                        // newArchiveData = dataArchive![0];
+                        //SetDataArchive(dataArchive => [...dataArchive, newArchiveData])
+                        //    SetDataArchive([newArchiveData])
+                        //}
+                        //else {
+                        SetDataArchive((dataArchive) => [...dataArchive!, newArchiveData]);
+                        //}
 
+                        // TODO: here we still draw from the newest data though.
                         const convertedData = convertData(
                             newArchiveData,
+                            //dataArchive[dataArchive.length - 1], // this has the weird step now.
                             activeProblemInfo!.minimize
                         );
                         SetConvertData(convertedData);
@@ -690,3 +720,4 @@ function NautilusNavigatorMethod({
     );
 }
 export default NautilusNavigatorMethod;
+
