@@ -85,9 +85,13 @@ function NautilusNavigatorMethod({
 
     const [satisfied, SetSatisfied] = useState<boolean>(false);
     const [showFinal, SetShowFinal] = useState<boolean>(false);
-    const [alternatives, SetAlternatives] = useState<ObjectiveData>();
+    //const [alternatives, SetAlternatives] = useState<ObjectiveData>();
     const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
-    const [finalVariables, SetFinalVariables] = useState<number[]>([]);
+    //const [finalVariables, SetFinalVariables] = useState<number[]>([]);
+
+    // TODO: remove later
+    const testVars = [[0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1]]
+
 
     // default dims. Change height to fit objectives better, currently no adaptive chartdims.
     const dims: RectDimensions = {
@@ -196,10 +200,14 @@ function NautilusNavigatorMethod({
     };
 
     // TODO: basic idea works, to be done better.
-    // reset Form components aswell.
-    // Going back to step 1, splices properly but means that we lose createStep which means wont work.
-    // some bug here with ref points
     const goBack = (step: number) => {
+
+        // need to stop iteration if going back
+        if (itestateRef.current === true) {
+            SetIterateNavi(false);
+            //ite
+        }
+
         if (step > currentStep) {
             console.log("cant go back to the future");
             return;
@@ -212,12 +220,30 @@ function NautilusNavigatorMethod({
         );
         SetConvertData(newConData);
 
+        // update referencePoints  
+        const updatedRef = newConData!.referencePoints.flatMap((d: number[]) => [
+            d[newConData!.referencePoints[0].length - 1],
+        ])
+        SetReferencePoint(
+            updatedRef
+        );
+        const updatedBound = newConData!.boundaries.flatMap((d: number[]) => [
+            d[newConData!.boundaries[0].length - 1],
+        ]);
+        SetBoundaryPoint(
+            updatedBound
+        );
+
+
         //SetDataArchive(dataArchive)
         SetCurrentStep(step);
         SetPrevious(true); // state to true so iterate works properly
         SetShowFinal(false);
     };
 
+    const checkSolution = () => {
+        // get decision variables from server
+    }
 
     // COMPONENT ACTIVITIES
 
@@ -332,7 +358,6 @@ function NautilusNavigatorMethod({
                     };
 
                     // put over the old one since we want the steps go along with the drawing, drawing needs more than one point to work
-                    //SetDataArchive((dataArchive) => [...dataArchive!, newArchiveData]);
                     SetStartArchive(newArchiveData)
                     const convertedData = convertData(
                         newArchiveData,
@@ -519,37 +544,34 @@ function NautilusNavigatorMethod({
                             navigationPoint: body.response.navigation_point,
                         };
 
-                        // TODO: refactor, another hacky fix for hacky code.
-                        // TODO: this has more idea but now since dataARch[0] has step 0, it does weird thing.
-                        // 
-                        //if (body.response.step_number === 1) {
-                        // TODO: ^^
-                        // newArchiveData = dataArchive![0];
-                        //SetDataArchive(dataArchive => [...dataArchive, newArchiveData])
-                        //    SetDataArchive([newArchiveData])
-                        //}
-                        //else {
                         SetDataArchive((dataArchive) => [...dataArchive!, newArchiveData]);
-                        //}
 
                         // TODO: here we still draw from the newest data though.
                         const convertedData = convertData(
                             newArchiveData,
-                            //dataArchive[dataArchive.length - 1], // this has the weird step now.
                             activeProblemInfo!.minimize
                         );
                         SetConvertData(convertedData);
                         SetCurrentStep(convertedData.stepsTaken);
+                        // update referencePoints  
+                        const updatedRef = convertedData!.referencePoints.flatMap((d: number[]) => [
+                            d[convertedData!.referencePoints[0].length - 1],
+                        ]);
+                        SetReferencePoint(updatedRef);
+                        const updatedBound = convertedData!.boundaries.flatMap((d: number[]) => [
+                            d[convertedData!.boundaries[0].length - 1],
+                        ]);
+                        SetBoundaryPoint(updatedBound);
 
                         if (newArchiveData.distance === 100) {
                             console.log("Method finished with 100 steps");
                             SetIterateNavi(false);
                             SetLoading(false);
 
-                            //SetCurrentStep(convertedData.stepsTaken + 1);
                             SetFinalObjectives(
                                 response.navigation_point.map((v: number) => [-v])
                             );
+
                             SetShowFinal(true);
                             return;
                         }
@@ -628,6 +650,23 @@ function NautilusNavigatorMethod({
                                             );
                                             updatePoint(boundy, false);
                                         }}
+                                        handleGoBack={(s: number) => {
+                                            // if iteration have to stop iteration first
+                                            if (itestateRef.current === true) {
+                                                SetIterateNavi(false);
+                                            }
+                                            console.log("ASKEL", s)
+                                            // checks for step being correct etc..
+                                            if (s > currentStep) {
+                                                // do nothing
+                                                console.log("cant step to the future")
+                                            }
+                                            if (s < 1) {
+                                                console.log("not possible value")
+                                            }
+                                            SetCurrentStep(s)
+                                            goBack(s)
+                                        }}
                                         dimensionsMaybe={dims}
                                     />
                                 </div>
@@ -679,7 +718,7 @@ function NautilusNavigatorMethod({
                         </Col>
                         <Col sm={2}>
                             {!loading && !iterateNavi && (
-                                <Button size={"lg"} onClick={toggleIteration}>
+                                <Button disabled={false} size={"lg"} onClick={toggleIteration}>
                                     Start Navigation
                                 </Button>
                             )}
@@ -699,6 +738,7 @@ function NautilusNavigatorMethod({
                         <Col sm={1}>
                             <InputButton
                                 stepNumber={currentStep}
+                                disabled={prevRef.current}
                                 handleChange={(step: number) => {
                                     goBack(step);
                                 }}
@@ -706,11 +746,11 @@ function NautilusNavigatorMethod({
                         </Col>
                         <Col>
                             {showFinal && (
-                                <p>
-                                    {" "}
-                                    Objective values: {finalObjectives[0]}, {finalObjectives[1]},{" "}
-                                    {finalObjectives[2]}{" "}
-                                </p>
+                                // TODO: add the textarea here to be filled with data from checksol
+                                //const testVars = [[0,0,0],[1,1,1,1,1,1]]
+                                <Button size={"lg"} onClick={checkSolution}>
+                                    Check Solution
+                                </Button>
                             )}
                         </Col>
                     </Row>
