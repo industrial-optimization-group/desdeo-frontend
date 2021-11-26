@@ -5,12 +5,11 @@ import {
     NavigationData,
 } from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col, Button, Card } from "react-bootstrap";
 import ReactLoading from "react-loading";
 import { NavigationBars } from "desdeo-components";
 import Slider from "@material-ui/core/Slider";
 import InputForm from "../components/InputForm";
-import InputButton from "../components/InputButton";
 
 // TODO: should be imported, and need to update the NavigationData type in NavigationBars /types
 // Test with 7 maximizable objectives.. only possible to test the drawing I guess..
@@ -66,31 +65,29 @@ function NautilusNavigatorMethod({
     dRef.current = dataArchive;
 
     // handles speed.
-    const speedo = 500; // in ms. speedo / speed, is the current speed of iteration
+    const speedo = 2000; // in ms. speedo / speed, is the current speed of iteration
     const [speed, SetSpeed] = useState<number>(1);
     const speedRef = useRef<number>();
     speedRef.current = speed;
 
     const [currentStep, SetCurrentStep] = useState<number>(1);
 
-    //const stepRef = useRef<number>();
-    //stepRef.current = currentStep
     const [goPrevious, SetPrevious] = useState<boolean>(false);
     const prevRef = useRef<boolean>(false);
     prevRef.current = goPrevious;
 
-    // yleiset
+    // general 
     const [fetchedInfo, SetFetchedInfo] = useState<boolean>(false);
     const [loading, SetLoading] = useState<boolean>(false);
 
     const [satisfied, SetSatisfied] = useState<boolean>(false);
     const [showFinal, SetShowFinal] = useState<boolean>(false);
     //const [alternatives, SetAlternatives] = useState<ObjectiveData>();
-    const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
-    //const [finalVariables, SetFinalVariables] = useState<number[]>([]);
+    //const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
 
-    // TODO: remove later
-    const testVars = [[0, 0, 0, 0, 0, 0], [1, 1, 1, 1, 1, 1]]
+
+    // TODO: set decision variables here
+    const [finalVariables, SetFinalVariables] = useState<number[]>([]);
 
 
     // default dims. Change height to fit objectives better, currently no adaptive chartdims.
@@ -201,13 +198,11 @@ function NautilusNavigatorMethod({
 
     // TODO: basic idea works, to be done better.
     const goBack = (step: number) => {
-
         // need to stop iteration if going back
         if (itestateRef.current === true) {
             SetIterateNavi(false);
             //ite
         }
-
         if (step > currentStep) {
             console.log("cant go back to the future");
             return;
@@ -219,7 +214,6 @@ function NautilusNavigatorMethod({
             activeProblemInfo!.minimize
         );
         SetConvertData(newConData);
-
         // update referencePoints  
         const updatedRef = newConData!.referencePoints.flatMap((d: number[]) => [
             d[newConData!.referencePoints[0].length - 1],
@@ -233,8 +227,6 @@ function NautilusNavigatorMethod({
         SetBoundaryPoint(
             updatedBound
         );
-
-
         //SetDataArchive(dataArchive)
         SetCurrentStep(step);
         SetPrevious(true); // state to true so iterate works properly
@@ -243,6 +235,7 @@ function NautilusNavigatorMethod({
 
     const checkSolution = () => {
         // get decision variables from server
+        SetFinalVariables([1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0])
     }
 
     // COMPONENT ACTIVITIES
@@ -406,7 +399,7 @@ function NautilusNavigatorMethod({
             console.log(currentStep);
 
             // turn these for the server
-            console.log("refe", referencePoint);
+            //console.log("refe", referencePoint);
             // TODO: handle these better. Should never fire though.
             if (activeProblemInfo === undefined) {
                 console.log("not ok, activeProblem not defined");
@@ -491,7 +484,7 @@ function NautilusNavigatorMethod({
                         // ok
                         const body = await res.json();
                         const response = body.response;
-                        console.log("vastaus", response);
+                        //console.log("vastaus", response);
 
                         // TODO: 
                         const dataArchive = dRef.current;
@@ -568,10 +561,6 @@ function NautilusNavigatorMethod({
                             SetIterateNavi(false);
                             SetLoading(false);
 
-                            SetFinalObjectives(
-                                response.navigation_point.map((v: number) => [-v])
-                            );
-
                             SetShowFinal(true);
                             return;
                         }
@@ -631,8 +620,8 @@ function NautilusNavigatorMethod({
                         <Col xxl={10} className="mr-auto">
                             {fetchedInfo && (
                                 <div className={"mt-5"}>
-                                    {console.log("ennen piirtoa archive", dataArchive)}
-                                    {console.log("ennen piirtoa conv data", convertedData)}
+                                    {/* console.log("ennen piirtoa archive", dataArchive) */}
+                                    {/*console.log("ennen piirtoa conv data", convertedData) */}
                                     <NavigationBars
                                         problemInfo={trueProbData(activeProblemInfo!)}
                                         problemData={convertedData!}
@@ -655,7 +644,7 @@ function NautilusNavigatorMethod({
                                             if (itestateRef.current === true) {
                                                 SetIterateNavi(false);
                                             }
-                                            console.log("ASKEL", s)
+                                            //console.log("ASKEL", s)
                                             // checks for step being correct etc..
                                             if (s > currentStep) {
                                                 // do nothing
@@ -675,39 +664,42 @@ function NautilusNavigatorMethod({
                     </Row>
                     <Row>
                         <Col sm={2} className="mt-auto">
-                            <Slider
-                                value={speed}
-                                onChange={(_, val) => {
-                                    SetSpeed(val as number);
-                                }}
-                                aria-labelledby="discrete-slider"
-                                valueLabelDisplay="off"
-                                step={1}
-                                marks={[
-                                    {
-                                        value: 1,
-                                        label: "1",
-                                    },
-                                    {
-                                        value: 2,
-                                        label: "2",
-                                    },
-                                    {
-                                        value: 3,
-                                        label: "3",
-                                    },
-                                    {
-                                        value: 4,
-                                        label: "4",
-                                    },
-                                    {
-                                        value: 5,
-                                        label: "5",
-                                    },
-                                ]}
-                                min={1}
-                                max={5}
-                            />
+                            <Card border="light">
+                                <Card.Body>Iteration Speed</Card.Body>
+                                <Slider
+                                    value={speed}
+                                    onChange={(_, val) => {
+                                        SetSpeed(val as number);
+                                    }}
+                                    aria-labelledby="discrete-slider"
+                                    valueLabelDisplay="off"
+                                    step={1}
+                                    marks={[
+                                        {
+                                            value: 1,
+                                            label: "1",
+                                        },
+                                        {
+                                            value: 2,
+                                            label: "2",
+                                        },
+                                        {
+                                            value: 3,
+                                            label: "3",
+                                        },
+                                        {
+                                            value: 4,
+                                            label: "4",
+                                        },
+                                        {
+                                            value: 5,
+                                            label: "5",
+                                        },
+                                    ]}
+                                    min={1}
+                                    max={5}
+                                />
+                            </Card>
                         </Col>
                         <Col sm={2}>
                             {loading && (
@@ -735,28 +727,22 @@ function NautilusNavigatorMethod({
                                 </Button>
                             )}
                         </Col>
-                        <Col sm={1}>
-                            <InputButton
-                                stepNumber={currentStep}
-                                disabled={prevRef.current}
-                                handleChange={(step: number) => {
-                                    goBack(step);
-                                }}
-                            />
-                        </Col>
                         <Col>
                             {showFinal && (
-                                // TODO: add the textarea here to be filled with data from checksol
-                                //const testVars = [[0,0,0],[1,1,1,1,1,1]]
-                                <Button size={"lg"} onClick={checkSolution}>
-                                    Check Solution
-                                </Button>
+                                <>
+                                    <Button size={"lg"} onClick={checkSolution}>
+                                        Check Solution
+                                    </Button>
+                                    <textarea name="finalVariables" defaultValue={JSON.stringify(finalVariables)}>
+                                    </textarea>
+                                </>
                             )}
                         </Col>
                     </Row>
                 </>
-            )}
-        </Container>
+            )
+            }
+        </Container >
     );
 }
 export default NautilusNavigatorMethod;

@@ -54,11 +54,11 @@ function InputForm({
     }, [referencePoint]);
 
     const onSubmit = (data: FormData) => {
-        console.log("dataa", data)
+        //console.log("dataa", data)
         setReferencePoint(data.values);
     };
 
-    console.log("called form", JSON.stringify(referencePoint));
+    //console.log("called form", JSON.stringify(referencePoint));
 
     return (
         <Form action="" onSubmit={handleSubmit(onSubmit)}>
