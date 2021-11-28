@@ -10,6 +10,7 @@ import ReactLoading from "react-loading";
 import { NavigationBars } from "desdeo-components";
 import Slider from "@material-ui/core/Slider";
 import InputForm from "../components/InputForm";
+import { CSVDownload, CSVLink } from "react-csv";
 
 // TODO: should be imported, and need to update the NavigationData type in NavigationBars /types
 // Test with 7 maximizable objectives.. only possible to test the drawing I guess..
@@ -65,7 +66,7 @@ function NautilusNavigatorMethod({
     dRef.current = dataArchive;
 
     // handles speed.
-    const speedo = 2000; // in ms. speedo / speed, is the current speed of iteration
+    const speedo = 200; // in ms. speedo / speed, is the current speed of iteration
     const [speed, SetSpeed] = useState<number>(1);
     const speedRef = useRef<number>();
     speedRef.current = speed;
@@ -87,7 +88,8 @@ function NautilusNavigatorMethod({
 
 
     // TODO: set decision variables here
-    const [finalVariables, SetFinalVariables] = useState<number[]>([]);
+    const [finalVariables, SetFinalVariables] = useState<number[][]>([]);
+    const [finalObjectives, SetFinalObjectives] = useState<number[][]>([]);
 
 
     // default dims. Change height to fit objectives better, currently no adaptive chartdims.
@@ -235,7 +237,10 @@ function NautilusNavigatorMethod({
 
     const checkSolution = () => {
         // get decision variables from server
-        SetFinalVariables([1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0])
+        console.log("checking!");
+
+        const rows = finalObjectives.map((objectives, i) => objectives.concat(finalVariables[i]));
+        console.log(rows);
     }
 
     // COMPONENT ACTIVITIES
@@ -341,7 +346,7 @@ function NautilusNavigatorMethod({
                         boundaries: activeProblemInfo.minimize.map((d, i) => {
                             return [nadir[i]].concat(nadir[i]);
                         }),
-                        totalSteps: 100, // this has to be 100, since step 1 is the first step according to the server.
+                        totalSteps: 40, // this has to be 100, since step 1 is the first step according to the server.
                         stepsTaken: body.response.step_number,
                         //stepsTaken: 0,
                         distance: body.response.distance, // check for possible float errors
@@ -469,6 +474,7 @@ function NautilusNavigatorMethod({
                         console.log(`Trying to iterate with undefined ${resp}`);
                         return;
                     }
+                    console.log("call");
                     const res = await fetch(`${apiUrl}/method/control`, {
                         method: "POST",
                         headers: {
@@ -479,6 +485,7 @@ function NautilusNavigatorMethod({
                             response: resp,
                         }),
                     });
+                    console.log("response");
 
                     if (res.status === 200) {
                         // ok
@@ -529,7 +536,7 @@ function NautilusNavigatorMethod({
                                     ].concat(d);
                                 }
                             ),
-                            totalSteps: 100,
+                            totalSteps: 40,
                             stepsTaken: body.response.step_number,
                             distance: body.response.distance, // check for possible float errors
                             reachableIdx: body.response.reachable_idx,
@@ -557,11 +564,39 @@ function NautilusNavigatorMethod({
                         SetBoundaryPoint(updatedBound);
 
                         if (newArchiveData.distance === 100) {
-                            console.log("Method finished with 100 steps");
+                            console.log("Method finished with 40 steps");
+                            // fetch final solution
+                            const respFinal = {
+                                reference_point: refe,
+                                speed: speedRef.current,
+                                go_to_previous: false,
+                                stop: true,
+                                user_bounds: bounds,
+                            };
+
+                            const resFinal = await fetch(`${apiUrl}/method/control`, {
+                                method: "POST",
+                                headers: {
+                                    Authorization: `Bearer ${tokens.access}`,
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                    response: respFinal,
+                                }),
+                            });
+
+                            const bodyFinal = await resFinal.json();
+
+                            const variables = bodyFinal.response.decision_vectors;
+                            const objectives = bodyFinal.response.objective_vectors;
+                            SetFinalVariables(variables);
+                            SetFinalObjectives(objectives);
+
                             SetIterateNavi(false);
                             SetLoading(false);
 
                             SetShowFinal(true);
+
                             return;
                         }
                         // hacky way to make speed matter
@@ -730,11 +765,7 @@ function NautilusNavigatorMethod({
                         <Col>
                             {showFinal && (
                                 <>
-                                    <Button size={"lg"} onClick={checkSolution}>
-                                        Check Solution
-                                    </Button>
-                                    <textarea name="finalVariables" defaultValue={JSON.stringify(finalVariables)}>
-                                    </textarea>
+                                    <CSVLink data={finalObjectives.map((objectives, i) => objectives.concat(finalVariables[i]))}>Export solution(s) to CSV</CSVLink>
                                 </>
                             )}
                         </Col>
