@@ -589,9 +589,24 @@ function NautilusNavigatorMethod({
 
                             const variables = bodyFinal.response.decision_vectors;
                             const objectives = bodyFinal.response.objective_vectors;
-                            SetFinalVariables(variables);
-                            SetFinalObjectives(objectives);
 
+                            if (variables.length > 0  && (typeof variables[0] === "number")) {
+                                // non-empty and first element in number
+                                SetFinalVariables([variables]);
+                            } else if (variables.length === 0) {
+                                // empty
+                                SetFinalVariables([variables]);
+                            } else {
+                                // non-empty, first element something else than number (must be a list)
+                                SetFinalVariables(variables);
+                            }
+                            if (objectives.length > 0  && (typeof objectives[0] === "number")) {
+                                SetFinalObjectives([objectives]);
+                            } else if (objectives.length === 0) {
+                                SetFinalObjectives([objectives]);
+                            } else {
+                                SetFinalObjectives(objectives);
+                            }
                             SetIterateNavi(false);
                             SetLoading(false);
 
