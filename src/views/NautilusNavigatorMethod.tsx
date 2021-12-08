@@ -5,7 +5,7 @@ import {
     NavigationData,
 } from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
-import { Container, Row, Col, Button, Card } from "react-bootstrap";
+import { Container, Row, Col, Button, Card, ProgressBar } from "react-bootstrap";
 import ReactLoading from "react-loading";
 import { NavigationBars } from "desdeo-components";
 import Slider from "@material-ui/core/Slider";
@@ -76,6 +76,9 @@ function NautilusNavigatorMethod({
     const [goPrevious, SetPrevious] = useState<boolean>(false);
     const prevRef = useRef<boolean>(false);
     prevRef.current = goPrevious;
+    
+    // keep track of the distance traveled to show in the progress bar
+    const [distanceTraveled, SetDistanceTraveled] = useState<number>(0);
 
     // general 
     const [fetchedInfo, SetFetchedInfo] = useState<boolean>(false);
@@ -215,6 +218,8 @@ function NautilusNavigatorMethod({
             dataArchive![step - 1],
             activeProblemInfo!.minimize
         );
+        // Update distance traveled
+        SetDistanceTraveled(dataArchive![step - 1].distance === undefined ? 0 : dataArchive![step - 1].distance!)
         SetConvertData(newConData);
         // update referencePoints  
         const updatedRef = newConData!.referencePoints.flatMap((d: number[]) => [
@@ -375,6 +380,9 @@ function NautilusNavigatorMethod({
                             d[convertedData.boundaries[0].length - 1],
                         ])
                     );
+
+                    // update distance traveled
+                    SetDistanceTraveled(body.response.distance);
 
                     SetFetchedInfo(true);
                     SetMethodStarted(true);
@@ -563,6 +571,10 @@ function NautilusNavigatorMethod({
                         ]);
                         SetBoundaryPoint(updatedBound);
 
+                        // Update distance traveled
+                        SetDistanceTraveled(body.response.distance);
+
+
                         if (newArchiveData.distance === 100) {
                             console.log("Method finished with 40 steps");
                             // fetch final solution
@@ -638,6 +650,9 @@ function NautilusNavigatorMethod({
                 <>
                     <Row>
                         <Col md={2} className="mt-5">
+                            <p>Total distance traveled:</p>
+                            <ProgressBar now={distanceTraveled} animated label={`${Math.round(distanceTraveled)}%`}/>
+                            <br/>
                             {fetchedInfo && (
                                 <>
                                     <InputForm
