@@ -1,46 +1,84 @@
-# Getting Started with Create React App
+# desdeo-frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# About
 
-## Available Scripts
+`desdeo-frontend` is a graphical user interface (GUI) for various interactive multiobjective
+optimization methods found in [DESDEO](https://desdeo.it.jyu.fi/).
+`desdeo-frontend` is related to the ecosystem of packages
+belonging to DESDEO. The GUI can be used to define, explore, and solve multiobjective optimization
+problems of varying type interactively. `desdeo-frontend` has been developed as a [React](https://reactjs.org/) application
+in [TypeScript](https://www.typescriptlang.org/). `desdeo-frontend` is also an example on how the
+interactive visualizations implemented in [desdeo-components](https://github.com/gialmisi/desdeo-components)
+may be used, and how the [desdeo-webapi](https://github.com/gialmisi/desdeo-webapi)
+API can be utilized in practice.
 
-In the project directory, you can run:
+# Installation and usage
 
-### `npm start`
+## Installation
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Before installing `desdeo-frontend`, make sure a server with
+[desdeo-webapi](https://github.com/gialmisi/desdeo-webapi) is first
+installed and running, either locally or on some remote machine. To run it locally, follow the instructions
+on [desdeo-webapi](https://github.com/gialmisi/desdeo-webapi)'s GitHub page.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+From here on, it is assumed that a server is run locally with the address `http://127.0.0.1:5000`.
 
-### `npm test`
+To install ``desdeo-frontend``, make sure your system supports a [Node.js](https://nodejs.org/en/) environment and a
+dependency manager, such as [npm](https://docs.npmjs.com/cli/v7/commands/npm) or [yarn](https://yarnpkg.com/) is available.
+`yarn` is recommended as it has been tested to be working. From here on, it is assumed that `yarn` is available.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+When `Node.js` is installed and a package manager is available, `desdeo-frontend` can be installed by running the
+following commans:
 
-### `npm run build`
+```
+$> git clone git@github.com:gialmisi/desdeo-frontend.git
+$> cd desdeo-frontend
+$> yarn install 
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+To run the GUI application, first, make sure that the variable `API_URL` in `src/App.tsx` is set with a valid URL
+(e.g., `http://127.0.0.1:5000`). Then, run the `start` script by issuing the command:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+$> yarn run start
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+This should launch the GUI application in a new tab in your web browser.
 
-### `npm run eject`
+## Usage
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+To use the GUI, a username and password are required. For locally running the GUI, a dummy user(s) with a password(s) can
+be set readily by utilzing the utilities provided in [desdeo-webapi](git@github.com:gialmisi/desdeo-frontend.git).
+After logging in, the navigation bar will update with menus to access various features of the GUI.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+![login](./resources/login.gif)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+# Features
 
-## Learn More
+## Supported problem types
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Currently, only a dummy problem can be defined through the interface. However, the intractive methods support
+solving problems with both analytical formualtions and/or discrete formulations. Problems must currently be added
+manually to the databse in `desdeo-webapi`. See its documentation for additiona details. 
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Supported interactive methods
+Currently interfaces for the following multiobjective optimization methods have been implemented:
+
+### Reference point method
+
+![reference-point-method](./resources/rpm.gif)
+
+### Synchronous NIMBUS
+
+![synchronous-nimbus](./resources/nimbus.gif)
+
+### NAUTILUS Navigator
+
+![nautilus-navigator](./resources/nautnav.gif)
+
+# Contributors
+
+Below are listed the major contributors to `desdeo-frontend`. If you feel you should be part of this list, make a PR.
+- [Giovanni Misitano](https://github.com/gialmisi) - **maintainer**
+- [Juuso Pajasmaa](https://github.com/jpajasmaa)

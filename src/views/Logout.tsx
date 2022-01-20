@@ -34,10 +34,15 @@ function Logout({
           console.log(await res_access.json());
           throw new Error("Could not revoke access token.");
         }
+<<<<<<< HEAD
       } catch (err) {
         if (err instanceof Error){
           SetErrMsg(err.message);
         }
+=======
+      } catch (err: any) {
+        SetErrMsg(err.message);
+>>>>>>> master
         SetLogoutOk(false);
         return;
       }
@@ -50,10 +55,15 @@ function Logout({
         if (res_refresh.status != 200) {
           throw new Error("Could not revoke refresh token.");
         }
+<<<<<<< HEAD
       } catch (err) {
         if (err instanceof Error){
           SetErrMsg(err.message);
         }
+=======
+      } catch (err: any) {
+        SetErrMsg(err.message);
+>>>>>>> master
         SetLogoutOk(false);
         return;
       }
