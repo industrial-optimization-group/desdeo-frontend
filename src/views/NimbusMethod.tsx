@@ -10,7 +10,7 @@ import ClassificationsInputForm from "../components/ClassificationsInputForm";
 import { Container, Row, Col, Button, Form, Table } from "react-bootstrap";
 import ReactLoading from "react-loading";
 import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
-import { HorizontalBars, ParallelAxes } from "visual-components";
+import { HorizontalBars, ParallelAxes } from "desdeo-components";
 import SolutionTable from "../components/SolutionTable";
 import SolutionTableMultiSelect from "../components/SolutionTableMultiSelect";
 import { Link } from "react-router-dom";
@@ -191,7 +191,7 @@ function NimbusMethod({
           if (res.status === 200) {
             // ok
             const body = await res.json();
-            const response = JSON.parse(body.response);
+            const response = body.response;
             SetNewSolutions(
               ParseSolutions(response.objectives, activeProblemInfo!)
             );
@@ -229,7 +229,7 @@ function NimbusMethod({
           });
           if (res.status === 200) {
             const body = await res.json();
-            const response = JSON.parse(body.response);
+            const response = body.response;
 
             // update the solutions to be shown
             const toBeShown = ParseSolutions(
@@ -290,7 +290,7 @@ function NimbusMethod({
           if (res.status === 200) {
             // ok
             const body = await res.json();
-            const response = JSON.parse(body.response);
+            const response = body.response;
 
             if (computeIntermediate) {
               // update solutions to be shown
@@ -355,7 +355,7 @@ function NimbusMethod({
           if (res.status === 200) {
             // Ok
             const body = await res.json();
-            const response = JSON.parse(body.response);
+            const response = body.response;
 
             if (cont) {
               // continue iterating

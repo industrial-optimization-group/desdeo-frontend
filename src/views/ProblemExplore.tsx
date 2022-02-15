@@ -79,7 +79,7 @@ function ProblemExplore({
         <Container>
           <Tab.Container
             id="list-group-tabs-example"
-            activeKey={key}
+            activeKey={key!}
             onSelect={(k) => SetKey(k)}
           >
             <Row>

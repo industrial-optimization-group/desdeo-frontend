@@ -34,8 +34,10 @@ function Logout({
           console.log(await res_access.json());
           throw new Error("Could not revoke access token.");
         }
-      } catch (err) {
-        SetErrMsg(err.message);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          SetErrMsg(err.message);
+        }
         SetLogoutOk(false);
         return;
       }
@@ -49,7 +51,9 @@ function Logout({
           throw new Error("Could not revoke refresh token.");
         }
       } catch (err) {
-        SetErrMsg(err.message);
+        if (err instanceof Error) {
+          SetErrMsg(err.message);
+        }
         SetLogoutOk(false);
         return;
       }

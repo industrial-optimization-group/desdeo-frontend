@@ -10,7 +10,7 @@ import ReferencePointInputForm from "../components/ReferencePointInputForm";
 import { Table, Container, Row, Col, Button, Form } from "react-bootstrap";
 import ReactLoading from "react-loading";
 import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
-import { HorizontalBars, ParallelAxes } from "visual-components";
+import { HorizontalBars, ParallelAxes } from "desdeo-components";
 import SolutionTable from "../components/SolutionTable";
 import { Link } from "react-router-dom";
 
@@ -214,7 +214,7 @@ function ReferencePointMethod({
         if (res.status === 200) {
           // ok
           const body = await res.json();
-          const response = JSON.parse(body.response);
+          const response = body.response;
           SetHelpMessage(response.message);
           SetReferencePoint(response.current_solution);
           SetCurrentPoint(response.current_solution);
@@ -249,7 +249,7 @@ function ReferencePointMethod({
         if (res.status === 200) {
           // ok
           const body = await res.json();
-          const response = JSON.parse(body.response);
+          const response = body.response;
           SetFinalObjectives(response.objective_vector);
           SetFinalVariables(response.solution);
           SetShowFinal(true);
