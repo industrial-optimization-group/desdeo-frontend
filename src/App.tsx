@@ -10,6 +10,7 @@ import ProblemDefinition from "./views/ProblemDefinition";
 import ProblemExplore from "./views/ProblemExplore";
 import ReferencePointMethod from "./views/ReferencePointMethod";
 import NimbusMethod from "./views/NimbusMethod";
+import ENautilusMethod from "./views/ENautilusMethod";
 import MethodCreate from "./views/MethodCreate";
 import Questionnaire from "./views/Questionnaire";
 import { Tokens } from "./types/AppTypes";
@@ -124,6 +125,16 @@ function App() {
             )}
             {chosenMethod === "synchronous_nimbus" && (
               <NimbusMethod
+                apiUrl={API_URL}
+                isLoggedIn={isLoggedIn}
+                loggedAs={loggedAs}
+                tokens={tokens}
+                methodCreated={methodCreated}
+                activeProblemId={activeProblemId}
+              />
+            )}
+            {chosenMethod === "enautilus" && (
+              <ENautilusMethod
                 apiUrl={API_URL}
                 isLoggedIn={isLoggedIn}
                 loggedAs={loggedAs}

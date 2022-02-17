@@ -26,8 +26,22 @@ function LandingPage({
 }: LandingPageProps) {
   const [problemId, SetProblemId] = useState<number>(-1);
   const [state, SetState] = useState<
-    "reference_point_method" | "synchronous_nimbus" | "home"
+    "reference_point_method" | "synchronous_nimbus" | "enautilus" | "home"
   >("home");
+
+  function StateToName(stateName: "reference_point_method" | "synchronous_nimbus" | "enautilus" | "home") {
+    if (stateName === "reference_point_method") {
+      return "Reference point method";
+    } else if (stateName === "synchronous_nimbus") {
+      return "Synchronous NIMBUS";
+    } else if (stateName === "enautilus") {
+      return "E-NAUTILUS";
+    } else if (stateName == "home") {
+      return "No method selected";
+    } else {
+      return "Something went wrong";
+    }
+  }
 
   useEffect(() => {
     if (isLoggedIn && tokens.access !== "") {
@@ -104,7 +118,7 @@ function LandingPage({
 
     createMethod();
     SetState(
-      methodName as "reference_point_method" | "synchronous_nimbus" | "home"
+      methodName as "reference_point_method" | "synchronous_nimbus" | "enautilus" | "home"
     );
     return;
   };
@@ -152,29 +166,32 @@ function LandingPage({
             </Col>
           </Row>
           <Row>
-            <Col sm={2}></Col>
-            <Col sm={4}>
+            <Col sm={1}></Col>
+            <Col sm={3}>
               <Button onClick={(_) => onClick("reference_point_method")}>
                 {"Reference point method"}
               </Button>
             </Col>
-            <Col sm={4}>
+            <Col sm={3}>
+              <Button onClick={(_) => onClick("enautilus")}>
+                {"E-NAUTILUS"}
+              </Button>
+            </Col>
+            <Col sm={3}>
               <Button onClick={(_) => onClick("synchronous_nimbus")}>
                 {"Synchronous NIMBUS"}
               </Button>
             </Col>
-            <Col sm={2}></Col>
+            <Col sm={1}></Col>
           </Row>
         </>
       )}
       {isLoggedIn &&
         (state === "reference_point_method" ||
-          state === "synchronous_nimbus") && (
+          state === "synchronous_nimbus" || state === "enautilus") && (
           <>
             <h3>{`${
-              state === "reference_point_method"
-                ? "Reference point method"
-                : "Synchronous NIMBUS"
+              StateToName(state)
             } chosen`}</h3>
             <Button as={Link} to="/method/optimize">
               {"Start optimizing!"}
