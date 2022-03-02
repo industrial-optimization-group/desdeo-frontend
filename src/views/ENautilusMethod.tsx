@@ -38,6 +38,7 @@ interface IterationState {
   lowerBounds: number[][];
   distances: number[];
   iterationsLeft: number;
+  prefPointIndex: number;
 }
 
 interface EnautilusMethodProps {
@@ -80,18 +81,13 @@ function ENautilusMethod({
       lowerBounds: [[]],
       distances: [],
       iterationsLeft: -1,
+      prefPointIndex: -1,
     });
 
   // Keeping track of the previous iteration so that stepping back is possible
-  const [prevIterationsState, SetPrevIterationState] = useState<IterationState>(
-    {
-      points: [[]],
-      upperBounds: [[]],
-      lowerBounds: [[]],
-      distances: [],
-      iterationsLeft: -1,
-    }
-  );
+  const [prevIterationsStates, SetPrevIterationStates] = useState<
+    IterationState[]
+  >([]);
 
   // Form hooks and state variables
   const {
@@ -235,6 +231,7 @@ function ENautilusMethod({
             upperBounds: response.upper_bounds,
             iterationsLeft: response.n_iterations_left,
             distances: response.distances,
+            prefPointIndex: -1,
           });
 
           SetPrevPrefPoint(response.nadir);
@@ -260,20 +257,39 @@ function ENautilusMethod({
     SetLoading(true);
 
     try {
+      let payload = {};
+      if (stepBack) {
+        const prevIterationsState =
+          prevIterationsStates[prevIterationsStates.length - 1];
+        payload = {
+          response: {
+            preferred_point_index: preferredPointIndex,
+            change_remaining: changeRemaining,
+            step_back: stepBack,
+            iterations_left: prevIterationsState.iterationsLeft,
+            prev_solutions: prevIterationsState.points,
+            prev_lower_bounds: prevIterationsState.lowerBounds,
+            prev_upper_bounds: prevIterationsState.upperBounds,
+            prev_distances: prevIterationsState.distances,
+          },
+        };
+      } else {
+        payload = {
+          response: {
+            preferred_point_index: preferredPointIndex,
+            change_remaining: changeRemaining,
+            step_back: stepBack,
+            iterations_left: newIterationsLeft,
+          },
+        };
+      }
       const res = await fetch(`${apiUrl}/method/control`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${tokens.access}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          response: {
-            preferred_point_index: preferredPointIndex,
-            change_remaining: changeRemaining,
-            iterations_left: newIterationsLeft,
-            step_back: false,
-          },
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (res.status === 200) {
@@ -281,21 +297,56 @@ function ENautilusMethod({
         const body = await res.json();
         const response = body.response;
 
-        // update previous iteration
-        SetPrevIterationState(currentIterationState);
-        SetPrevPrefPoint(currentIterationState.points[preferredPointIndex]);
+        if (stepBack) {
+          // Pop the last state
+          const statesCopy = prevIterationsStates;
+          statesCopy.pop();
+          SetPrevIterationStates(statesCopy);
 
-        // update current iteration
-        SetCurrentIterationState({
-          points: response.points,
-          lowerBounds: response.lower_bounds,
-          upperBounds: response.upper_bounds,
-          iterationsLeft: response.n_iterations_left,
-          distances: response.distances,
-        });
+          const currentState = {
+            points: response.points,
+            lowerBounds: response.lower_bounds,
+            upperBounds: response.upper_bounds,
+            iterationsLeft: response.n_iterations_left,
+            distances: response.distances,
+            prefPointIndex: preferredPointIndex,
+          };
+
+          // Update previous pref point
+          SetPrevPrefPoint(
+            statesCopy[statesCopy.length - 1].points[
+              statesCopy[statesCopy.length - 1].prefPointIndex
+            ]
+          );
+          SetCurrentIterationState(currentState);
+        } else {
+          // iterate normally
+          // add the current state to the previous states
+          SetPrevIterationStates(
+            prevIterationsStates.concat(currentIterationState)
+          );
+
+          // new state
+          const newState = {
+            points: response.points,
+            lowerBounds: response.lower_bounds,
+            upperBounds: response.upper_bounds,
+            iterationsLeft: response.n_iterations_left,
+            distances: response.distances,
+            prefPointIndex: preferredPointIndex,
+          };
+
+          // Update previous solution
+          SetPrevPrefPoint(currentIterationState.points[preferredPointIndex]);
+
+          // Update current state with the new state
+          SetCurrentIterationState(newState);
+        }
+
         SetPreferredPointIndex(-1);
         SetNumOfIterations(response.n_iterations_left);
         SetChangeRemaining(false);
+        SetStepBack(false);
       } else {
         console.log(`iteration not ok, got response ${res.status}`);
       }
@@ -403,12 +454,12 @@ function ENautilusMethod({
         <Row>
           <Col sm={4}></Col>
           <Col sm={4}>
-            {preferredPointIndex === -1 && (
+            {preferredPointIndex === -1 && !stepBack && (
               <Button block={true} size={"lg"} disabled={true} variant={"info"}>
                 Select a point first
               </Button>
             )}
-            {preferredPointIndex >= 0 && (
+            {preferredPointIndex >= 0 && !stepBack && (
               <Button
                 block={true}
                 size={"lg"}
@@ -420,6 +471,16 @@ function ENautilusMethod({
                   : changeRemaining
                   ? "Change iterations and iterate"
                   : "Iterate"}
+              </Button>
+            )}
+            {stepBack && (
+              <Button
+                block={true}
+                size={"lg"}
+                onClick={iterate}
+                disabled={loading}
+              >
+                {loading ? "Loading..." : "Step back"}
               </Button>
             )}
           </Col>
@@ -444,6 +505,7 @@ function ENautilusMethod({
                     className={"mt-3"}
                     id="remaining-switch"
                     type="switch"
+                    disabled={stepBack}
                     label={
                       changeRemaining ? (
                         <>
@@ -459,6 +521,31 @@ function ENautilusMethod({
                     }
                     checked={changeRemaining}
                     onChange={() => SetChangeRemaining(!changeRemaining)}
+                  />
+                </Col>
+                <Form.Label column sm={8} className={"mt-2"}>
+                  {"Go to previous iteration?"}
+                </Form.Label>
+                <Col sm={3}>
+                  <Form.Check
+                    className={"mt-3"}
+                    id="stepback-switch"
+                    type="switch"
+                    label={
+                      stepBack ? (
+                        <>
+                          {"no/"}
+                          <b>{"yes"}</b>
+                        </>
+                      ) : (
+                        <>
+                          <b>{"no"}</b>
+                          {"/yes"}
+                        </>
+                      )
+                    }
+                    checked={stepBack}
+                    onChange={() => SetStepBack(!stepBack)}
                   />
                 </Col>
               </Form.Group>
