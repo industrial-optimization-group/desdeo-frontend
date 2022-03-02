@@ -32,6 +32,14 @@ interface InitializationFormData {
   selectedNumOfIterations: number;
 }
 
+interface IterationState {
+  points: number[][];
+  upperBounds: number[][];
+  lowerBounds: number[][];
+  distances: number[];
+  iterationsLeft: number;
+}
+
 interface NimbusMethodProps {
   isLoggedIn: boolean;
   loggedAs: string;
@@ -49,14 +57,46 @@ function ENautilusMethod({
   methodCreated,
   activeProblemId,
 }: NimbusMethodProps) {
+  // General state variables to keep track of the current state of the method
   const [isInitialized, SetIsInitialized] = useState<boolean>(false);
   const [activeProblemInfo, SetActiveProblemInfo] = useState<ProblemInfo>();
   const [fetchedInfo, SetFetchedInfo] = useState<boolean>(false);
-  const [numOfIterations, SetNumOfIterations] = useState<number>(-1);
-  const [numOfPoints, SetNumOfPoint] = useState<number>(-1);
   const [loading, SetLoading] = useState<boolean>(false);
   const [methodStarted, SetMethodStarted] = useState<boolean>(false);
+  const [isFirstIteration, SetIsFirstIteration] = useState<boolean>(true);
 
+  // State variables for iterating the method
+  const [numOfIterations, SetNumOfIterations] = useState<number>(-1);
+  const [numOfPoints, SetNumOfPoints] = useState<number>(-1);
+  const [intermediatePoints, SetIntermediatePoints] = useState<number[][]>([
+    [],
+  ]);
+  const [preferredPointIndex, SetPreferredPointIndex] = useState<number>(-1);
+  const [changeRemaining, SetChangeRemaining] = useState<boolean>(false);
+  const [newIterationsLeft, SetNewIterationsLeft] = useState<number>(-1);
+  const [stepBack, SetStepBack] = useState<boolean>(false);
+  const [prevPrefPoint, SetPrevPrefPoint] = useState<number[]>([]);
+  const [currentIterationState, SetCurrentIterationState] =
+    useState<IterationState>({
+      points: [[]],
+      upperBounds: [[]],
+      lowerBounds: [[]],
+      distances: [],
+      iterationsLeft: -1,
+    });
+
+  // Keeping track of the previous iteration so that stepping back is possible
+  const [prevIterationsState, SetPrevIterationState] = useState<IterationState>(
+    {
+      points: [[]],
+      upperBounds: [[]],
+      lowerBounds: [[]],
+      distances: [],
+      iterationsLeft: -1,
+    }
+  );
+
+  // Form hooks and state variables
   const { register, handleSubmit, errors } = useForm<InitializationFormData>({
     mode: "onSubmit",
     defaultValues: { selectedNumOfPoints: 5, selectedNumOfIterations: 10 },
@@ -173,9 +213,26 @@ function ENautilusMethod({
         });
 
         if (res.status == 200) {
+          // initialization successful
           const body = await res.json();
           const response = body.response;
+
           console.log(response);
+
+          SetNumOfIterations(data.selectedNumOfIterations);
+          SetNumOfPoints(data.selectedNumOfPoints);
+
+          SetCurrentIterationState({
+            points: response.points,
+            lowerBounds: response.lower_bounds,
+            upperBounds: response.upper_bounds,
+            iterationsLeft: response.n_iterations,
+            distances: response.distances,
+          });
+
+          SetPrevPrefPoint(response.nadir);
+
+          SetIsInitialized(true);
         } else {
           console.log("Res status is not 200");
           // do nothing
@@ -190,6 +247,10 @@ function ENautilusMethod({
     };
     initialize();
   }
+
+  const iterate = async () => {
+    console.log("iterate");
+  };
 
   if (fetchedInfo && !isInitialized) {
     return (
@@ -270,12 +331,72 @@ function ENautilusMethod({
         </Row>
       </Container>
     );
-  } else {
+  } else if (fetchedInfo || isInitialized) {
     return (
-      <>
-        <p>Something went wrong.</p>
-      </>
+      <Container>
+        <Row>
+          <Col>
+            <h3 className="mb-3">E-NAUTILUS method</h3>
+            <p>Help: do stuff</p>
+          </Col>
+        </Row>
+        <Row>
+          <Col sm={4}></Col>
+          <Col sm={4}>
+            {preferredPointIndex === -1 && (
+              <Button block={true} size={"lg"} disabled={true} variant={"info"}>
+                Select a point first
+              </Button>
+            )}
+            {preferredPointIndex >= 0 && (
+              <Button block={true} size={"lg"} onClick={iterate}>
+                Iterate
+              </Button>
+            )}
+          </Col>
+          <Col sm={4}></Col>
+        </Row>
+        <Row>
+          <Col sm={2}></Col>
+          <Col>
+            <h4 className="mt-4">Currently selected intermediate point</h4>
+          </Col>
+          <Col sm={2}></Col>
+        </Row>
+        <Row>
+          <Col sm={6}>
+            <ParallelAxes
+              objectiveData={ToTrueValues(
+                ParseSolutions(currentIterationState.points, activeProblemInfo!)
+              )}
+              selectedIndices={
+                preferredPointIndex === -1 ? [] : [preferredPointIndex]
+              }
+              handleSelection={(x: number[]) => {
+                x.length > 0
+                  ? SetPreferredPointIndex(x.pop()!)
+                  : SetPreferredPointIndex(preferredPointIndex);
+              }}
+              oldAlternative={ToTrueValues(
+                ParseSolutions([prevPrefPoint], activeProblemInfo!)
+              )}
+            />
+          </Col>
+          <Col sm={6}>
+            <SolutionTable
+              objectiveData={ToTrueValues(
+                ParseSolutions(currentIterationState.points, activeProblemInfo!)
+              )}
+              setIndex={(x: number) => SetPreferredPointIndex(x)}
+              selectedIndex={preferredPointIndex}
+              tableTitle={"Intermediate points"}
+            />
+          </Col>
+        </Row>
+      </Container>
     );
+  } else {
+    return <p>...</p>;
   }
 }
 
