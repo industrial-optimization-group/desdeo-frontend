@@ -27,7 +27,7 @@ import { useForm } from "react-hook-form";
 import { ErrorMessage } from "@hookform/error-message";
 import { RSA_X931_PADDING } from "constants";
 
-interface InitializationFormData {
+interface FormData {
   selectedNumOfPoints: number;
   selectedNumOfIterations: number;
 }
@@ -40,7 +40,7 @@ interface IterationState {
   iterationsLeft: number;
 }
 
-interface NimbusMethodProps {
+interface EnautilusMethodProps {
   isLoggedIn: boolean;
   loggedAs: string;
   tokens: Tokens;
@@ -56,7 +56,7 @@ function ENautilusMethod({
   apiUrl,
   methodCreated,
   activeProblemId,
-}: NimbusMethodProps) {
+}: EnautilusMethodProps) {
   // General state variables to keep track of the current state of the method
   const [isInitialized, SetIsInitialized] = useState<boolean>(false);
   const [activeProblemInfo, SetActiveProblemInfo] = useState<ProblemInfo>();
@@ -68,9 +68,6 @@ function ENautilusMethod({
   // State variables for iterating the method
   const [numOfIterations, SetNumOfIterations] = useState<number>(-1);
   const [numOfPoints, SetNumOfPoints] = useState<number>(-1);
-  const [intermediatePoints, SetIntermediatePoints] = useState<number[][]>([
-    [],
-  ]);
   const [preferredPointIndex, SetPreferredPointIndex] = useState<number>(-1);
   const [changeRemaining, SetChangeRemaining] = useState<boolean>(false);
   const [newIterationsLeft, SetNewIterationsLeft] = useState<number>(-1);
@@ -97,9 +94,21 @@ function ENautilusMethod({
   );
 
   // Form hooks and state variables
-  const { register, handleSubmit, errors } = useForm<InitializationFormData>({
+  const {
+    register: registerInit,
+    handleSubmit: handleSubmitInit,
+    errors: errorsInit,
+  } = useForm<FormData>({
     mode: "onSubmit",
     defaultValues: { selectedNumOfPoints: 5, selectedNumOfIterations: 10 },
+  });
+
+  const {
+    register: registerIter,
+    handleSubmit: handleSubmitIter,
+    errors: errorsIter,
+  } = useForm<FormData>({
+    mode: "onChange",
   });
 
   // fetch current problem info
@@ -192,7 +201,7 @@ function ENautilusMethod({
     console.log("method started!");
   }, [activeProblemInfo, methodStarted]);
 
-  function onSubmitInitialize(data: InitializationFormData) {
+  function onSubmitInitialize(data: FormData) {
     const initialize = async () => {
       SetLoading(true);
 
@@ -217,8 +226,6 @@ function ENautilusMethod({
           const body = await res.json();
           const response = body.response;
 
-          console.log(response);
-
           SetNumOfIterations(data.selectedNumOfIterations);
           SetNumOfPoints(data.selectedNumOfPoints);
 
@@ -226,7 +233,7 @@ function ENautilusMethod({
             points: response.points,
             lowerBounds: response.lower_bounds,
             upperBounds: response.upper_bounds,
-            iterationsLeft: response.n_iterations,
+            iterationsLeft: response.n_iterations_left,
             distances: response.distances,
           });
 
@@ -250,14 +257,67 @@ function ENautilusMethod({
 
   const iterate = async () => {
     console.log("iterate");
+    SetLoading(true);
+
+    try {
+      const res = await fetch(`${apiUrl}/method/control`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${tokens.access}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          response: {
+            preferred_point_index: preferredPointIndex,
+            change_remaining: changeRemaining,
+            iterations_left: newIterationsLeft,
+            step_back: false,
+          },
+        }),
+      });
+
+      if (res.status === 200) {
+        // iteration successful
+        const body = await res.json();
+        const response = body.response;
+
+        // update previous iteration
+        SetPrevIterationState(currentIterationState);
+        SetPrevPrefPoint(currentIterationState.points[preferredPointIndex]);
+
+        // update current iteration
+        SetCurrentIterationState({
+          points: response.points,
+          lowerBounds: response.lower_bounds,
+          upperBounds: response.upper_bounds,
+          iterationsLeft: response.n_iterations_left,
+          distances: response.distances,
+        });
+        SetPreferredPointIndex(-1);
+        SetNumOfIterations(response.n_iterations_left);
+        SetChangeRemaining(false);
+      } else {
+        console.log(`iteration not ok, got response ${res.status}`);
+      }
+    } catch (e) {
+      console.log("something went wrong");
+      console.log(e);
+      // do nothing
+    }
+
+    SetLoading(false);
   };
+
+  function onIterChange(data: FormData) {
+    SetNewIterationsLeft(data.selectedNumOfIterations);
+  }
 
   if (fetchedInfo && !isInitialized) {
     return (
       <Container>
         <Row>
           <Col sm={12}>
-            <Form action="" onSubmit={handleSubmit(onSubmitInitialize)}>
+            <Form action="" onSubmit={handleSubmitInit(onSubmitInitialize)}>
               <Form.Group>
                 <Row>
                   <Col sm={2}></Col>
@@ -268,7 +328,7 @@ function ENautilusMethod({
                     <Form.Control
                       key="controlofiterations"
                       name="selectedNumOfIterations"
-                      ref={register({
+                      ref={registerInit({
                         required: true,
                         valueAsNumber: true,
                         pattern: {
@@ -282,7 +342,7 @@ function ENautilusMethod({
                       })}
                     ></Form.Control>
                     <ErrorMessage
-                      errors={errors}
+                      errors={errorsInit}
                       name={"selectedNumOfIterations"}
                       render={({ message }) => <p>{message}</p>}
                     ></ErrorMessage>
@@ -295,7 +355,7 @@ function ENautilusMethod({
                     <Form.Control
                       key="controlofpoints"
                       name="selectedNumOfPoints"
-                      ref={register({
+                      ref={registerInit({
                         required: true,
                         valueAsNumber: true,
                         pattern: {
@@ -309,7 +369,7 @@ function ENautilusMethod({
                       })}
                     ></Form.Control>
                     <ErrorMessage
-                      errors={errors}
+                      errors={errorsInit}
                       name={"selectedNumOfPoints"}
                       render={({ message }) => <p>{message}</p>}
                     ></ErrorMessage>
@@ -331,7 +391,7 @@ function ENautilusMethod({
         </Row>
       </Container>
     );
-  } else if (fetchedInfo || isInitialized) {
+  } else if (fetchedInfo && isInitialized) {
     return (
       <Container>
         <Row>
@@ -349,8 +409,17 @@ function ENautilusMethod({
               </Button>
             )}
             {preferredPointIndex >= 0 && (
-              <Button block={true} size={"lg"} onClick={iterate}>
-                Iterate
+              <Button
+                block={true}
+                size={"lg"}
+                onClick={iterate}
+                disabled={loading}
+              >
+                {loading
+                  ? "Loading..."
+                  : changeRemaining
+                  ? "Change iterations and iterate"
+                  : "Iterate"}
               </Button>
             )}
           </Col>
@@ -359,12 +428,41 @@ function ENautilusMethod({
         <Row>
           <Col sm={2}></Col>
           <Col>
-            <h4 className="mt-4">Currently selected intermediate point</h4>
+            <h4 className="mt-4">{`Iterations left ${numOfIterations}`}</h4>
           </Col>
           <Col sm={2}></Col>
         </Row>
         <Row>
           <Col sm={6}>
+            <Form>
+              <Form.Group as={Row}>
+                <Form.Label column sm={8} className={"mt-2"}>
+                  {"Change the number of remaining iterations?"}
+                </Form.Label>
+                <Col sm={3}>
+                  <Form.Check
+                    className={"mt-3"}
+                    id="remaining-switch"
+                    type="switch"
+                    label={
+                      changeRemaining ? (
+                        <>
+                          {"no/"}
+                          <b>{"yes"}</b>
+                        </>
+                      ) : (
+                        <>
+                          <b>{"no"}</b>
+                          {"/yes"}
+                        </>
+                      )
+                    }
+                    checked={changeRemaining}
+                    onChange={() => SetChangeRemaining(!changeRemaining)}
+                  />
+                </Col>
+              </Form.Group>
+            </Form>
             <ParallelAxes
               objectiveData={ToTrueValues(
                 ParseSolutions(currentIterationState.points, activeProblemInfo!)
@@ -383,6 +481,40 @@ function ENautilusMethod({
             />
           </Col>
           <Col sm={6}>
+            <Row className={changeRemaining ? "visible" : "invisible"}>
+              <Form action="" onChange={handleSubmitIter(onIterChange)}>
+                <FormGroup as={Row}>
+                  <Form.Label column sm={8} className={"mt-2"}>
+                    {"New number of iterations:"}
+                  </Form.Label>
+                  <Col sm={3} className={"mt-2"}>
+                    <Form.Control
+                      key="controlofnewiter"
+                      name="selectedNumOfIterations"
+                      defaultValue={numOfIterations}
+                      ref={registerIter({
+                        required: true,
+                        pattern: {
+                          value: /^[0-9]+$/,
+                          message: "Input must be a positive integer.",
+                        },
+                        valueAsNumber: true,
+                        min: {
+                          value: 1,
+                          message:
+                            "Number of iterations must be greater than 1",
+                        },
+                      })}
+                    />
+                    <ErrorMessage
+                      errors={errorsIter}
+                      name={"selectedNumOfIterations"}
+                      render={({ message }) => <p>{message}</p>}
+                    ></ErrorMessage>
+                  </Col>
+                </FormGroup>
+              </Form>
+            </Row>
             <SolutionTable
               objectiveData={ToTrueValues(
                 ParseSolutions(currentIterationState.points, activeProblemInfo!)
