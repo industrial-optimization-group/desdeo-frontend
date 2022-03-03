@@ -19,7 +19,7 @@ import {
 } from "react-bootstrap";
 import ReactLoading from "react-loading";
 import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
-import { HorizontalBars, ParallelAxes } from "desdeo-components";
+import { HorizontalBars, ParallelAxes, RadarChart } from "desdeo-components";
 import SolutionTable from "../components/SolutionTable";
 import SolutionTableMultiSelect from "../components/SolutionTableMultiSelect";
 import { Link } from "react-router-dom";
@@ -65,6 +65,8 @@ function ENautilusMethod({
   const [loading, SetLoading] = useState<boolean>(false);
   const [methodStarted, SetMethodStarted] = useState<boolean>(false);
   const [isFirstIteration, SetIsFirstIteration] = useState<boolean>(true);
+  const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
+  const [finalVariables, SetFinalVariables] = useState<number[]>([]);
 
   // State variables for iterating the method
   const [numOfIterations, SetNumOfIterations] = useState<number>(-1);
@@ -263,7 +265,7 @@ function ENautilusMethod({
           prevIterationsStates[prevIterationsStates.length - 1];
         payload = {
           response: {
-            preferred_point_index: preferredPointIndex,
+            preferred_point_index: prevIterationsState.prefPointIndex,
             change_remaining: changeRemaining,
             step_back: stepBack,
             iterations_left: prevIterationsState.iterationsLeft,
@@ -300,7 +302,8 @@ function ENautilusMethod({
         if (stepBack) {
           // Pop the last state
           const statesCopy = prevIterationsStates;
-          statesCopy.pop();
+          const prevState = statesCopy.pop();
+          console.log(`pref point index ${prevState?.prefPointIndex}`);
           SetPrevIterationStates(statesCopy);
 
           const currentState = {
@@ -309,16 +312,32 @@ function ENautilusMethod({
             upperBounds: response.upper_bounds,
             iterationsLeft: response.n_iterations_left,
             distances: response.distances,
-            prefPointIndex: preferredPointIndex,
+            prefPointIndex: prevState?.prefPointIndex!,
           };
 
           // Update previous pref point
-          SetPrevPrefPoint(
-            statesCopy[statesCopy.length - 1].points[
-              statesCopy[statesCopy.length - 1].prefPointIndex
-            ]
-          );
+          if (statesCopy.length > 0) {
+            console.log(
+              statesCopy[statesCopy.length - 1].points[
+                prevState!.prefPointIndex
+              ]
+            );
+            SetPrevPrefPoint(
+              statesCopy[statesCopy.length - 1].points[
+                prevState!.prefPointIndex
+              ]
+            );
+          } else {
+            // first iteration, nadir as previous best
+            console.log(activeProblemInfo?.nadir!);
+            SetPrevPrefPoint(activeProblemInfo?.nadir!);
+          }
           SetCurrentIterationState(currentState);
+          SetNumOfIterations(response.n_iterations_left);
+        } else if (numOfIterations === 1) {
+          // last iteration
+          SetFinalObjectives(response.solution);
+          SetNumOfIterations(0);
         } else {
           // iterate normally
           // add the current state to the previous states
@@ -341,10 +360,10 @@ function ENautilusMethod({
 
           // Update current state with the new state
           SetCurrentIterationState(newState);
+          SetNumOfIterations(response.n_iterations_left);
         }
 
         SetPreferredPointIndex(-1);
-        SetNumOfIterations(response.n_iterations_left);
         SetChangeRemaining(false);
         SetStepBack(false);
       } else {
@@ -442,7 +461,7 @@ function ENautilusMethod({
         </Row>
       </Container>
     );
-  } else if (fetchedInfo && isInitialized) {
+  } else if (fetchedInfo && isInitialized && numOfIterations > 0) {
     return (
       <Container>
         <Row>
@@ -470,6 +489,8 @@ function ENautilusMethod({
                   ? "Loading..."
                   : changeRemaining
                   ? "Change iterations and iterate"
+                  : numOfIterations === 1
+                  ? "Select final solution and stop"
                   : "Iterate"}
               </Button>
             )}
@@ -531,6 +552,7 @@ function ENautilusMethod({
                     className={"mt-3"}
                     id="stepback-switch"
                     type="switch"
+                    disabled={prevIterationsStates.length < 1}
                     label={
                       stepBack ? (
                         <>
@@ -603,8 +625,9 @@ function ENautilusMethod({
               </Form>
             </Row>
             <SolutionTable
-              objectiveData={ToTrueValues(
-                ParseSolutions(currentIterationState.points, activeProblemInfo!)
+              objectiveData={ParseSolutions(
+                currentIterationState.points,
+                activeProblemInfo!
               )}
               setIndex={(x: number) => SetPreferredPointIndex(x)}
               selectedIndex={preferredPointIndex}
@@ -613,6 +636,19 @@ function ENautilusMethod({
           </Col>
         </Row>
       </Container>
+    );
+  } else if (numOfIterations === 0) {
+    return (
+      <>
+        <SolutionTable
+          objectiveData={ParseSolutions([finalObjectives], activeProblemInfo!)}
+          setIndex={() => {
+            return;
+          }}
+          selectedIndex={0}
+          tableTitle={"Final objective values"}
+        />
+      </>
     );
   } else {
     return <p>...</p>;
