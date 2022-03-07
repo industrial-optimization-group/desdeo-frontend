@@ -336,7 +336,9 @@ function ENautilusMethod({
           SetNumOfIterations(response.n_iterations_left);
         } else if (numOfIterations === 1) {
           // last iteration
-          SetFinalObjectives(response.solution);
+          SetFinalObjectives(response.objective);
+          SetFinalVariables(response.solution);
+          console.log(`Final solution: ${response.solution}`);
           SetNumOfIterations(0);
         } else {
           // iterate normally
@@ -639,7 +641,7 @@ function ENautilusMethod({
     );
   } else if (numOfIterations === 0) {
     return (
-      <>
+      <Container>
         <SolutionTable
           objectiveData={ParseSolutions([finalObjectives], activeProblemInfo!)}
           setIndex={() => {
@@ -648,7 +650,24 @@ function ENautilusMethod({
           selectedIndex={0}
           tableTitle={"Final objective values"}
         />
-      </>
+        <p>{"Final decision variable values:"}</p>
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              {finalVariables.map((_, i) => {
+                return <th>{`x${i + 1}`}</th>;
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              {finalVariables.map((v) => {
+                return <td>{`${v.toFixed(4)}`}</td>;
+              })}
+            </tr>
+          </tbody>
+        </Table>
+      </Container>
     );
   } else {
     return <p>...</p>;
