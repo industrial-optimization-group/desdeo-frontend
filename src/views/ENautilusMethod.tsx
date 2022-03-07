@@ -1,12 +1,6 @@
-import React from "react";
-import { useEffect, useState, useCallback } from "react";
-import {
-  ProblemInfo,
-  ObjectiveData,
-  ObjectiveDatum,
-} from "../types/ProblemTypes";
+import { useEffect, useState } from "react";
+import { ProblemInfo } from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
-import ClassificationsInputForm from "../components/ClassificationsInputForm";
 import {
   Container,
   Row,
@@ -14,18 +8,14 @@ import {
   Button,
   Form,
   Table,
-  ListGroup,
   FormGroup,
 } from "react-bootstrap";
-import ReactLoading from "react-loading";
 import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
-import { HorizontalBars, ParallelAxes, RadarChart } from "desdeo-components";
+import { ParallelAxes } from "desdeo-components";
 import SolutionTable from "../components/SolutionTable";
-import SolutionTableMultiSelect from "../components/SolutionTableMultiSelect";
-import { Link } from "react-router-dom";
+import QuestionsModal from "../components/QuestionsModal";
 import { useForm } from "react-hook-form";
 import { ErrorMessage } from "@hookform/error-message";
-import { RSA_X931_PADDING } from "constants";
 
 interface FormData {
   selectedNumOfPoints: number;
@@ -667,6 +657,12 @@ function ENautilusMethod({
             </tr>
           </tbody>
         </Table>
+        <QuestionsModal
+          apiUrl={apiUrl}
+          tokens={tokens}
+          description="Testing"
+          questionnaireType="After"
+        />
       </Container>
     );
   } else {
