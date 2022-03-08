@@ -151,6 +151,9 @@ function App() {
               tokens={tokens}
               questionnaireType={"After"}
               description={"Test questionnaire"}
+              handleSuccess={(x: boolean) => {
+                console.log(`Success? : ${x}`);
+              }}
             />
           </Route>
         </Switch>

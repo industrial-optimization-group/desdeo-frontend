@@ -9,6 +9,7 @@ import {
   Form,
   Table,
   FormGroup,
+  Modal,
 } from "react-bootstrap";
 import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
 import { ParallelAxes } from "desdeo-components";
@@ -16,6 +17,7 @@ import SolutionTable from "../components/SolutionTable";
 import QuestionsModal from "../components/QuestionsModal";
 import { useForm } from "react-hook-form";
 import { ErrorMessage } from "@hookform/error-message";
+import { Link } from "react-router-dom";
 
 interface FormData {
   selectedNumOfPoints: number;
@@ -90,6 +92,10 @@ function ENautilusMethod({
     mode: "onSubmit",
     defaultValues: { selectedNumOfPoints: 5, selectedNumOfIterations: 10 },
   });
+
+  // Hooks realted to the questionnaires
+  const [showAfter, SetShowAfter] = useState<boolean>(false);
+  const [afterQSuccess, SetAfterQSuccess] = useState<boolean>(false);
 
   const {
     register: registerIter,
@@ -657,12 +663,33 @@ function ENautilusMethod({
             </tr>
           </tbody>
         </Table>
-        <QuestionsModal
-          apiUrl={apiUrl}
-          tokens={tokens}
-          description="Testing"
-          questionnaireType="After"
-        />
+        {!afterQSuccess && (
+          <Button onClick={() => SetShowAfter(!showAfter)}>
+            Answer questionnaire
+          </Button>
+        )}
+        {afterQSuccess && (
+          <Button as={Link} to="/">
+            {"Back to index"}
+          </Button>
+        )}
+        <Modal show={showAfter} fullscreen={true}>
+          <Modal.Header>
+            <Modal.Title>After Questionnaire</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <QuestionsModal
+              apiUrl={apiUrl}
+              tokens={tokens}
+              description="Testing"
+              questionnaireType="After"
+              handleSuccess={(isSuccess) => {
+                SetShowAfter(!isSuccess);
+                SetAfterQSuccess(isSuccess);
+              }}
+            />
+          </Modal.Body>
+        </Modal>
       </Container>
     );
   } else {

@@ -10,6 +10,7 @@ interface QuestionsModalProps {
   apiUrl: string;
   questionnaireType: QuestionnaireType;
   description: string;
+  handleSuccess: (x: boolean) => void;
 }
 
 interface Question {
@@ -28,11 +29,15 @@ function QuestionsModal({
   apiUrl,
   questionnaireType,
   description,
+  handleSuccess,
 }: QuestionsModalProps) {
   // States related to the questionnaire
   const [questionnaire, SetQuestionnaire] = useState<Question[]>([]);
   const [questionnaireFetched, SetQuestionnaireFetched] =
     useState<boolean>(false);
+
+  // General states
+  const [loading, SetLoading] = useState<boolean>(false);
 
   // Form states for collecting answers
   const { control, handleSubmit, errors } = useForm<FormData>({
@@ -99,7 +104,80 @@ function QuestionsModal({
   }, []);
 
   function onSubmit(data: FormData) {
-    console.log(data);
+    // Check the FormData
+    if (data.answers.length !== questionnaire.length) {
+      console.log(
+        "The number of answers in the submitted form data does not match the number of questions in the questionnaire."
+      );
+      // do nothing
+      return;
+    }
+
+    const filledQuestionnaire = questionnaire;
+
+    // Fill the questions
+    questionnaire.map((q, i) => {
+      if (q.type === "differential" || q.type === "likert") {
+        // semantic differential or liker type question
+        filledQuestionnaire[i].answer = parseInt(data.answers[i]);
+      } else if (q.type === "open") {
+        // open question type
+        filledQuestionnaire[i].answer = data.answers[i];
+      } else {
+        console.log(
+          `While parsing form data, encountered a question of unknown type: ${q.type}`
+        );
+        // do nothing
+      }
+    });
+
+    const submitAnswers = async (
+      filledQuestionnaire: Question[],
+      description: string
+    ) => {
+      SetLoading(true);
+      const endPoint = questionnaireType === "After" ? "after" : "during";
+
+      try {
+        const res = await fetch(`${apiUrl}/questionnaire/${endPoint}`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${tokens.access}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            description: description,
+            questions: filledQuestionnaire,
+          }),
+        });
+
+        if (res.status == 200) {
+          console.log("Questionnaire submitted successfully!");
+          // do nothing
+          SetLoading(false);
+          handleSuccess(true);
+          return;
+        } else {
+          console.log(
+            `Something went wrong when submitting the questionnaire. Got response: ${res.status}`
+          );
+          // do nothing
+          SetLoading(false);
+          handleSuccess(false);
+          return;
+        }
+      } catch (e) {
+        console.log(
+          `Encountered an error while trying to send questionnaire answers: ${e}`
+        );
+        // do nothing
+        SetLoading(false);
+        handleSuccess(false);
+        return;
+      }
+    };
+
+    submitAnswers(filledQuestionnaire, description);
     return;
   }
 
@@ -134,7 +212,7 @@ function QuestionsModal({
                                     key={`keyofcheck${i}${j}`}
                                     name={`group${i}`}
                                     type={"radio"}
-                                    value={j}
+                                    value={j + 1}
                                   />
                                 );
                               })}
@@ -143,7 +221,7 @@ function QuestionsModal({
                           name={`answers.${i}`}
                           key={`keyofq${i}`}
                           control={control}
-                          defaultValue={"3"}
+                          defaultValue={"4"}
                         ></Controller>
                       </Col>
                     </Row>
@@ -172,7 +250,7 @@ function QuestionsModal({
                                     key={`keyofcheck${i}${j}`}
                                     name={`group${i}`}
                                     type={"radio"}
-                                    value={j}
+                                    value={j + 1}
                                   />
                                 );
                               })}
@@ -181,7 +259,7 @@ function QuestionsModal({
                           name={`answers.${i}`}
                           key={`keyofq${i}`}
                           control={control}
-                          defaultValue={"2"}
+                          defaultValue={"3"}
                         ></Controller>
                       </Col>
                     </Row>
@@ -227,7 +305,9 @@ function QuestionsModal({
                   return <p>{"unkown type of question"}</p>;
                 }
               })}
-              <Button type="submit">Submit</Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Loading..." : "Submit"}
+              </Button>
             </Form>
           </Col>
         </Row>
