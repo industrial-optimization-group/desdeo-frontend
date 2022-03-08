@@ -138,7 +138,7 @@ function MethodCreate({
         <Row>
           <Col>
             <Form action="">
-              <Form.Row>
+              <Row>
                 <Col>
                   <Form.Group>
                     <Form.Label>Select a problem</Form.Label>
@@ -174,7 +174,7 @@ function MethodCreate({
                     </Form.Control>
                   </Form.Group>
                 </Col>
-              </Form.Row>
+              </Row>
               <Row>
                 <Col>
                   <Button

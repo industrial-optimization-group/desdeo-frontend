@@ -448,7 +448,7 @@ function ENautilusMethod({
               <Row>
                 <Col sm={4}></Col>
                 <Col sm={4}>
-                  <Button block={true} size={"lg"} type="submit">
+                  <Button size={"lg"} type="submit">
                     Continue
                   </Button>
                 </Col>
@@ -472,17 +472,12 @@ function ENautilusMethod({
           <Col sm={4}></Col>
           <Col sm={4}>
             {preferredPointIndex === -1 && !stepBack && (
-              <Button block={true} size={"lg"} disabled={true} variant={"info"}>
+              <Button size={"lg"} disabled={true} variant={"info"}>
                 Select a point first
               </Button>
             )}
             {preferredPointIndex >= 0 && !stepBack && (
-              <Button
-                block={true}
-                size={"lg"}
-                onClick={iterate}
-                disabled={loading}
-              >
+              <Button size={"lg"} onClick={iterate} disabled={loading}>
                 {loading
                   ? "Loading..."
                   : changeRemaining
@@ -493,12 +488,7 @@ function ENautilusMethod({
               </Button>
             )}
             {stepBack && (
-              <Button
-                block={true}
-                size={"lg"}
-                onClick={iterate}
-                disabled={loading}
-              >
+              <Button size={"lg"} onClick={iterate} disabled={loading}>
                 {loading ? "Loading..." : "Step back"}
               </Button>
             )}
@@ -669,9 +659,9 @@ function ENautilusMethod({
           </Button>
         )}
         {afterQSuccess && (
-          <Button as={Link} to="/">
-            {"Back to index"}
-          </Button>
+          <Link to={"/"}>
+            <Button>{"Back to index"}</Button>
+          </Link>
         )}
         <Modal show={showAfter} fullscreen={true}>
           <Modal.Header>

@@ -284,22 +284,17 @@ function ReferencePointMethod({
             <Col sm={4}></Col>
             <Col sm={4}>
               {!loading && !satisfied && (
-                <Button block={true} size={"lg"} onClick={iterate}>
+                <Button size={"lg"} onClick={iterate}>
                   Iterate
                 </Button>
               )}
               {!loading && satisfied && (
-                <Button block={true} size={"lg"} onClick={iterate}>
+                <Button size={"lg"} onClick={iterate}>
                   Stop
                 </Button>
               )}
               {loading && (
-                <Button
-                  block={true}
-                  disabled={true}
-                  size={"lg"}
-                  variant={"info"}
-                >
+                <Button disabled={true} size={"lg"} variant={"info"}>
                   {"Working... "}
                   <ReactLoading
                     type={"bubbles"}
@@ -459,9 +454,9 @@ function ReferencePointMethod({
             </tbody>
           </Table>
           <h4>{`Please answer to the questions in the survey regarding the reference point method before returning back to the index.`}</h4>
-          <Button as={Link} to="/">
-            {"Back to index"}
-          </Button>
+          <Link to={"/"}>
+            <Button>{"Back to index"}</Button>
+          </Link>
         </>
       )}
     </Container>

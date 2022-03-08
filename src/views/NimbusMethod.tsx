@@ -58,9 +58,8 @@ function NimbusMethod({
   const [numberOfSolutions, SetNumberOfSolutions] = useState<number>(1);
   const [newSolutions, SetNewSolutions] = useState<ObjectiveData>();
   const [selectedIndices, SetSelectedIndices] = useState<number[]>([]);
-  const [computeIntermediate, SetComputeIntermediate] = useState<boolean>(
-    false
-  );
+  const [computeIntermediate, SetComputeIntermediate] =
+    useState<boolean>(false);
   const [cont, SetCont] = useState<boolean>(true);
   const [finalVariables, SetFinalVariables] = useState<number[]>([]);
 
@@ -531,7 +530,6 @@ function NimbusMethod({
         <Col sm={4}>
           {!loading && nimbusState !== "stop" && (
             <Button
-              block={true}
               size={"lg"}
               onClick={iterate}
               disabled={
@@ -585,7 +583,7 @@ function NimbusMethod({
             </Button>
           )}
           {loading && (
-            <Button block={true} disabled={true} size={"lg"} variant={"info"}>
+            <Button disabled={true} size={"lg"} variant={"info"}>
               {"Working... "}
               <ReactLoading
                 type={"bubbles"}
@@ -872,9 +870,9 @@ function NimbusMethod({
             </tbody>
           </Table>
           <h4>{`Please answer to the questions in the survey regarding the synchronous NIMBUS method before returning back to the index.`}</h4>
-          <Button as={Link} to="/">
-            {"Back to index"}
-          </Button>
+          <Link to={"/"}>
+            <Button>{"Back to index"}</Button>
+          </Link>
         </>
       )}
     </Container>

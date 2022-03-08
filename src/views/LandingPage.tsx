@@ -29,7 +29,13 @@ function LandingPage({
     "reference_point_method" | "synchronous_nimbus" | "enautilus" | "home"
   >("home");
 
-  function StateToName(stateName: "reference_point_method" | "synchronous_nimbus" | "enautilus" | "home") {
+  function StateToName(
+    stateName:
+      | "reference_point_method"
+      | "synchronous_nimbus"
+      | "enautilus"
+      | "home"
+  ) {
     if (stateName === "reference_point_method") {
       return "Reference point method";
     } else if (stateName === "synchronous_nimbus") {
@@ -118,7 +124,11 @@ function LandingPage({
 
     createMethod();
     SetState(
-      methodName as "reference_point_method" | "synchronous_nimbus" | "enautilus" | "home"
+      methodName as
+        | "reference_point_method"
+        | "synchronous_nimbus"
+        | "enautilus"
+        | "home"
     );
     return;
   };
@@ -146,9 +156,9 @@ function LandingPage({
           <Row>
             <Col sm={4}></Col>
             <Col sm={4}>
-              <Button as={Link} to={"/login"}>
-                {"Login"}
-              </Button>
+              <Link to={"/login"}>
+                <Button>{"Login"}</Button>
+              </Link>
             </Col>
             <Col sm={4}></Col>
           </Row>
@@ -188,14 +198,13 @@ function LandingPage({
       )}
       {isLoggedIn &&
         (state === "reference_point_method" ||
-          state === "synchronous_nimbus" || state === "enautilus") && (
+          state === "synchronous_nimbus" ||
+          state === "enautilus") && (
           <>
-            <h3>{`${
-              StateToName(state)
-            } chosen`}</h3>
-            <Button as={Link} to="/method/optimize">
-              {"Start optimizing!"}
-            </Button>
+            <h3>{`${StateToName(state)} chosen`}</h3>
+            <Link to={"/method/optimize"}>
+              <Button>{"Start optimizing!"}</Button>
+            </Link>
           </>
         )}
     </Container>
