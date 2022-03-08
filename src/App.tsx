@@ -15,6 +15,7 @@ import MethodCreate from "./views/MethodCreate";
 import Questionnaire from "./views/Questionnaire";
 import { Tokens } from "./types/AppTypes";
 import { useState } from "react";
+import QuestionsModal from "./components/QuestionsModal";
 
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
@@ -145,11 +146,11 @@ function App() {
             )}
           </Route>
           <Route path="/questionnaire" exact>
-            <Questionnaire
+            <QuestionsModal
               apiUrl={API_URL}
-              isLoggedIn={isLoggedIn}
-              loggedAs={loggedAs}
               tokens={tokens}
+              questionnaireType={"After"}
+              description={"Test questionnaire"}
             />
           </Route>
         </Switch>

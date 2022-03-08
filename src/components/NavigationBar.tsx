@@ -40,6 +40,9 @@ function NavigationBar({
               <Nav.Link as={Link} to="/logout">
                 Logout
               </Nav.Link>
+              <Nav.Link as={Link} to="/questionnaire">
+                Questionnaire
+              </Nav.Link>
             </>
           )}
           {!isLoggedIn && "You are not currently logged in"}
