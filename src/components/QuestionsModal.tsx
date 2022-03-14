@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Tokens } from "../types/AppTypes";
-import { Container, Row, Col, Form, Button } from "react-bootstrap";
+import { Container, Row, Col, Form, Button, Modal } from "react-bootstrap";
 import { useForm, Controller } from "react-hook-form";
 
 type QuestionnaireType = "After" | "During";
@@ -11,6 +11,8 @@ interface QuestionsModalProps {
   questionnaireType: QuestionnaireType;
   description: string;
   handleSuccess: (x: boolean) => void;
+  show: boolean;
+  questionnaireTitle: string;
 }
 
 interface Question {
@@ -30,6 +32,8 @@ function QuestionsModal({
   questionnaireType,
   description,
   handleSuccess,
+  show,
+  questionnaireTitle,
 }: QuestionsModalProps) {
   // States related to the questionnaire
   const [questionnaire, SetQuestionnaire] = useState<Question[]>([]);
@@ -182,144 +186,159 @@ function QuestionsModal({
   }
 
   return (
-    <Container>
+    <Modal
+      show={show}
+      fullscreen={true}
+      size={"xl"}
+      centered
+      aria-labelledby="contained-modal-title-vcenter"
+    >
+      <Modal.Header>
+        <Modal.Title>{questionnaireTitle}</Modal.Title>
+      </Modal.Header>
       {questionnaireFetched && (
         <Form action="" onSubmit={handleSubmit(onSubmit)}>
-          {questionnaire.map((q, i) => {
-            if (q.type === "likert") {
-              // return likert scale question
-              return (
-                <Row className={"mb-4"}>
-                  <Col sm={12}>
-                    <Controller
-                      as={
-                        <Form.Group>
-                          <Row>
-                            <Col sm={12}>
-                              <Form.Label>
-                                <h4>{`${q.question_txt}`}</h4>
-                              </Form.Label>
-                            </Col>
-                          </Row>
-                          {[...Array(7)].map((_, j) => {
-                            return (
-                              <Form.Check
-                                inline
-                                defaultChecked={j === 3 ? true : false}
-                                label={likertScale.get(j)}
-                                key={`keyofcheck${i}${j}`}
-                                name={`group${i}`}
-                                type={"radio"}
-                                value={j + 1}
-                              />
-                            );
-                          })}
-                        </Form.Group>
-                      }
-                      name={`answers.${i}`}
-                      key={`keyofq${i}`}
-                      control={control}
-                      defaultValue={"4"}
-                    ></Controller>
-                  </Col>
-                </Row>
-              );
-            } else if (q.type === "differential") {
-              // rerturn differential scale quesiton
-              return (
-                <Row className={"mb-4"}>
-                  <Col sm={12}>
-                    <Controller
-                      as={
-                        <Form.Group>
-                          <Row>
-                            <Col sm={12}>
-                              <Form.Label>
-                                <h4>{`${q.question_txt}`}</h4>
-                              </Form.Label>
-                            </Col>
-                          </Row>
-                          {[...Array(5)].map((_, j) => {
-                            return (
-                              <Form.Check
-                                inline
-                                defaultChecked={j === 2 ? true : false}
-                                label={semanticDiff.get(j)}
-                                key={`keyofcheck${i}${j}`}
-                                name={`group${i}`}
-                                type={"radio"}
-                                value={j + 1}
-                              />
-                            );
-                          })}
-                        </Form.Group>
-                      }
-                      name={`answers.${i}`}
-                      key={`keyofq${i}`}
-                      control={control}
-                      defaultValue={"3"}
-                    ></Controller>
-                  </Col>
-                </Row>
-              );
-            } else if (q.type === "open") {
-              // return open type question
-              return (
-                <Row className={"mb-4"}>
-                  <Col sm={12}>
-                    <Controller
-                      as={
-                        <Form.Group>
-                          <Row>
-                            <Col sm={12}>
-                              <Form.Label>
-                                <h4>{`${q.question_txt}`}</h4>
-                              </Form.Label>
-                            </Col>
-                          </Row>
-                          <Row>
-                            <Col sm={3} />
-                            <Col>
-                              <Form.Control
-                                as="textarea"
-                                rows={3}
-                                key={`keyoftextarea${i}`}
-                                placeholder={"Write your answer here"}
-                              />
-                            </Col>
-                            <Col sm={3} />
-                          </Row>
-                        </Form.Group>
-                      }
-                      name={`answers.${i}`}
-                      key={`keyofq${i}`}
-                      control={control}
-                      defaultValue={"No answer"}
-                    ></Controller>
-                  </Col>
-                </Row>
-              );
-            } else {
-              return <p>{"unkown type of question"}</p>;
-            }
-          })}
-          <Row>
-            <Col sm={3}></Col>
-            <Col sm={6}>
-              <Button
-                type="submit"
-                disabled={loading}
-                size={"lg"}
-                className={"mx-auto"}
-              >
-                {loading ? "Loading..." : "Submit"}
-              </Button>
-            </Col>
-            <Col sm={3}></Col>
-          </Row>
+          <Modal.Body>
+            <Container>
+              {questionnaire.map((q, i) => {
+                if (q.type === "likert") {
+                  // return likert scale question
+                  return (
+                    <Row className={"mb-4"}>
+                      <Col sm={12}>
+                        <Controller
+                          as={
+                            <Form.Group>
+                              <Row>
+                                <Col sm={12}>
+                                  <Form.Label>
+                                    <h4>{`${q.question_txt}`}</h4>
+                                  </Form.Label>
+                                </Col>
+                              </Row>
+                              {[...Array(7)].map((_, j) => {
+                                return (
+                                  <Form.Check
+                                    inline
+                                    defaultChecked={j === 3 ? true : false}
+                                    label={likertScale.get(j)}
+                                    key={`keyofcheck${i}${j}`}
+                                    name={`group${i}`}
+                                    type={"radio"}
+                                    value={j + 1}
+                                  />
+                                );
+                              })}
+                            </Form.Group>
+                          }
+                          name={`answers.${i}`}
+                          key={`keyofq${i}`}
+                          control={control}
+                          defaultValue={"4"}
+                        ></Controller>
+                      </Col>
+                    </Row>
+                  );
+                } else if (q.type === "differential") {
+                  // rerturn differential scale quesiton
+                  return (
+                    <Row className={"mb-4"}>
+                      <Col sm={12}>
+                        <Controller
+                          as={
+                            <Form.Group>
+                              <Row>
+                                <Col sm={12}>
+                                  <Form.Label>
+                                    <h4>{`${q.question_txt}`}</h4>
+                                  </Form.Label>
+                                </Col>
+                              </Row>
+                              {[...Array(5)].map((_, j) => {
+                                return (
+                                  <Form.Check
+                                    inline
+                                    defaultChecked={j === 2 ? true : false}
+                                    label={semanticDiff.get(j)}
+                                    key={`keyofcheck${i}${j}`}
+                                    name={`group${i}`}
+                                    type={"radio"}
+                                    value={j + 1}
+                                  />
+                                );
+                              })}
+                            </Form.Group>
+                          }
+                          name={`answers.${i}`}
+                          key={`keyofq${i}`}
+                          control={control}
+                          defaultValue={"3"}
+                        ></Controller>
+                      </Col>
+                    </Row>
+                  );
+                } else if (q.type === "open") {
+                  // return open type question
+                  return (
+                    <Row className={"mb-4"}>
+                      <Col sm={12}>
+                        <Controller
+                          as={
+                            <Form.Group>
+                              <Row>
+                                <Col sm={12}>
+                                  <Form.Label>
+                                    <h4>{`${q.question_txt}`}</h4>
+                                  </Form.Label>
+                                </Col>
+                              </Row>
+                              <Row>
+                                <Col sm={3} />
+                                <Col>
+                                  <Form.Control
+                                    as="textarea"
+                                    rows={3}
+                                    key={`keyoftextarea${i}`}
+                                    placeholder={"Write your answer here"}
+                                  />
+                                </Col>
+                                <Col sm={3} />
+                              </Row>
+                            </Form.Group>
+                          }
+                          name={`answers.${i}`}
+                          key={`keyofq${i}`}
+                          control={control}
+                          defaultValue={"No answer"}
+                        ></Controller>
+                      </Col>
+                    </Row>
+                  );
+                } else {
+                  return <p>{"unkown type of question"}</p>;
+                }
+              })}
+            </Container>
+          </Modal.Body>
+          <Modal.Footer>
+            <Row>
+              <Col sm={3}></Col>
+              <Col sm={6}>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  size={"lg"}
+                  className={"mx-auto"}
+                >
+                  {loading ? "Loading..." : "Submit"}
+                </Button>
+              </Col>
+              <Col sm={3}></Col>
+            </Row>
+          </Modal.Footer>
         </Form>
       )}
-    </Container>
+    </Modal>
   );
 }
 

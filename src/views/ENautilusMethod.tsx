@@ -663,23 +663,18 @@ function ENautilusMethod({
             <Button>{"Back to index"}</Button>
           </Link>
         )}
-        <Modal show={showAfter} fullscreen={true} size={"xl"} centered>
-          <Modal.Header>
-            <Modal.Title>After Questionnaire</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <QuestionsModal
-              apiUrl={apiUrl}
-              tokens={tokens}
-              description="Testing"
-              questionnaireType="After"
-              handleSuccess={(isSuccess) => {
-                SetShowAfter(!isSuccess);
-                SetAfterQSuccess(isSuccess);
-              }}
-            />
-          </Modal.Body>
-        </Modal>
+        <QuestionsModal
+          apiUrl={apiUrl}
+          tokens={tokens}
+          description="Testing"
+          questionnaireType="After"
+          handleSuccess={(isSuccess) => {
+            SetShowAfter(!isSuccess);
+            SetAfterQSuccess(isSuccess);
+          }}
+          show={showAfter}
+          questionnaireTitle={"After E-NAUTILUS questions"}
+        />
       </Container>
     );
   } else {

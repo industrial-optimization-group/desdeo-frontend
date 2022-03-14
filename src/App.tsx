@@ -154,6 +154,8 @@ function App() {
               handleSuccess={(x: boolean) => {
                 console.log(`Success? : ${x}`);
               }}
+              show={true}
+              questionnaireTitle={"Testing the questionnaire"}
             />
           </Route>
         </Switch>
