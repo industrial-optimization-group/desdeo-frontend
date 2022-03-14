@@ -663,7 +663,7 @@ function ENautilusMethod({
             <Button>{"Back to index"}</Button>
           </Link>
         )}
-        <Modal show={showAfter} fullscreen={true}>
+        <Modal show={showAfter} fullscreen={true} size={"xl"} centered>
           <Modal.Header>
             <Modal.Title>After Questionnaire</Modal.Title>
           </Modal.Header>
