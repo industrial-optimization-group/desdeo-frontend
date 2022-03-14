@@ -41,10 +41,8 @@ function ProblemDefinition({
   apiUrl,
 }: ProblemDefinitionProps) {
   const [problemDefined, SetProblemDefined] = useState<boolean>(false);
-  const [
-    problemNameAndType,
-    SetProblemNameAndType,
-  ] = useState<ProblemNameAndType>({ name: "", type: "" });
+  const [problemNameAndType, SetProblemNameAndType] =
+    useState<ProblemNameAndType>({ name: "", type: "" });
   const { register, handleSubmit, errors } = useForm<ProblemData>();
 
   if (!isLoggedIn) {

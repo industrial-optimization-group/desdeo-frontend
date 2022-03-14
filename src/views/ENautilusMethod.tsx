@@ -13,7 +13,7 @@ import {
 } from "react-bootstrap";
 import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
 import { ParallelAxes } from "desdeo-components";
-import SolutionTable from "../components/SolutionTable";
+import SolutionTableNautilus from "../components/SolutionTableNautilus";
 import QuestionsModal from "../components/QuestionsModal";
 import { useForm } from "react-hook-form";
 import { ErrorMessage } from "@hookform/error-message";
@@ -577,7 +577,10 @@ function ENautilusMethod({
               )}
             />
           </Col>
-          <Col sm={6}>
+        </Row>
+        <Row>
+          <Col sm={2} />
+          <Col sm={8}>
             <Row className={changeRemaining ? "visible" : "invisible"}>
               <Form action="" onChange={handleSubmitIter(onIterChange)}>
                 <FormGroup as={Row}>
@@ -612,7 +615,7 @@ function ENautilusMethod({
                 </FormGroup>
               </Form>
             </Row>
-            <SolutionTable
+            <SolutionTableNautilus
               objectiveData={ParseSolutions(
                 currentIterationState.points,
                 activeProblemInfo!
@@ -620,21 +623,28 @@ function ENautilusMethod({
               setIndex={(x: number) => SetPreferredPointIndex(x)}
               selectedIndex={preferredPointIndex}
               tableTitle={"Intermediate points"}
+              lowerBounds={[[]]}
+              upperBounds={[[]]}
+              distances={[]}
             />
           </Col>
+          <Col sm={2} />
         </Row>
       </Container>
     );
   } else if (numOfIterations === 0) {
     return (
       <Container>
-        <SolutionTable
+        <SolutionTableNautilus
           objectiveData={ParseSolutions([finalObjectives], activeProblemInfo!)}
           setIndex={() => {
             return;
           }}
           selectedIndex={0}
           tableTitle={"Final objective values"}
+          lowerBounds={[[]]}
+          upperBounds={[[]]}
+          distances={[]}
         />
         <p>{"Final decision variable values:"}</p>
         <Table striped bordered hover>
