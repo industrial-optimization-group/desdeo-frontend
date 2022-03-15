@@ -51,15 +51,12 @@ function SolutionTableNautilus({
           <ListGroup.Item variant="dark">
             <Row>
               {objectiveData.names.map((name, i) => {
-                return (
-                  <Col>{`${name} (${
-                    objectiveData.directions[i] === 1 ? "min" : "max"
-                  })`}</Col>
-                );
+                return <Col>{`${name} LB`}</Col>;
               })}
-              <Col>Lower bound</Col>
-              <Col>Upper bound</Col>
-              <Col>Distance</Col>
+              {objectiveData.names.map((name, i) => {
+                return <Col>{`${name} UB`}</Col>;
+              })}
+              <Col>{"Distance"}</Col>
             </Row>
           </ListGroup.Item>
           {data.map((datum, index) => {
@@ -71,18 +68,35 @@ function SolutionTableNautilus({
                 key={index}
               >
                 <Row>
-                  {datum.value.map((value) => {
+                  {(objectiveData.directions[index] === 1
+                    ? lowerBounds
+                    : upperBounds)[index].map((bound) => {
                     return (
-                      <Col>{`${
-                        objectiveData.directions[index] === 1
-                          ? value.toPrecision(4)
-                          : -value.toPrecision(4)
-                      }`}</Col>
+                      <>
+                        <Col>
+                          {(objectiveData.directions[index] === 1
+                            ? bound
+                            : -bound
+                          ).toPrecision(4)}
+                        </Col>
+                      </>
                     );
                   })}
-                  <Col>Extra!</Col>
-                  <Col>Extra!</Col>
-                  <Col>Extra!</Col>
+                  {(objectiveData.directions[index] === 1
+                    ? upperBounds
+                    : lowerBounds)[index].map((bound) => {
+                    return (
+                      <>
+                        <Col>
+                          {(objectiveData.directions[index] === 1
+                            ? bound
+                            : -bound
+                          ).toPrecision(4)}
+                        </Col>
+                      </>
+                    );
+                  })}
+                  <Col>{distances[index].toPrecision(2)}</Col>
                 </Row>
               </ListGroup.Item>
             );

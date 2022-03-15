@@ -13,6 +13,7 @@ import {
 } from "react-bootstrap";
 import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
 import { ParallelAxes } from "desdeo-components";
+import SolutionTable from "../components/SolutionTable";
 import SolutionTableNautilus from "../components/SolutionTableNautilus";
 import QuestionsModal from "../components/QuestionsModal";
 import { useForm } from "react-hook-form";
@@ -59,6 +60,7 @@ function ENautilusMethod({
   const [isFirstIteration, SetIsFirstIteration] = useState<boolean>(true);
   const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
   const [finalVariables, SetFinalVariables] = useState<number[]>([]);
+  const [helpText, SetHelpText] = useState<string>("Help text");
 
   // State variables for iterating the method
   const [numOfIterations, SetNumOfIterations] = useState<number>(-1);
@@ -184,6 +186,9 @@ function ENautilusMethod({
           const body = await res.json();
           console.log(body.response);
           SetMethodStarted(true);
+          SetHelpText(
+            "Select a desired number of iterations and a desired number of intermediate points to be shown in each iteration."
+          );
         }
       } catch (e) {
         console.log("not ok, could not start the method");
@@ -384,6 +389,12 @@ function ENautilusMethod({
     return (
       <Container>
         <Row>
+          <Col>
+            <h3 className="mb-3">E-NAUTILUS method</h3>
+            <p>{`Help: ${helpText}`}</p>
+          </Col>
+        </Row>
+        <Row>
           <Col sm={12}>
             <Form action="" onSubmit={handleSubmitInit(onSubmitInitialize)}>
               <Form.Group>
@@ -577,10 +588,7 @@ function ENautilusMethod({
               )}
             />
           </Col>
-        </Row>
-        <Row>
-          <Col sm={2} />
-          <Col sm={8}>
+          <Col sm={6}>
             <Row className={changeRemaining ? "visible" : "invisible"}>
               <Form action="" onChange={handleSubmitIter(onIterChange)}>
                 <FormGroup as={Row}>
@@ -615,7 +623,7 @@ function ENautilusMethod({
                 </FormGroup>
               </Form>
             </Row>
-            <SolutionTableNautilus
+            <SolutionTable
               objectiveData={ParseSolutions(
                 currentIterationState.points,
                 activeProblemInfo!
@@ -623,28 +631,35 @@ function ENautilusMethod({
               setIndex={(x: number) => SetPreferredPointIndex(x)}
               selectedIndex={preferredPointIndex}
               tableTitle={"Intermediate points"}
-              lowerBounds={[[]]}
-              upperBounds={[[]]}
-              distances={[]}
             />
           </Col>
-          <Col sm={2} />
+        </Row>
+        <Row>
+          <SolutionTableNautilus
+            objectiveData={ParseSolutions(
+              currentIterationState.points,
+              activeProblemInfo!
+            )}
+            setIndex={(x: number) => SetPreferredPointIndex(x)}
+            selectedIndex={preferredPointIndex}
+            tableTitle={"Lower (LB) and upper (UB) bounds and distances"}
+            lowerBounds={currentIterationState.lowerBounds}
+            upperBounds={currentIterationState.upperBounds}
+            distances={currentIterationState.distances}
+          />
         </Row>
       </Container>
     );
   } else if (numOfIterations === 0) {
     return (
       <Container>
-        <SolutionTableNautilus
+        <SolutionTable
           objectiveData={ParseSolutions([finalObjectives], activeProblemInfo!)}
           setIndex={() => {
             return;
           }}
           selectedIndex={0}
           tableTitle={"Final objective values"}
-          lowerBounds={[[]]}
-          upperBounds={[[]]}
-          distances={[]}
         />
         <p>{"Final decision variable values:"}</p>
         <Table striped bordered hover>
