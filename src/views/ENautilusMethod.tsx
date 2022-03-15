@@ -240,6 +240,7 @@ function ENautilusMethod({
           SetPrevPrefPoint(response.nadir);
 
           SetIsInitialized(true);
+          SetHelpText("Select the most preferred intermediate point.");
         } else {
           console.log("Res status is not 200");
           // do nothing
@@ -328,6 +329,7 @@ function ENautilusMethod({
                 prevState!.prefPointIndex
               ]
             );
+            SetHelpText("Select the most preferred intermediate point.");
           } else {
             // first iteration, nadir as previous best
             console.log(activeProblemInfo?.nadir!);
@@ -364,6 +366,7 @@ function ENautilusMethod({
           // Update current state with the new state
           SetCurrentIterationState(newState);
           SetNumOfIterations(response.n_iterations_left);
+          SetHelpText("Select the most preferred intermediate point.");
         }
 
         SetPreferredPointIndex(-1);
@@ -476,7 +479,7 @@ function ENautilusMethod({
         <Row>
           <Col>
             <h3 className="mb-3">E-NAUTILUS method</h3>
-            <p>Help: do stuff</p>
+            <p>{`Help: ${helpText}`}</p>
           </Col>
         </Row>
         <Row>
@@ -540,7 +543,16 @@ function ENautilusMethod({
                       )
                     }
                     checked={changeRemaining}
-                    onChange={() => SetChangeRemaining(!changeRemaining)}
+                    onChange={() => {
+                      SetChangeRemaining(!changeRemaining);
+                      if (!changeRemaining) {
+                        SetHelpText("Input a new number of iterations.");
+                      } else {
+                        SetHelpText(
+                          "Select the most preferred intermediate point."
+                        );
+                      }
+                    }}
                   />
                 </Col>
                 <Form.Label column sm={8} className={"mt-2"}>
@@ -566,7 +578,16 @@ function ENautilusMethod({
                       )
                     }
                     checked={stepBack}
-                    onChange={() => SetStepBack(!stepBack)}
+                    onChange={() => {
+                      SetStepBack(!stepBack);
+                      if (!stepBack) {
+                        SetHelpText("Stepping back.");
+                      } else {
+                        SetHelpText(
+                          "Select the most preferred  intermediate point."
+                        );
+                      }
+                    }}
                   />
                 </Col>
               </Form.Group>
@@ -653,6 +674,7 @@ function ENautilusMethod({
   } else if (numOfIterations === 0) {
     return (
       <Container>
+        <h3 className="mb-3">E-NAUTILUS method</h3>
         <SolutionTable
           objectiveData={ParseSolutions([finalObjectives], activeProblemInfo!)}
           setIndex={() => {
@@ -661,7 +683,7 @@ function ENautilusMethod({
           selectedIndex={0}
           tableTitle={"Final objective values"}
         />
-        <p>{"Final decision variable values:"}</p>
+        <p>{"Final decision variable values"}</p>
         <Table striped bordered hover>
           <thead>
             <tr>
