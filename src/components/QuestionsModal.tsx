@@ -80,6 +80,7 @@ function QuestionsModal({
       const endPoint = questionnaireType === "After" ? "after" : "during";
 
       try {
+        // GET cannot contain a body, this is a violation of standards.
         const res = await fetch(`${apiUrl}/questionnaire/${endPoint}`, {
           method: "GET",
           headers: {
