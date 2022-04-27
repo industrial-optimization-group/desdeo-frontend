@@ -3,6 +3,7 @@ import { Tokens } from "../types/AppTypes";
 import { Container, Row, Col, Form, Button, Modal } from "react-bootstrap";
 import { useForm, Controller } from "react-hook-form";
 import { start } from "repl";
+import { url } from "inspector";
 
 type QuestionnaireType = "After" | "During";
 
@@ -80,14 +81,19 @@ function QuestionsModal({
       const endPoint = questionnaireType === "After" ? "after" : "during";
 
       try {
-        // GET cannot contain a body, this is a violation of standards.
-        const res = await fetch(`${apiUrl}/questionnaire/${endPoint}`, {
+        var urls: string;
+        if (nIteration === 1 && endPoint === "during") {
+          // first iteration, during questionnaire
+          urls = `${apiUrl}/questionnaire/during/first`;
+        } else {
+          urls = `${apiUrl}/questionnaire/${endPoint}`;
+        }
+        const res = await fetch(urls, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${tokens.access}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ iteration: nIteration }),
         });
 
         if (res.status == 200) {
@@ -163,6 +169,7 @@ function QuestionsModal({
             description: description,
             questions: filledQuestionnaire,
             start_time: startTime,
+            iteration: nIteration,
           }),
         });
 
