@@ -19,6 +19,7 @@ import QuestionsModal from "../components/QuestionsModal";
 import { useForm } from "react-hook-form";
 import { ErrorMessage } from "@hookform/error-message";
 import { Link } from "react-router-dom";
+import { LogInfoToDB } from "../utils/Logging";
 
 interface FormData {
   selectedNumOfPoints: number;
@@ -191,6 +192,13 @@ function ENautilusMethod({
           SetHelpText(
             "Select a desired number of iterations and a desired number of intermediate points to be shown in each iteration."
           );
+          await LogInfoToDB(
+            tokens,
+            apiUrl,
+            "Info",
+            "",
+            "User started the method."
+          );
         }
       } catch (e) {
         console.log("not ok, could not start the method");
@@ -243,6 +251,13 @@ function ENautilusMethod({
 
           SetIsInitialized(true);
           SetHelpText("Select the most preferred intermediate point.");
+          await LogInfoToDB(
+            tokens,
+            apiUrl,
+            "Preference",
+            `Number of iterations: ${data.selectedNumOfIterations}; Number of intermediate points: ${data.selectedNumOfPoints}.`,
+            "User initialized E-NAUTILUS."
+          );
         } else {
           console.log("Res status is not 200");
           // do nothing
@@ -339,12 +354,26 @@ function ENautilusMethod({
           }
           SetCurrentIterationState(currentState);
           SetNumOfIterations(response.n_iterations_left);
+          await LogInfoToDB(
+            tokens,
+            apiUrl,
+            "Info",
+            "",
+            "User took a step back in E-NAUTILUS."
+          );
         } else if (numOfIterations === 1) {
           // last iteration
           SetFinalObjectives(response.objective);
           SetFinalVariables(response.solution);
           console.log(`Final solution: ${response.solution}`);
           SetNumOfIterations(0);
+          await LogInfoToDB(
+            tokens,
+            apiUrl,
+            "Final solution",
+            `Objective values: [${response.objective}]; variable values: [${response.solution}]`,
+            "User reached the final solution in E-NAUTILUS."
+          );
         } else {
           // iterate normally
           // add the current state to the previous states
@@ -371,6 +400,13 @@ function ENautilusMethod({
           SetHelpText("Select the most preferred intermediate point.");
           SetNIteration(nIteration + 1);
           SetShowQuestionnaire(true);
+          await LogInfoToDB(
+            tokens,
+            apiUrl,
+            "Preference",
+            `Intermediate point selected: [${currentIterationState.points[preferredPointIndex]}]; Iterations left: ${numOfIterations}; Changed remaining iterations?: ${changeRemaining}.`,
+            "User iterated E-NAUTILUS."
+          );
         }
 
         SetPreferredPointIndex(-1);
