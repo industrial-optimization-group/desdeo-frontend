@@ -58,6 +58,8 @@ function ENautilusMethod({
   const [loading, SetLoading] = useState<boolean>(false);
   const [methodStarted, SetMethodStarted] = useState<boolean>(false);
   const [isFirstIteration, SetIsFirstIteration] = useState<boolean>(true);
+  const [showQuestionnaire, SetShowQuestionnaire] = useState<boolean>(false);
+  const [nIteration, SetNIteration] = useState<number>(0);
   const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
   const [finalVariables, SetFinalVariables] = useState<number[]>([]);
   const [helpText, SetHelpText] = useState<string>("Help text");
@@ -367,6 +369,8 @@ function ENautilusMethod({
           SetCurrentIterationState(newState);
           SetNumOfIterations(response.n_iterations_left);
           SetHelpText("Select the most preferred intermediate point.");
+          SetNIteration(nIteration + 1);
+          SetShowQuestionnaire(true);
         }
 
         SetPreferredPointIndex(-1);
@@ -669,6 +673,20 @@ function ENautilusMethod({
             distances={currentIterationState.distances}
           />
         </Row>
+        {showQuestionnaire && (
+          <QuestionsModal
+            apiUrl={apiUrl}
+            tokens={tokens}
+            description={`After iteration ${nIteration}`}
+            questionnaireType="During"
+            nIteration={nIteration}
+            handleSuccess={(isSuccess) => {
+              SetShowQuestionnaire(!isSuccess);
+            }}
+            show={showQuestionnaire}
+            questionnaireTitle={`Questoins after iterating ${nIteration} times`}
+          />
+        )}
       </Container>
     );
   } else if (numOfIterations === 0) {
@@ -715,6 +733,7 @@ function ENautilusMethod({
           tokens={tokens}
           description="Testing"
           questionnaireType="After"
+          nIteration={nIteration}
           handleSuccess={(isSuccess) => {
             SetShowAfter(!isSuccess);
             SetAfterQSuccess(isSuccess);

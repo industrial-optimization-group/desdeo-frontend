@@ -150,6 +150,7 @@ function App() {
               apiUrl={API_URL}
               tokens={tokens}
               questionnaireType={"After"}
+              nIteration={0}
               description={"Test questionnaire"}
               handleSuccess={(x: boolean) => {
                 console.log(`Success? : ${x}`);

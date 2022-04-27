@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Tokens } from "../types/AppTypes";
 import { Container, Row, Col, Form, Button, Modal } from "react-bootstrap";
 import { useForm, Controller } from "react-hook-form";
+import { start } from "repl";
 
 type QuestionnaireType = "After" | "During";
 
@@ -10,6 +11,7 @@ interface QuestionsModalProps {
   apiUrl: string;
   questionnaireType: QuestionnaireType;
   description: string;
+  nIteration: number;
   handleSuccess: (x: boolean) => void;
   show: boolean;
   questionnaireTitle: string;
@@ -31,6 +33,7 @@ function QuestionsModal({
   apiUrl,
   questionnaireType,
   description,
+  nIteration,
   handleSuccess,
   show,
   questionnaireTitle,
@@ -39,6 +42,7 @@ function QuestionsModal({
   const [questionnaire, SetQuestionnaire] = useState<Question[]>([]);
   const [questionnaireFetched, SetQuestionnaireFetched] =
     useState<boolean>(false);
+  const [startTime, SetStartTime] = useState<string>("");
 
   // General states
   const [loading, SetLoading] = useState<boolean>(false);
@@ -80,13 +84,18 @@ function QuestionsModal({
           method: "GET",
           headers: {
             Authorization: `Bearer ${tokens.access}`,
+            "Content-Type": "application/json",
           },
+          body: JSON.stringify({ iteration: nIteration }),
         });
 
         if (res.status == 200) {
           const body = await res.json();
           const questions = body.questions;
+          const startTime = body.start_time;
           SetQuestionnaire(questions);
+          SetStartTime(startTime);
+          console.log(`Start time of questionnaire is ${startTime}`);
           SetQuestionnaireFetched(true);
         } else {
           console.log(
@@ -152,6 +161,7 @@ function QuestionsModal({
           body: JSON.stringify({
             description: description,
             questions: filledQuestionnaire,
+            start_time: startTime,
           }),
         });
 
