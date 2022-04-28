@@ -58,7 +58,7 @@ function ENautilusMethod({
   const [fetchedInfo, SetFetchedInfo] = useState<boolean>(false);
   const [loading, SetLoading] = useState<boolean>(false);
   const [methodStarted, SetMethodStarted] = useState<boolean>(false);
-  const [isFirstIteration, SetIsFirstIteration] = useState<boolean>(true);
+  // const [isFirstIteration, SetIsFirstIteration] = useState<boolean>(true);
   const [showQuestionnaire, SetShowQuestionnaire] = useState<boolean>(false);
   const [nIteration, SetNIteration] = useState<number>(0);
   const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
@@ -255,7 +255,7 @@ function ENautilusMethod({
             tokens,
             apiUrl,
             "Preference",
-            `Number of iterations: ${data.selectedNumOfIterations}; Number of intermediate points: ${data.selectedNumOfPoints}.`,
+            `{"Number of iterations": ${data.selectedNumOfIterations}, "Number of intermediate points": ${data.selectedNumOfPoints},}`,
             "User initialized E-NAUTILUS."
           );
         } else {
@@ -371,7 +371,7 @@ function ENautilusMethod({
             tokens,
             apiUrl,
             "Final solution",
-            `Objective values: [${response.objective}]; variable values: [${response.solution}]`,
+            `{"Objective values": [${response.objective}], "Variable values": [${response.solution}]}`,
             "User reached the final solution in E-NAUTILUS."
           );
         } else {
@@ -404,7 +404,7 @@ function ENautilusMethod({
             tokens,
             apiUrl,
             "Preference",
-            `Intermediate point selected: [${currentIterationState.points[preferredPointIndex]}]; Iterations left: ${numOfIterations}; Changed remaining iterations?: ${changeRemaining}.`,
+            `{"Intermediate point selected": [${currentIterationState.points[preferredPointIndex]}], "Iterations left": ${numOfIterations}, "Changed remaining iterations?": ${changeRemaining},}`,
             "User iterated E-NAUTILUS."
           );
         }
