@@ -13,6 +13,7 @@ import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
 import { HorizontalBars, ParallelAxes } from "desdeo-components";
 import SolutionTable from "../components/SolutionTable";
 import { Link } from "react-router-dom";
+import QuestionsModal from "../components/QuestionsModal";
 
 interface ReferencePointMethodProps {
   isLoggedIn: boolean;
@@ -47,6 +48,12 @@ function ReferencePointMethod({
   const [showFinal, SetShowFinal] = useState<boolean>(false);
   const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
   const [finalVariables, SetFinalVariables] = useState<number[]>([]);
+  const [nIteration, SetNIteration] = useState<number>(0);
+
+  // related to questionnaire and logging
+  const [showAfter, SetShowAfter] = useState<boolean>(false);
+  const [afterQSuccess, SetAfterQSuccess] = useState<boolean>(false);
+  const [showQuestionnaire, SetShowQuestionnaire] = useState<boolean>(false);
 
   useEffect(() => {
     if (alternatives !== undefined) {
@@ -183,6 +190,7 @@ function ReferencePointMethod({
               (v) => v.toFixed(3)
             )}]`
           );
+          SetNIteration(1);
         }
       } catch (e) {
         console.log("not ok, could not start the method");
@@ -224,6 +232,8 @@ function ReferencePointMethod({
               activeProblemInfo!
             )
           );
+          SetShowQuestionnaire(true);
+          SetNIteration(nIteration + 1);
           console.log(response.additional_solutions);
         } else {
           console.log("Got a response which is not 200");
@@ -426,6 +436,20 @@ function ReferencePointMethod({
               </Row>
             </>
           )}
+          {showQuestionnaire && (
+            <QuestionsModal
+              apiUrl={apiUrl}
+              tokens={tokens}
+              description={`After iteration ${nIteration} in the Reference Point Method.`}
+              questionnaireType="During"
+              nIteration={nIteration}
+              handleSuccess={(isSuccess) => {
+                SetShowQuestionnaire(!isSuccess);
+              }}
+              show={showQuestionnaire}
+              questionnaireTitle={`Questoins after iterating ${nIteration} times`}
+            />
+          )}
         </>
       )}
       {showFinal && (
@@ -453,10 +477,29 @@ function ReferencePointMethod({
               </tr>
             </tbody>
           </Table>
-          <h4>{`Please answer to the questions in the survey regarding the reference point method before returning back to the index.`}</h4>
-          <Link to={"/"}>
-            <Button>{"Back to index"}</Button>
-          </Link>
+          {!afterQSuccess && (
+            <Button onClick={() => SetShowAfter(!showAfter)}>
+              Answer questionnaire
+            </Button>
+          )}
+          {afterQSuccess && (
+            <Link to={"/"}>
+              <Button>{"Back to index"}</Button>
+            </Link>
+          )}
+          <QuestionsModal
+            apiUrl={apiUrl}
+            tokens={tokens}
+            description="Questions asked at the end of iterating the Reference Point Method."
+            questionnaireType="After"
+            nIteration={nIteration}
+            handleSuccess={(isSuccess) => {
+              SetShowAfter(!isSuccess);
+              SetAfterQSuccess(isSuccess);
+            }}
+            show={showAfter}
+            questionnaireTitle={"After Reference Point Method questions"}
+          />
         </>
       )}
     </Container>

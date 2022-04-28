@@ -713,7 +713,7 @@ function ENautilusMethod({
           <QuestionsModal
             apiUrl={apiUrl}
             tokens={tokens}
-            description={`After iteration ${nIteration}`}
+            description={`After iteration ${nIteration} in the E-NAUTILUS Method.`}
             questionnaireType="During"
             nIteration={nIteration}
             handleSuccess={(isSuccess) => {
@@ -767,7 +767,7 @@ function ENautilusMethod({
         <QuestionsModal
           apiUrl={apiUrl}
           tokens={tokens}
-          description="Testing"
+          description="Questions asked at the end of iterating the E-NAUTILUS method."
           questionnaireType="After"
           nIteration={nIteration}
           handleSuccess={(isSuccess) => {
