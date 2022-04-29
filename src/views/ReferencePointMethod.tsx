@@ -14,6 +14,7 @@ import { HorizontalBars, ParallelAxes } from "desdeo-components";
 import SolutionTable from "../components/SolutionTable";
 import { Link } from "react-router-dom";
 import QuestionsModal from "../components/QuestionsModal";
+import { LogInfoToDB } from "../utils/Logging";
 
 interface ReferencePointMethodProps {
   isLoggedIn: boolean;
@@ -190,6 +191,13 @@ function ReferencePointMethod({
               (v) => v.toFixed(3)
             )}]`
           );
+          LogInfoToDB(
+            tokens,
+            apiUrl,
+            "Info",
+            "",
+            "Use started the Reference Point method."
+          );
           SetNIteration(1);
         }
       } catch (e) {
@@ -233,6 +241,18 @@ function ReferencePointMethod({
             )
           );
           SetShowQuestionnaire(true);
+          const alternativesValues = alternatives
+            ? alternatives.values.map((value) => value.value)
+            : [];
+          LogInfoToDB(
+            tokens,
+            apiUrl,
+            "Preference",
+            `{"Reference point": [${referencePoint}], "Alternatives": ${JSON.stringify(
+              alternativesValues
+            )},"Iteration": ${nIteration},}`,
+            "User provided a reference point in the Reference Point Method."
+          );
           SetNIteration(nIteration + 1);
           console.log(response.additional_solutions);
         } else {
@@ -262,6 +282,13 @@ function ReferencePointMethod({
           const response = body.response;
           SetFinalObjectives(response.objective_vector);
           SetFinalVariables(response.solution);
+          LogInfoToDB(
+            tokens,
+            apiUrl,
+            "Final solution",
+            `{"Objective values": [${response.objective_vector}], "Variable values": [${response.solution}],}`,
+            "User reached the final solution in the Reference Point Method."
+          );
           SetShowFinal(true);
         } else {
           console.log("Got a response which is not 200");
@@ -440,7 +467,9 @@ function ReferencePointMethod({
             <QuestionsModal
               apiUrl={apiUrl}
               tokens={tokens}
-              description={`After iteration ${nIteration} in the Reference Point Method.`}
+              description={`After iteration ${
+                nIteration - 1
+              } in the Reference Point Method.`}
               questionnaireType="During"
               nIteration={nIteration}
               handleSuccess={(isSuccess) => {
