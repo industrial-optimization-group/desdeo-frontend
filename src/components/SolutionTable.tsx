@@ -6,6 +6,7 @@ import {
   Row,
   Col,
   ListGroupItem,
+  Table,
 } from "react-bootstrap";
 import { ObjectiveData } from "../types/ProblemTypes";
 
@@ -37,45 +38,63 @@ function SolutionTable({
     SetKey(selectedIndex);
   }, [selectedIndex]);
 
+  const ideal = objectiveData.ideal;
+  const nadir = objectiveData.nadir;
+
   return (
     <Container>
       <Tab.Container id="table-of-alternatives">
         {tableTitle.length > 0 && <h4>{tableTitle}</h4>}
-        <ListGroup>
-          <ListGroup.Item variant="dark">
-            <Row>
+        <Table hover>
+          <thead>
+            <tr>
+              <th>{"Candidate"}</th>
               {objectiveData.names.map((name, i) => {
                 return (
-                  <Col>{`${name} (${
+                  <th>{`${name} (${
                     objectiveData.directions[i] === 1 ? "min" : "max"
-                  })`}</Col>
+                  })`}</th>
                 );
               })}
-            </Row>
-          </ListGroup.Item>
-          {data.map((datum, index) => {
-            return (
-              <ListGroup.Item
-                action
-                variant={index === selectedIndex ? "info" : ""}
-                onClick={() => SetKey(index)}
-                key={index}
-              >
-                <Row>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="tableInfo">
+              <td>{"Ideal"}</td>
+              {ideal.map((v, i) => {
+                const v_ = objectiveData.directions[i] === 1 ? v : -v;
+                return <td>{`${v_.toPrecision(4)}`}</td>;
+              })}
+            </tr>
+            {data.map((datum, index) => {
+              return (
+                <tr
+                  onClick={() => SetKey(index)}
+                  key={index}
+                  className={index === selectedIndex ? "tableSelected" : ""}
+                >
+                  <td>{`#${index + 1}`}</td>
                   {datum.value.map((value) => {
                     return (
-                      <Col>{`${
+                      <td>{`${
                         objectiveData.directions[index] === 1
                           ? value.toPrecision(4)
                           : -value.toPrecision(4)
-                      }`}</Col>
+                      }`}</td>
                     );
                   })}
-                </Row>
-              </ListGroup.Item>
-            );
-          })}
-        </ListGroup>
+                </tr>
+              );
+            })}
+            <tr className="tableInfo">
+              <td>{"Nadir"}</td>
+              {nadir.map((v, i) => {
+                const v_ = objectiveData.directions[i] === 1 ? v : -v;
+                return <td>{`${v_.toPrecision(4)}`}</td>;
+              })}
+            </tr>
+          </tbody>
+        </Table>
       </Tab.Container>
     </Container>
   );

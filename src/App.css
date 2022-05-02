@@ -130,3 +130,7 @@ body {
 .tableSelected {
   background-color: #BEE5EB;
 }
+.tableInfo {
+  background-color: lightgray;
+  pointer-events: none;
+}

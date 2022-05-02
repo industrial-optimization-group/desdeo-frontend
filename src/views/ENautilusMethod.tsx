@@ -695,7 +695,7 @@ function ENautilusMethod({
             />
           </Col>
         </Row>
-        <Row>
+        <Row className="mt-5">
           <SolutionTableNautilus
             objectiveData={ParseSolutions(
               currentIterationState.points,
