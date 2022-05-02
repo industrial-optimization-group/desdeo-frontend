@@ -366,7 +366,28 @@ function ENautilusMethod({
           SetFinalObjectives(response.objective);
           SetFinalVariables(response.solution);
           console.log(`Final solution: ${response.solution}`);
-          SetNumOfIterations(0);
+          await LogInfoToDB(
+            tokens,
+            apiUrl,
+            "Preference",
+            `{"Intermediate point selected": [${
+              currentIterationState.points[preferredPointIndex]
+            }],
+            "Selected point index: ${preferredPointIndex},
+            "Intermediate points": ${JSON.stringify(
+              currentIterationState.points
+            )},
+            "Lower bounds": ${JSON.stringify(
+              currentIterationState.lowerBounds
+            )},
+            "Upper bounds": ${JSON.stringify(
+              currentIterationState.upperBounds
+            )},
+            "Distances": ${JSON.stringify(currentIterationState.distances)},
+            "Iterations left": ${numOfIterations},
+            "Changed remaining iterations?": ${changeRemaining},}`,
+            "User iterated E-NAUTILUS."
+          );
           await LogInfoToDB(
             tokens,
             apiUrl,
@@ -374,6 +395,7 @@ function ENautilusMethod({
             `{"Objective values": [${response.objective}], "Variable values": [${response.solution}]}`,
             "User reached the final solution in E-NAUTILUS."
           );
+          SetNumOfIterations(0);
         } else {
           // iterate normally
           // add the current state to the previous states
@@ -395,18 +417,35 @@ function ENautilusMethod({
           SetPrevPrefPoint(currentIterationState.points[preferredPointIndex]);
 
           // Update current state with the new state
-          SetCurrentIterationState(newState);
           SetNumOfIterations(response.n_iterations_left);
           SetHelpText("Select the most preferred intermediate point.");
           SetNIteration(nIteration + 1);
           SetShowQuestionnaire(true);
+
           await LogInfoToDB(
             tokens,
             apiUrl,
             "Preference",
-            `{"Intermediate point selected": [${currentIterationState.points[preferredPointIndex]}], "Iterations left": ${numOfIterations}, "Changed remaining iterations?": ${changeRemaining},}`,
+            `{"Intermediate point selected": [${
+              currentIterationState.points[preferredPointIndex]
+            }],
+            "Selected point index: ${preferredPointIndex},
+            "Intermediate points": ${JSON.stringify(
+              currentIterationState.points
+            )},
+            "Lower bounds": ${JSON.stringify(
+              currentIterationState.lowerBounds
+            )},
+            "Upper bounds": ${JSON.stringify(
+              currentIterationState.upperBounds
+            )},
+            "Distances": ${JSON.stringify(currentIterationState.distances)},
+            "Iterations left": ${numOfIterations},
+            "Changed remaining iterations?": ${changeRemaining},}`,
             "User iterated E-NAUTILUS."
           );
+
+          SetCurrentIterationState(newState);
         }
 
         SetPreferredPointIndex(-1);
