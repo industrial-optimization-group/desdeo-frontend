@@ -372,20 +372,15 @@ function ENautilusMethod({
             "Preference",
             `{"Intermediate point selected": [${
               currentIterationState.points[preferredPointIndex]
-            }],
-            "Selected point index: ${preferredPointIndex},
-            "Intermediate points": ${JSON.stringify(
+            }], "Selected point index": ${preferredPointIndex}, "Intermediate points": ${JSON.stringify(
               currentIterationState.points
-            )},
-            "Lower bounds": ${JSON.stringify(
+            )}, "Lower bounds": ${JSON.stringify(
               currentIterationState.lowerBounds
-            )},
-            "Upper bounds": ${JSON.stringify(
+            )}, "Upper bounds": ${JSON.stringify(
               currentIterationState.upperBounds
-            )},
-            "Distances": ${JSON.stringify(currentIterationState.distances)},
-            "Iterations left": ${numOfIterations},
-            "Changed remaining iterations?": ${changeRemaining},}`,
+            )}, "Distances": ${JSON.stringify(
+              currentIterationState.distances
+            )}, "Iterations left": ${numOfIterations}, "Changed remaining iterations": ${changeRemaining},}`,
             "User iterated E-NAUTILUS."
           );
           await LogInfoToDB(
@@ -428,20 +423,15 @@ function ENautilusMethod({
             "Preference",
             `{"Intermediate point selected": [${
               currentIterationState.points[preferredPointIndex]
-            }],
-            "Selected point index: ${preferredPointIndex},
-            "Intermediate points": ${JSON.stringify(
+            }], "Selected point index": ${preferredPointIndex}, "Intermediate points": ${JSON.stringify(
               currentIterationState.points
-            )},
-            "Lower bounds": ${JSON.stringify(
+            )}, "Lower bounds": ${JSON.stringify(
               currentIterationState.lowerBounds
-            )},
-            "Upper bounds": ${JSON.stringify(
+            )}, "Upper bounds": ${JSON.stringify(
               currentIterationState.upperBounds
-            )},
-            "Distances": ${JSON.stringify(currentIterationState.distances)},
-            "Iterations left": ${numOfIterations},
-            "Changed remaining iterations?": ${changeRemaining},}`,
+            )}, "Distances": ${JSON.stringify(
+              currentIterationState.distances
+            )}, "Iterations left": ${numOfIterations}, "Changed remaining iterations": ${changeRemaining},}`,
             "User iterated E-NAUTILUS."
           );
 
