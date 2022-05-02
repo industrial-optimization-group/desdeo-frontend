@@ -14,6 +14,7 @@ import { HorizontalBars, ParallelAxes } from "desdeo-components";
 import SolutionTable from "../components/SolutionTable";
 import SolutionTableMultiSelect from "../components/SolutionTableMultiSelect";
 import { Link } from "react-router-dom";
+import { LogInfoToDB } from "../utils/Logging";
 
 interface NimbusMethodProps {
   isLoggedIn: boolean;
@@ -62,6 +63,7 @@ function NimbusMethod({
     useState<boolean>(false);
   const [cont, SetCont] = useState<boolean>(true);
   const [finalVariables, SetFinalVariables] = useState<number[]>([]);
+  const [nIteration, SetNIteration] = useState<number>(0);
 
   // fetch current problem info
   useEffect(() => {
@@ -147,6 +149,14 @@ function NimbusMethod({
           SetClassificationLevels(body.response.objective_values);
           SetHelpMessage("Please classify each of the shown objectives.");
           SetNimbusState("classification");
+          await LogInfoToDB(
+            tokens,
+            apiUrl,
+            "Info",
+            "",
+            "User started the NIMBUS method."
+          );
+          SetNIteration(1);
         }
       } catch (e) {
         console.log("not ok, could not start the method");
@@ -189,6 +199,21 @@ function NimbusMethod({
 
           if (res.status === 200) {
             // ok
+            await LogInfoToDB(
+              tokens,
+              apiUrl,
+              "Preference",
+              `{"Current solution": ${JSON.stringify(
+                preferredPoint
+              )}, "Iteration": ${nIteration}, "Classification": ${JSON.stringify(
+                classifications
+              )}, "Levels": ${JSON.stringify(
+                classificationLevels
+              )}, "Number of new solutions": ${JSON.stringify(
+                numberOfSolutions
+              )}}`,
+              "User provided classifications in NIMBUS."
+            );
             const body = await res.json();
             const response = body.response;
             SetNewSolutions(
@@ -229,6 +254,21 @@ function NimbusMethod({
           if (res.status === 200) {
             const body = await res.json();
             const response = body.response;
+
+            const chosenNew =
+              newSolutions !== undefined
+                ? selectedIndices.map((i) => newSolutions.values[i].value)
+                : [];
+
+            await LogInfoToDB(
+              tokens,
+              apiUrl,
+              "Info",
+              `{"Solutions chosen": ${JSON.stringify(
+                chosenNew
+              )}, "Iteration": ${nIteration},}`,
+              "Solutions chosen by the user to be saved to the archive in NIMBUS."
+            );
 
             // update the solutions to be shown
             const toBeShown = ParseSolutions(
@@ -299,6 +339,21 @@ function NimbusMethod({
               );
               SetNewSolutions(toBeShown);
 
+              const betweenWhich =
+                newSolutions !== undefined
+                  ? selectedIndices.map((i) => newSolutions.values[i].value)
+                  : [];
+
+              await LogInfoToDB(
+                tokens,
+                apiUrl,
+                "Info",
+                `{"Number of points to compute": ${numberOfSolutions}, "Solutions computed between points": ${JSON.stringify(
+                  betweenWhich
+                )}, "Iteration": ${nIteration},}`,
+                "Computation of intermediate solutions in NIMBUS."
+              );
+
               // reset and ask to save next
               SetComputeIntermediate(false);
               SetSelectedIndices([]);
@@ -308,6 +363,13 @@ function NimbusMethod({
               );
               SetNimbusState("archive");
             } else {
+              await LogInfoToDB(
+                tokens,
+                apiUrl,
+                "Info",
+                `{"Iteration": ${nIteration}, }`,
+                "User chose not to compute intermediate points in NIMBUS."
+              );
               SetComputeIntermediate(false);
               SetSelectedIndices([]);
               SetNumberOfSolutions(1);
@@ -358,6 +420,20 @@ function NimbusMethod({
 
             if (cont) {
               // continue iterating
+              const newPreferred =
+                newSolutions !== undefined
+                  ? newSolutions.values[selectedIndices[0]].value
+                  : [];
+              await LogInfoToDB(
+                tokens,
+                apiUrl,
+                "Preference",
+                `{"Preferred solution": ${JSON.stringify(
+                  newPreferred
+                )}, "Iteration": ${nIteration},}`,
+                "User chose a new preferred solution in NIMBUS."
+              );
+
               SetPreferredPoint([...response.objective_values]); // avoid aliasing
               SetClassificationLevels(response.objective_values);
               SetClassifications(
@@ -367,10 +443,19 @@ function NimbusMethod({
               SetSelectedIndices([]);
               SetHelpMessage("Please classify each of the shown objectives.");
               SetNimbusState("classification");
+              SetNIteration(nIteration + 1);
               break;
             } else {
               // stop iterating
-              console.log(response);
+              await LogInfoToDB(
+                tokens,
+                apiUrl,
+                "Final solution",
+                `{"Objective values": ${JSON.stringify(
+                  response.objective
+                )}, "Variable values": ${JSON.stringify(response.solution)}},`,
+                "User reached the final solution in NIMBUS."
+              );
               SetPreferredPoint(response.objective);
               SetFinalVariables(response.solution);
               SetHelpMessage("Stopped. Showing final solution reached.");

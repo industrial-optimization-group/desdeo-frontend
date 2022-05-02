@@ -197,7 +197,7 @@ function ENautilusMethod({
             apiUrl,
             "Info",
             "",
-            "User started the method."
+            "User started the E-NAUTILUS method."
           );
         }
       } catch (e) {
