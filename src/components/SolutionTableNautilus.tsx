@@ -5,6 +5,7 @@ import {
   Tab,
   Row,
   Col,
+  Table,
   ListGroupItem,
 } from "react-bootstrap";
 import { ObjectiveData } from "../types/ProblemTypes";
@@ -47,61 +48,65 @@ function SolutionTableNautilus({
     <Container>
       <Tab.Container id="table-of-alternatives">
         {tableTitle.length > 0 && <h4>{tableTitle}</h4>}
-        <ListGroup>
-          <ListGroup.Item variant="dark">
-            <Row>
+        <Table hover>
+          <thead>
+            <tr>
               {objectiveData.names.map((name, i) => {
-                return <Col>{`${name} LB`}</Col>;
+                return (
+                  <>
+                    <th colSpan={2}>{`${name}`}</th>
+                    <th></th>
+                  </>
+                );
               })}
+              <th>{"Distance"}</th>
+            </tr>
+            <tr>
               {objectiveData.names.map((name, i) => {
-                return <Col>{`${name} UB`}</Col>;
+                return (
+                  <>
+                    <th>LB</th>
+                    <th>UB</th>
+                    <th></th>
+                  </>
+                );
               })}
-              <Col>{"Distance"}</Col>
-            </Row>
-          </ListGroup.Item>
-          {data.map((datum, index) => {
-            return (
-              <ListGroup.Item
-                action
-                variant={index === selectedIndex ? "info" : ""}
-                onClick={() => SetKey(index)}
-                key={index}
-              >
-                <Row>
-                  {(objectiveData.directions[index] === 1
-                    ? lowerBounds
-                    : upperBounds)[index].map((bound) => {
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((datum, index) => {
+              return (
+                <tr
+                  onClick={() => SetKey(index)}
+                  key={index}
+                  className={index === selectedIndex ? "tableSelected" : ""}
+                >
+                  {objectiveData.names.map((_, j) => {
+                    const lb = (
+                      objectiveData.directions[j] === 1
+                        ? lowerBounds
+                        : upperBounds
+                    )[index][j].toPrecision(4);
+                    const ub = (
+                      objectiveData.directions[j] === 1
+                        ? upperBounds
+                        : lowerBounds
+                    )[index][j].toPrecision(4);
                     return (
                       <>
-                        <Col>
-                          {(objectiveData.directions[index] === 1
-                            ? bound
-                            : -bound
-                          ).toPrecision(4)}
-                        </Col>
+                        <td>{objectiveData.directions[j] === 1 ? lb : -lb}</td>
+                        <td>{objectiveData.directions[j] === 1 ? ub : -ub}</td>
+                        <td></td>
                       </>
                     );
                   })}
-                  {(objectiveData.directions[index] === 1
-                    ? upperBounds
-                    : lowerBounds)[index].map((bound) => {
-                    return (
-                      <>
-                        <Col>
-                          {(objectiveData.directions[index] === 1
-                            ? bound
-                            : -bound
-                          ).toPrecision(4)}
-                        </Col>
-                      </>
-                    );
-                  })}
-                  <Col>{distances[index].toPrecision(2)}</Col>
-                </Row>
-              </ListGroup.Item>
-            );
-          })}
-        </ListGroup>
+                  <td>{distances[index].toPrecision(2)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
       </Tab.Container>
     </Container>
   );
