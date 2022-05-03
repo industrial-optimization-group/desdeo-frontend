@@ -15,6 +15,7 @@ import SolutionTable from "../components/SolutionTable";
 import SolutionTableMultiSelect from "../components/SolutionTableMultiSelect";
 import { Link } from "react-router-dom";
 import { LogInfoToDB } from "../utils/Logging";
+import QuestionsModal from "../components/QuestionsModal";
 
 interface NimbusMethodProps {
   isLoggedIn: boolean;
@@ -64,6 +65,11 @@ function NimbusMethod({
   const [cont, SetCont] = useState<boolean>(true);
   const [finalVariables, SetFinalVariables] = useState<number[]>([]);
   const [nIteration, SetNIteration] = useState<number>(0);
+
+  // related to quesionnaires
+  const [showAfter, SetShowAfter] = useState<boolean>(false);
+  const [afterQSuccess, SetAfterQSuccess] = useState<boolean>(false);
+  const [showQuestionnaire, SetShowQuestionnaire] = useState<boolean>(false);
 
   // fetch current problem info
   useEffect(() => {
@@ -460,6 +466,7 @@ function NimbusMethod({
               SetFinalVariables(response.solution);
               SetHelpMessage("Stopped. Showing final solution reached.");
               SetNimbusState("stop");
+              SetShowAfter(true);
               break;
             }
           } else {
@@ -954,10 +961,29 @@ function NimbusMethod({
               </tr>
             </tbody>
           </Table>
-          <h4>{`Please answer to the questions in the survey regarding the synchronous NIMBUS method before returning back to the index.`}</h4>
-          <Link to={"/"}>
-            <Button>{"Back to index"}</Button>
-          </Link>
+          {!afterQSuccess && (
+            <Button onClick={() => SetShowAfter(!showAfter)}>
+              Answer questionnaire
+            </Button>
+          )}
+          {afterQSuccess && (
+            <Link to={"/"}>
+              <Button>{"Back to index"}</Button>
+            </Link>
+          )}
+          <QuestionsModal
+            apiUrl={apiUrl}
+            tokens={tokens}
+            description={"Questions asked at the nd of the iterating NIMBUS."}
+            questionnaireType={"After"}
+            nIteration={nIteration}
+            handleSuccess={(isSuccess) => {
+              SetShowAfter(!isSuccess);
+              SetAfterQSuccess(isSuccess);
+            }}
+            show={showAfter}
+            questionnaireTitle={"After NIMBUS questions"}
+          />
         </>
       )}
     </Container>
