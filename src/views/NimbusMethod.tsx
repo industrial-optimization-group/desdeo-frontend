@@ -228,6 +228,7 @@ function NimbusMethod({
             SetHelpMessage(
               "Select the solutions you would like to be saved for later viewing."
             );
+            SetShowQuestionnaire(true);
             SetNimbusState("archive");
             break;
           } else {
@@ -772,6 +773,20 @@ function NimbusMethod({
       )}
       {nimbusState === "archive" && (
         <>
+          {showQuestionnaire && (
+            <QuestionsModal
+              apiUrl={apiUrl}
+              tokens={tokens}
+              description={`After providing classifications in iteration ${nIteration} in NIMBUS.`}
+              questionnaireType={"During"}
+              nIteration={nIteration}
+              handleSuccess={(isSuccess) => {
+                SetShowQuestionnaire(!isSuccess);
+              }}
+              show={showQuestionnaire}
+              questionnaireTitle={`Questions after poviding classifications in iteration ${nIteration}`}
+            />
+          )}
           <Row>
             <Col sm={12}>
               <h4 className={"mt-3"}>{"New solutions"}</h4>

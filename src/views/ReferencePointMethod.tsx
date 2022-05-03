@@ -476,7 +476,7 @@ function ReferencePointMethod({
                 SetShowQuestionnaire(!isSuccess);
               }}
               show={showQuestionnaire}
-              questionnaireTitle={`Questoins after iterating ${nIteration} times`}
+              questionnaireTitle={`Questions after iterating ${nIteration} times`}
             />
           )}
         </>
