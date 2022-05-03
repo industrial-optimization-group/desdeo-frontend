@@ -1,10 +1,5 @@
-import React from "react";
-import { useEffect, useState, useCallback } from "react";
-import {
-  ProblemInfo,
-  ObjectiveData,
-  ObjectiveDatum,
-} from "../types/ProblemTypes";
+import { useEffect, useState } from "react";
+import { ProblemInfo, ObjectiveData } from "../types/ProblemTypes";
 import { Tokens } from "../types/AppTypes";
 import ClassificationsInputForm from "../components/ClassificationsInputForm";
 import { Container, Row, Col, Button, Form, Table } from "react-bootstrap";

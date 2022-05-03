@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Container,
-  ListGroup,
-  Tab,
-  Row,
-  Col,
-  ListGroupItem,
-} from "react-bootstrap";
+import { Container, Tab, Table } from "react-bootstrap";
 import { ObjectiveData } from "../types/ProblemTypes";
 
 interface SolutionTableMultiSelectProps {
@@ -35,57 +28,48 @@ function SolutionTableMultiSelect({
 
   return (
     <Container>
-      <Tab.Container
-        id="table-of-alternatives"
-        /*
-        activeKey={keys}
-        onSelect={(k) => {
-          SetKeys([...keys!, k!]);
-        }}
-        */
-      >
+      <Tab.Container id="table-of-alternatives">
         <h4>{tableTitle}</h4>
-        <ListGroup>
-          <ListGroup.Item variant="dark">
-            <Row>
+        <Table hover>
+          <thead>
+            <tr>
               {objectiveData.names.map((name, i) => {
                 return (
-                  <Col>{`${name} (${
+                  <th>{`${name} (${
                     objectiveData.directions[i] === 1 ? "min" : "max"
-                  })`}</Col>
+                  })`}</th>
                 );
               })}
-            </Row>
-          </ListGroup.Item>
-          {data.map((datum, index: number) => {
-            return (
-              <ListGroup.Item
-                action
-                variant={keys.includes(index) ? "info" : ""}
-                onClick={() => {
-                  if (keys.includes(index)) {
-                    setIndices(keys.filter((k) => k !== index));
-                  } else {
-                    setIndices([...keys, index]);
-                  }
-                }}
-                key={index}
-              >
-                <Row>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((datum, index: number) => {
+              return (
+                <tr
+                  onClick={() => {
+                    if (keys.includes(index)) {
+                      setIndices(keys.filter((k) => k !== index));
+                    } else {
+                      setIndices([...keys, index]);
+                    }
+                  }}
+                  className={keys.includes(index) ? "tableSelected" : ""}
+                  key={index}
+                >
                   {datum.value.map((value, i) => {
                     return (
-                      <Col>
+                      <td>
                         {objectiveData.directions[i] === 1
                           ? value.toPrecision(4)
                           : -value.toPrecision(4)}
-                      </Col>
+                      </td>
                     );
                   })}
-                </Row>
-              </ListGroup.Item>
-            );
-          })}
-        </ListGroup>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
       </Tab.Container>
     </Container>
   );
