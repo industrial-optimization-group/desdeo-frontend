@@ -51,6 +51,7 @@ function SolutionTableNautilus({
         <Table hover>
           <thead>
             <tr>
+              <th>{"Candidate"}</th>
               {objectiveData.names.map((name, i) => {
                 return (
                   <>
@@ -62,6 +63,7 @@ function SolutionTableNautilus({
               <th>{"Distance"}</th>
             </tr>
             <tr>
+              <th>{"#"}</th>
               {objectiveData.names.map((name, i) => {
                 return (
                   <>
@@ -71,7 +73,7 @@ function SolutionTableNautilus({
                   </>
                 );
               })}
-              <th></th>
+              <th>{"% of distance"}</th>
             </tr>
           </thead>
           <tbody>
@@ -82,6 +84,7 @@ function SolutionTableNautilus({
                   key={index}
                   className={index === selectedIndex ? "tableSelected" : ""}
                 >
+                  <td>{`#${index + 1}`}</td>
                   {objectiveData.names.map((_, j) => {
                     const lb = (
                       objectiveData.directions[j] === 1

@@ -70,7 +70,6 @@ function ENautilusMethod({
   const [preferredPointIndex, SetPreferredPointIndex] = useState<number>(-1);
   const [changeRemaining, SetChangeRemaining] = useState<boolean>(false);
   const [newIterationsLeft, SetNewIterationsLeft] = useState<number>(-1);
-  const [stepBack, SetStepBack] = useState<boolean>(false);
   const [prevPrefPoint, SetPrevPrefPoint] = useState<number[]>([]);
   const [currentIterationState, SetCurrentIterationState] =
     useState<IterationState>({
@@ -272,20 +271,20 @@ function ENautilusMethod({
     initialize();
   }
 
-  const iterate = async () => {
+  const iterate = async (takeStepBack: boolean = false) => {
     console.log("iterate");
     SetLoading(true);
 
     try {
       let payload = {};
-      if (stepBack) {
+      if (takeStepBack) {
         const prevIterationsState =
           prevIterationsStates[prevIterationsStates.length - 1];
         payload = {
           response: {
             preferred_point_index: prevIterationsState.prefPointIndex,
             change_remaining: changeRemaining,
-            step_back: stepBack,
+            step_back: takeStepBack,
             iterations_left: prevIterationsState.iterationsLeft,
             prev_solutions: prevIterationsState.points,
             prev_lower_bounds: prevIterationsState.lowerBounds,
@@ -298,7 +297,7 @@ function ENautilusMethod({
           response: {
             preferred_point_index: preferredPointIndex,
             change_remaining: changeRemaining,
-            step_back: stepBack,
+            step_back: takeStepBack,
             iterations_left: newIterationsLeft,
           },
         };
@@ -317,7 +316,7 @@ function ENautilusMethod({
         const body = await res.json();
         const response = body.response;
 
-        if (stepBack) {
+        if (takeStepBack) {
           // Pop the last state
           const statesCopy = prevIterationsStates;
           const prevState = statesCopy.pop();
@@ -439,7 +438,6 @@ function ENautilusMethod({
 
         SetPreferredPointIndex(-1);
         SetChangeRemaining(false);
-        SetStepBack(false);
       } else {
         console.log(`iteration not ok, got response ${res.status}`);
       }
@@ -554,8 +552,37 @@ function ENautilusMethod({
           <Col sm={4}>
             <Button
               size={"lg"}
+              id={"step-back-btn"}
+              disabled={prevIterationsStates.length < 1 || changeRemaining}
+              onClick={() => {
+                iterate(true);
+              }}
+            >
+              {"← Step back"}
+            </Button>
+          </Col>
+          <Col sm={4}>
+            {preferredPointIndex === -1 && (
+              <Button size={"lg"} disabled={true} variant={"info"}>
+                {"Select a point to iterate"}
+              </Button>
+            )}
+            {preferredPointIndex >= 0 && (
+              <Button size={"lg"} onClick={() => iterate()} disabled={loading}>
+                {loading
+                  ? "Loading..."
+                  : changeRemaining
+                  ? "Change iterations and iterate"
+                  : numOfIterations === 1
+                  ? "Select final solution and stop"
+                  : "Iterate"}
+              </Button>
+            )}
+          </Col>
+          <Col sm={4}>
+            <Button
+              size={"lg"}
               id={"change-remaining-btn"}
-              disabled={stepBack}
               onClick={() => {
                 SetChangeRemaining(!changeRemaining);
                 if (!changeRemaining) {
@@ -602,51 +629,11 @@ function ENautilusMethod({
               </Form>
             </Row>
           </Col>
-          <Col sm={4}>
-            {preferredPointIndex === -1 && !stepBack && (
-              <Button size={"lg"} disabled={true} variant={"info"}>
-                {"Select a point to iterate"}
-              </Button>
-            )}
-            {preferredPointIndex >= 0 && !stepBack && (
-              <Button size={"lg"} onClick={iterate} disabled={loading}>
-                {loading
-                  ? "Loading..."
-                  : changeRemaining
-                  ? "Change iterations and iterate"
-                  : numOfIterations === 1
-                  ? "Select final solution and stop"
-                  : "Iterate"}
-              </Button>
-            )}
-            {stepBack && (
-              <Button size={"lg"} onClick={iterate} disabled={loading}>
-                {loading ? "Loading..." : "Step back"}
-              </Button>
-            )}
-          </Col>
-          <Col sm={4}>
-            <Button
-              size={"lg"}
-              id={"step-back-btn"}
-              disabled={prevIterationsStates.length < 1}
-              onClick={() => {
-                SetStepBack(!stepBack);
-                if (!stepBack) {
-                  SetHelpText("Stepping back.");
-                } else {
-                  SetHelpText("Select the most preferred  intermediate point.");
-                }
-              }}
-            >
-              {!stepBack ? "Take a step back next" : "Cancel"}
-            </Button>
-          </Col>
         </Row>
         <Row className="mb-2">
           <Col sm={2}></Col>
           <Col>
-            <h4>{"Intermediate points"}</h4>
+            <h4>{"Select next candidate"}</h4>
           </Col>
           <Col sm={2}></Col>
         </Row>
