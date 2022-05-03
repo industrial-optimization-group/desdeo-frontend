@@ -9,7 +9,6 @@ import {
   Form,
   Table,
   FormGroup,
-  Modal,
 } from "react-bootstrap";
 import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
 import { ParallelAxes } from "desdeo-components";
@@ -547,138 +546,27 @@ function ENautilusMethod({
       <Container>
         <Row>
           <Col>
-            <h3 className="mb-3">E-NAUTILUS method</h3>
+            <h3 className="mb-3">{`E-NAUTILUS method: iterations left ${numOfIterations}`}</h3>
             <p>{`Help: ${helpText}`}</p>
           </Col>
         </Row>
         <Row>
-          <Col sm={4}></Col>
           <Col sm={4}>
-            {preferredPointIndex === -1 && !stepBack && (
-              <Button size={"lg"} disabled={true} variant={"info"}>
-                Select a point first
-              </Button>
-            )}
-            {preferredPointIndex >= 0 && !stepBack && (
-              <Button size={"lg"} onClick={iterate} disabled={loading}>
-                {loading
-                  ? "Loading..."
-                  : changeRemaining
-                  ? "Change iterations and iterate"
-                  : numOfIterations === 1
-                  ? "Select final solution and stop"
-                  : "Iterate"}
-              </Button>
-            )}
-            {stepBack && (
-              <Button size={"lg"} onClick={iterate} disabled={loading}>
-                {loading ? "Loading..." : "Step back"}
-              </Button>
-            )}
-          </Col>
-          <Col sm={4}></Col>
-        </Row>
-        <Row>
-          <Col sm={2}></Col>
-          <Col>
-            <h4 className="mt-4">{`Iterations left ${numOfIterations}`}</h4>
-          </Col>
-          <Col sm={2}></Col>
-        </Row>
-        <Row>
-          <Col sm={6}>
-            <Form>
-              <Form.Group as={Row}>
-                <Form.Label column sm={8} className={"mt-2"}>
-                  {"Change the number of remaining iterations?"}
-                </Form.Label>
-                <Col sm={3}>
-                  <Form.Check
-                    className={"mt-3"}
-                    id="remaining-switch"
-                    type="switch"
-                    disabled={stepBack}
-                    label={
-                      changeRemaining ? (
-                        <>
-                          {"no/"}
-                          <b>{"yes"}</b>
-                        </>
-                      ) : (
-                        <>
-                          <b>{"no"}</b>
-                          {"/yes"}
-                        </>
-                      )
-                    }
-                    checked={changeRemaining}
-                    onChange={() => {
-                      SetChangeRemaining(!changeRemaining);
-                      if (!changeRemaining) {
-                        SetHelpText("Input a new number of iterations.");
-                      } else {
-                        SetHelpText(
-                          "Select the most preferred intermediate point."
-                        );
-                      }
-                    }}
-                  />
-                </Col>
-                <Form.Label column sm={8} className={"mt-2"}>
-                  {"Go to previous iteration?"}
-                </Form.Label>
-                <Col sm={3}>
-                  <Form.Check
-                    className={"mt-3"}
-                    id="stepback-switch"
-                    type="switch"
-                    disabled={prevIterationsStates.length < 1}
-                    label={
-                      stepBack ? (
-                        <>
-                          {"no/"}
-                          <b>{"yes"}</b>
-                        </>
-                      ) : (
-                        <>
-                          <b>{"no"}</b>
-                          {"/yes"}
-                        </>
-                      )
-                    }
-                    checked={stepBack}
-                    onChange={() => {
-                      SetStepBack(!stepBack);
-                      if (!stepBack) {
-                        SetHelpText("Stepping back.");
-                      } else {
-                        SetHelpText(
-                          "Select the most preferred  intermediate point."
-                        );
-                      }
-                    }}
-                  />
-                </Col>
-              </Form.Group>
-            </Form>
-            <ParallelAxes
-              objectiveData={ToTrueValues(
-                ParseSolutions(currentIterationState.points, activeProblemInfo!)
-              )}
-              selectedIndices={
-                preferredPointIndex === -1 ? [] : [preferredPointIndex]
-              }
-              handleSelection={(x: number[]) => {
-                x.length > 0
-                  ? SetPreferredPointIndex(x.pop()!)
-                  : SetPreferredPointIndex(preferredPointIndex);
+            <Button
+              size={"lg"}
+              id={"change-remaining-btn"}
+              disabled={stepBack}
+              onClick={() => {
+                SetChangeRemaining(!changeRemaining);
+                if (!changeRemaining) {
+                  SetHelpText("Input a new number of iterations.");
+                } else {
+                  SetHelpText("Select the most preferred intermediate point.");
+                }
               }}
-              oldAlternative={ToTrueValues(
-                ParseSolutions([prevPrefPoint], activeProblemInfo!)
-              )}
-            />
-          </Col>
-          <Col sm={6}>
+            >
+              {!changeRemaining ? "Change number of iterations" : "Cancel"}
+            </Button>
             <Row className={changeRemaining ? "visible" : "invisible"}>
               <Form action="" onChange={handleSubmitIter(onIterChange)}>
                 <FormGroup as={Row}>
@@ -713,6 +601,92 @@ function ENautilusMethod({
                 </FormGroup>
               </Form>
             </Row>
+          </Col>
+          <Col sm={4}>
+            {preferredPointIndex === -1 && !stepBack && (
+              <Button size={"lg"} disabled={true} variant={"info"}>
+                {"Select a point to iterate"}
+              </Button>
+            )}
+            {preferredPointIndex >= 0 && !stepBack && (
+              <Button size={"lg"} onClick={iterate} disabled={loading}>
+                {loading
+                  ? "Loading..."
+                  : changeRemaining
+                  ? "Change iterations and iterate"
+                  : numOfIterations === 1
+                  ? "Select final solution and stop"
+                  : "Iterate"}
+              </Button>
+            )}
+            {stepBack && (
+              <Button size={"lg"} onClick={iterate} disabled={loading}>
+                {loading ? "Loading..." : "Step back"}
+              </Button>
+            )}
+          </Col>
+          <Col sm={4}>
+            <Button
+              size={"lg"}
+              id={"step-back-btn"}
+              disabled={prevIterationsStates.length < 1}
+              onClick={() => {
+                SetStepBack(!stepBack);
+                if (!stepBack) {
+                  SetHelpText("Stepping back.");
+                } else {
+                  SetHelpText("Select the most preferred  intermediate point.");
+                }
+              }}
+            >
+              {!stepBack ? "Take a step back next" : "Cancel"}
+            </Button>
+          </Col>
+        </Row>
+        <Row className="mb-2">
+          <Col sm={2}></Col>
+          <Col>
+            <h4>{"Intermediate points"}</h4>
+          </Col>
+          <Col sm={2}></Col>
+        </Row>
+        <Row>
+          <Col sm={6}>
+            <Container fluid>
+              <Row className="jusify-content-center">
+                <Col>
+                  <ParallelAxes
+                    objectiveData={ToTrueValues(
+                      ParseSolutions(
+                        currentIterationState.points,
+                        activeProblemInfo!
+                      )
+                    )}
+                    selectedIndices={
+                      preferredPointIndex === -1 ? [] : [preferredPointIndex]
+                    }
+                    handleSelection={(x: number[]) => {
+                      x.length > 0
+                        ? SetPreferredPointIndex(x.pop()!)
+                        : SetPreferredPointIndex(preferredPointIndex);
+                    }}
+                    oldAlternative={ToTrueValues(
+                      ParseSolutions([prevPrefPoint], activeProblemInfo!)
+                    )}
+                    dimensionsMaybe={{
+                      chartHeight: 700,
+                      chartWidth: 850,
+                      marginLeft: 0,
+                      marginRight: 0,
+                      marginTop: 30,
+                      marginBottom: 0,
+                    }}
+                  />
+                </Col>
+              </Row>
+            </Container>
+          </Col>
+          <Col sm={6}>
             <SolutionTable
               objectiveData={ParseSolutions(
                 currentIterationState.points,
@@ -720,7 +694,7 @@ function ENautilusMethod({
               )}
               setIndex={(x: number) => SetPreferredPointIndex(x)}
               selectedIndex={preferredPointIndex}
-              tableTitle={"Intermediate points"}
+              tableTitle={""}
             />
           </Col>
         </Row>
