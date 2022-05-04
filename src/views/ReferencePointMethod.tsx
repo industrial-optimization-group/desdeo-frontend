@@ -45,7 +45,6 @@ function ReferencePointMethod({
   const [loading, SetLoading] = useState<boolean>(false);
   const [alternatives, SetAlternatives] = useState<ObjectiveData>();
   const [indexCurrentPoint, SetIndexCurrentPoint] = useState<number>(0);
-  const [satisfied, SetSatisfied] = useState<boolean>(false);
   const [showFinal, SetShowFinal] = useState<boolean>(false);
   const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
   const [finalVariables, SetFinalVariables] = useState<number[]>([]);
@@ -70,21 +69,15 @@ function ReferencePointMethod({
             activeProblemInfo?.minimize[i] === 1 ? v.toFixed(3) : -v.toFixed(3)
         )}]`
       );
-    } else if (!satisfied) {
+    } else {
       SetHelpMessage(
         `Provide a new reference point or select a final solution and stop. The current reference point is [${referencePoint.map(
           (v, i) =>
             activeProblemInfo?.minimize[i] === 1 ? v.toFixed(3) : -v.toFixed(3)
         )}]`
       );
-    } else {
-      SetHelpMessage(
-        `Final solution is set to [${referencePoint.map((v, i) =>
-          activeProblemInfo?.minimize[i] === 1 ? v.toFixed(3) : -v.toFixed(3)
-        )}]. If you are happy with the solution, click on 'stop'`
-      );
     }
-  }, [referencePoint, alternatives, satisfied, activeProblemInfo]);
+  }, [referencePoint, alternatives, activeProblemInfo]);
 
   // fetch current problem info
   useEffect(() => {
@@ -209,7 +202,7 @@ function ReferencePointMethod({
     startMethod();
   }, [activeProblemInfo, methodStarted]);
 
-  const iterate = async () => {
+  const iterate = async (satisfied: boolean = false) => {
     // Attempt to iterate
     SetLoading(true);
     console.log("loading...");
@@ -318,18 +311,15 @@ function ReferencePointMethod({
         <>
           <p>{`Help: ${helpMessage}`}</p>
           <Row>
-            <Col sm={4}></Col>
+            <Col sm={2}></Col>
             <Col sm={4}>
-              {!loading && !satisfied && (
-                <Button size={"lg"} onClick={iterate}>
-                  Iterate
-                </Button>
-              )}
-              {!loading && satisfied && (
-                <Button size={"lg"} onClick={iterate}>
-                  Stop
-                </Button>
-              )}
+              <Button
+                size={"lg"}
+                onClick={() => iterate(false)}
+                hidden={loading}
+              >
+                {"Iterate"}
+              </Button>
               {loading && (
                 <Button disabled={true} size={"lg"} variant={"info"}>
                   {"Working... "}
@@ -343,53 +333,39 @@ function ReferencePointMethod({
                 </Button>
               )}
             </Col>
-            <Col sm={4}></Col>
+            <Col sm={4}>
+              <Row>
+                <Button
+                  size={"lg"}
+                  disabled={alternatives === undefined}
+                  onClick={() => iterate(true)}
+                >
+                  {"Select current solution and stop"}
+                </Button>
+                {alternatives !== undefined && (
+                  <p className="justify-content-center">{`Selected solution: [${alternatives.values[
+                    indexCurrentPoint
+                  ].value.map((v, i) =>
+                    alternatives.directions[i] === 1
+                      ? v.toFixed(3)
+                      : -v.toFixed(3)
+                  )}]`}</p>
+                )}
+              </Row>
+            </Col>
+            <Col sm={2}></Col>
           </Row>
           <Row>
             <Col sm={2}></Col>
             <Col>
-              <h4 className="mt-3">
-                Currently selected solution and reference point
-              </h4>
+              <h4 className={"mt-1"}>Provide a new reference point</h4>
             </Col>
             <Col sm={2}></Col>
           </Row>
           <Row>
             <Col sm={4}>
               {fetchedInfo && (
-                <>
-                  <Form>
-                    <Form.Group as={Row}>
-                      <Form.Label column sm={8}>
-                        {
-                          "Are you satisfied with the currently selected solution?"
-                        }
-                      </Form.Label>
-                      <Col sm={3}>
-                        <Form.Check
-                          className={"mt-3"}
-                          id="satisfied-switch"
-                          type="switch"
-                          disabled={alternatives === undefined ? true : false}
-                          label={
-                            satisfied ? (
-                              <>
-                                {"no/"}
-                                <b>{"yes"}</b>
-                              </>
-                            ) : (
-                              <>
-                                <b>{"no"}</b>
-                                {"/yes"}
-                              </>
-                            )
-                          }
-                          checked={satisfied}
-                          onChange={() => SetSatisfied(!satisfied)}
-                        />
-                      </Col>
-                    </Form.Group>
-                  </Form>
+                <div className={"mt-1"}>
                   <ReferencePointInputForm
                     setReferencePoint={SetReferencePoint}
                     referencePoint={referencePoint}
@@ -399,31 +375,37 @@ function ReferencePointMethod({
                     nadir={activeProblemInfo.nadir}
                     directions={activeProblemInfo.minimize}
                   />
-                </>
+                </div>
               )}
             </Col>
             <Col sm={8}>
               {fetchedInfo && (
-                <div className={"mt-5"}>
-                  <HorizontalBars
-                    objectiveData={ToTrueValues(
-                      ParseSolutions([referencePoint], activeProblemInfo)
-                    )}
-                    referencePoint={referencePoint.map((v, i) =>
-                      activeProblemInfo.minimize[i] === 1 ? v : -v
-                    )}
-                    currentPoint={currentPoint.map((v, i) =>
-                      activeProblemInfo.minimize[i] === 1 ? v : -v
-                    )}
-                    setReferencePoint={(ref: number[]) =>
-                      SetReferencePoint(
-                        ref.map((v, i) =>
-                          activeProblemInfo.minimize[i] === 1 ? v : -v
-                        )
+                <HorizontalBars
+                  objectiveData={ToTrueValues(
+                    ParseSolutions([referencePoint], activeProblemInfo)
+                  )}
+                  referencePoint={referencePoint.map((v, i) =>
+                    activeProblemInfo.minimize[i] === 1 ? v : -v
+                  )}
+                  currentPoint={currentPoint.map((v, i) =>
+                    activeProblemInfo.minimize[i] === 1 ? v : -v
+                  )}
+                  setReferencePoint={(ref: number[]) =>
+                    SetReferencePoint(
+                      ref.map((v, i) =>
+                        activeProblemInfo.minimize[i] === 1 ? v : -v
                       )
-                    }
-                  />
-                </div>
+                    )
+                  }
+                  dimensionsMaybe={{
+                    chartHeight: 400,
+                    chartWidth: 800,
+                    marginLeft: 0,
+                    marginRight: 150,
+                    marginTop: 0,
+                    marginBottom: 30,
+                  }}
+                />
               )}
             </Col>
           </Row>
@@ -432,7 +414,7 @@ function ReferencePointMethod({
               <Row>
                 <Col sm={2}></Col>
                 <Col>
-                  <h4 className="mt-3">Alternative solutions</h4>
+                  <h4 className="mt-3">Select an alternative solution</h4>
                 </Col>
                 <Col sm={2}></Col>
               </Row>
@@ -456,6 +438,14 @@ function ReferencePointMethod({
                         x.length > 0
                           ? SetIndexCurrentPoint(x.pop()!)
                           : SetIndexCurrentPoint(indexCurrentPoint);
+                      }}
+                      dimensionsMaybe={{
+                        chartHeight: 600,
+                        chartWidth: 850,
+                        marginLeft: 0,
+                        marginRight: 0,
+                        marginTop: 30,
+                        marginBottom: 0,
                       }}
                     />
                   </div>
