@@ -5263,10 +5263,10 @@ des.js@^1.0.0:
     inherits "^2.0.1"
     minimalistic-assert "^1.0.0"
 
-desdeo-components@^0.3.2:
-  version "0.3.4"
-  resolved "https://registry.yarnpkg.com/desdeo-components/-/desdeo-components-0.3.4.tgz#7a374a33202ee2a494b48651ddc5f13e15a09786"
-  integrity sha512-ranRF9at64tqKeROqu2Ql/e4bQk9benW3g84/3Bv2S5uMRr0o0HTM33j1zhbphmdEetHVLrKy5k9mguCaHmQmw==
+desdeo-components@^0.3.5:
+  version "0.3.5"
+  resolved "https://registry.yarnpkg.com/desdeo-components/-/desdeo-components-0.3.5.tgz#0cc4b575617e40431a03c6fe96106f7f70ffd48d"
+  integrity sha512-ajzHzfJkhduAKMxXSeUEAjQC7g+q4ukdELyJkUiU+ojAR5BrM83FFIobryRPvLiJDNVepnxXsH3vfXFJ/nVsEQ==
   dependencies:
     "@types/d3-array" "^2.9.0"
     "@types/d3-axis" "^2.0.0"
