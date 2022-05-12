@@ -7,6 +7,7 @@ import ReactLoading from "react-loading";
 import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
 import { HorizontalBars, ParallelAxes } from "desdeo-components";
 import SolutionTable from "../components/SolutionTable";
+import SolutionTableNimbus from "../components/SolutionTableNimbus";
 import SolutionTableMultiSelect from "../components/SolutionTableMultiSelect";
 import { Link } from "react-router-dom";
 import { LogInfoToDB } from "../utils/Logging";
@@ -57,9 +58,7 @@ function NimbusMethod({
   const [newSolutions, SetNewSolutions] = useState<ObjectiveData>();
   const [archivedSolutions, SetArchivedSolutions] = useState<ObjectiveData>();
   const [selectedIndices, SetSelectedIndices] = useState<number[]>([]);
-  const [selectedIndicesArchive, SetSelectedIndicesArchive] = useState<
-    number[]
-  >([]);
+  const [selectedIndexArchive, SetSelectedIndexArchive] = useState<number>(-1);
   const [nSolutionsInArchive, SetNSolutionsInArchive] = useState<number>(0);
   const [finalVariables, SetFinalVariables] = useState<number[]>([]);
   const [nIteration, SetNIteration] = useState<number>(0);
@@ -233,6 +232,8 @@ function NimbusMethod({
             );
             // SetShowQuestionnaire(true);
             SetCurrentState("archive");
+            SetSolutionsArchivedAfterClassification(false);
+            SetSelectedIndexArchive(-1);
             break;
           } else {
             // not ok
@@ -283,13 +284,13 @@ function NimbusMethod({
 
             // update the solutions to be shown
             const toBeShown = ParseSolutions(
-              response.objectives,
+              response.objectives.slice(
+                nSolutionsInArchive,
+                nSolutionsInArchive + numberOfSolutions
+              ),
               activeProblemInfo!
             );
             SetNewSolutions(toBeShown);
-
-            // reset the active selection
-            SetSelectedIndices([]);
 
             // reset the number of solutions
             SetNumberOfSolutions(1);
@@ -317,13 +318,16 @@ function NimbusMethod({
                 const bodyArchive = await resArchive.json();
                 const responseArchive = bodyArchive.response;
 
-                if (nSolutionsInArchive === 0) {
+                if (selectedIndices.length === 0) {
                   // do nothing
                 } else {
                   // pick archived solutions
                   SetArchivedSolutions(
                     ParseSolutions(
-                      responseArchive.objectives.slice(0, nSolutionsInArchive),
+                      responseArchive.objectives.slice(
+                        0,
+                        nSolutionsInArchive + selectedIndices.length
+                      ),
                       activeProblemInfo!
                     )
                   );
@@ -334,6 +338,12 @@ function NimbusMethod({
                 );
                 SetCurrentState("select preferred");
                 SetSolutionsArchivedAfterClassification(true);
+                // how many solutions are in the archive
+                SetNSolutionsInArchive(
+                  nSolutionsInArchive + selectedIndices.length
+                );
+                // reset the active selection
+                SetSelectedIndices([]);
                 break;
               } else {
                 // not ok
@@ -363,6 +373,8 @@ function NimbusMethod({
       case "classify preferred":
       case "stop with preferred": {
         // SELECT PREFERRED -> STOP or CLASSIFICATION
+        console.log("Selected index archive");
+        console.log(selectedIndexArchive);
         if (selectedIndices.length === 0) {
           SetHelpMessage("Please select a preferred solution first.");
           // do nothing;
@@ -746,14 +758,25 @@ function NimbusMethod({
           )}
           <Row>
             <Col sm={1}></Col>
-            <Col sm={3} onClick={() => iterate("archive")}>
-              <Button>{"Save selected solutions to archive"}</Button>
+            <Col sm={3}>
+              <Button
+                onClick={() => iterate("archive")}
+                disabled={solutionsArchivedAfterClassification}
+              >
+                {solutionsArchivedAfterClassification
+                  ? "Solutions archived!"
+                  : "Save selected solutions to archive"}
+              </Button>
             </Col>
-            <Col sm={4} onClick={() => iterate("classify preferred")}>
-              <Button>{"Classify currently selected solution"}</Button>
+            <Col sm={4}>
+              <Button onClick={() => iterate("classify preferred")}>
+                {"Classify currently selected solution"}
+              </Button>
             </Col>
-            <Col sm={3} onClick={() => iterate("stop with preferred")}>
-              <Button>{"Stop with currently selected solution"}</Button>
+            <Col sm={3}>
+              <Button onClick={() => iterate("stop with preferred")}>
+                {"Stop with currently selected solution"}
+              </Button>
             </Col>
             <Col sm={1}></Col>
           </Row>
@@ -775,6 +798,14 @@ function NimbusMethod({
                   objectiveData={ToTrueValues(newSolutions!)}
                   selectedIndices={selectedIndices}
                   handleSelection={SetSelectedIndices}
+                  dimensionsMaybe={{
+                    chartHeight: 600,
+                    chartWidth: 850,
+                    marginLeft: 0,
+                    marginRight: 0,
+                    marginTop: 30,
+                    marginBottom: 0,
+                  }}
                 />
               </div>
             </Col>
@@ -785,10 +816,12 @@ function NimbusMethod({
                 <h4 className={"mt-3"}>{"Archived solutions"}</h4>
               </Col>
               <Col sm={6}>
-                <SolutionTableMultiSelect
+                <SolutionTableNimbus
                   objectiveData={archivedSolutions!}
-                  activeIndices={selectedIndicesArchive}
-                  setIndices={SetSelectedIndicesArchive}
+                  selectedIndex={selectedIndexArchive}
+                  setIndex={(x: number) => {
+                    SetSelectedIndexArchive(x);
+                  }}
                   tableTitle={""}
                 />
               </Col>
@@ -796,8 +829,22 @@ function NimbusMethod({
                 <div className={"mt-1"}>
                   <ParallelAxes
                     objectiveData={ToTrueValues(archivedSolutions!)}
-                    selectedIndices={selectedIndicesArchive}
-                    handleSelection={SetSelectedIndicesArchive}
+                    selectedIndices={[selectedIndexArchive]}
+                    handleSelection={(x: number[]) => {
+                      if (x.length === 1) {
+                        SetSelectedIndexArchive(-1);
+                      } else {
+                        SetSelectedIndexArchive(x.pop()!);
+                      }
+                    }}
+                    dimensionsMaybe={{
+                      chartHeight: 600,
+                      chartWidth: 850,
+                      marginLeft: 0,
+                      marginRight: 0,
+                      marginTop: 30,
+                      marginBottom: 0,
+                    }}
                   />
                 </div>
               </Col>
