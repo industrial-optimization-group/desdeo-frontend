@@ -26,7 +26,6 @@ type NimbusState =
   | "not started"
   | "classification"
   | "archive"
-  | "intermediate"
   | "select preferred"
   | "stop";
 
@@ -55,8 +54,6 @@ function NimbusMethod({
   const [numberOfSolutions, SetNumberOfSolutions] = useState<number>(1);
   const [newSolutions, SetNewSolutions] = useState<ObjectiveData>();
   const [selectedIndices, SetSelectedIndices] = useState<number[]>([]);
-  const [computeIntermediate, SetComputeIntermediate] =
-    useState<boolean>(false);
   const [cont, SetCont] = useState<boolean>(true);
   const [finalVariables, SetFinalVariables] = useState<number[]>([]);
   const [nIteration, SetNIteration] = useState<number>(0);
@@ -307,7 +304,6 @@ function NimbusMethod({
                 const body = await res.json();
                 // const response = body.response;
 
-                SetComputeIntermediate(false);
                 SetHelpMessage(
                   "Please select the solution you prefer the most from the shown solution."
                 );
@@ -433,14 +429,7 @@ function NimbusMethod({
   // only allow two selected indices at any given time in the 'intermediate' state, and one index at any given time in the
   //
   useEffect(() => {
-    if (nimbusState === "intermediate") {
-      if (selectedIndices.length < 3) {
-        // do nothing
-        return;
-      }
-      SetSelectedIndices(selectedIndices.slice(1));
-      return;
-    } else if (nimbusState === "select preferred") {
+    if (nimbusState === "select preferred") {
       if (selectedIndices.length === 1 || selectedIndices.length === 0) {
         // do nothing
         return;
@@ -566,9 +555,6 @@ function NimbusMethod({
               onClick={iterate}
               disabled={
                 (nimbusState === "classification" && !classificationOk) ||
-                (nimbusState === "intermediate" &&
-                  computeIntermediate &&
-                  selectedIndices.length !== 2) ||
                 (nimbusState === "select preferred" &&
                   selectedIndices.length !== 1)
               }
@@ -584,17 +570,6 @@ function NimbusMethod({
                 "Save"}
               {nimbusState === "archive" &&
                 selectedIndices.length === 0 &&
-                "Continue"}
-              {nimbusState === "intermediate" &&
-                computeIntermediate &&
-                selectedIndices.length === 2 &&
-                "Compute"}
-              {nimbusState === "intermediate" &&
-                computeIntermediate &&
-                selectedIndices.length !== 2 &&
-                "Select two solutions first"}
-              {nimbusState === "intermediate" &&
-                !computeIntermediate &&
                 "Continue"}
               {nimbusState === "select preferred" &&
                 cont &&
