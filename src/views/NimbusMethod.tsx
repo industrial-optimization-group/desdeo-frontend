@@ -26,6 +26,8 @@ type NimbusState =
   | "not started"
   | "classification"
   | "archive"
+  | "classify preferred"
+  | "stop with preferred"
   | "select preferred"
   | "stop";
 
@@ -45,7 +47,7 @@ function NimbusMethod({
   const [preferredPoint, SetPreferredPoint] = useState<number[]>([]);
   const [fetchedInfo, SetFetchedInfo] = useState<boolean>(false);
   const [loading, SetLoading] = useState<boolean>(false);
-  const [nimbusState, SetNimbusState] = useState<NimbusState>("not started");
+  const [currentState, SetCurrentState] = useState<NimbusState>("not started");
   const [classifications, SetClassifications] = useState<Classification[]>([]);
   const [classificationLevels, SetClassificationLevels] = useState<number[]>(
     []
@@ -53,10 +55,18 @@ function NimbusMethod({
   const [classificationOk, SetClassificationOk] = useState<boolean>(false);
   const [numberOfSolutions, SetNumberOfSolutions] = useState<number>(1);
   const [newSolutions, SetNewSolutions] = useState<ObjectiveData>();
+  const [archivedSolutions, SetArchivedSolutions] = useState<ObjectiveData>();
   const [selectedIndices, SetSelectedIndices] = useState<number[]>([]);
-  const [cont, SetCont] = useState<boolean>(true);
+  const [selectedIndicesArchive, SetSelectedIndicesArchive] = useState<
+    number[]
+  >([]);
+  const [nSolutionsInArchive, SetNSolutionsInArchive] = useState<number>(0);
   const [finalVariables, SetFinalVariables] = useState<number[]>([]);
   const [nIteration, SetNIteration] = useState<number>(0);
+  const [
+    solutionsArchivedAfterClassification,
+    SetSolutionsArchivedAfterClassification,
+  ] = useState<boolean>(false);
 
   // related to quesionnaires
   const [showAfter, SetShowAfter] = useState<boolean>(false);
@@ -146,7 +156,7 @@ function NimbusMethod({
           SetPreferredPoint([...body.response.objective_values]); // make copy to avoid aliasing
           SetClassificationLevels(body.response.objective_values);
           SetHelpMessage("Please classify each of the shown objectives.");
-          SetNimbusState("classification");
+          SetCurrentState("classification");
           await LogInfoToDB(
             tokens,
             apiUrl,
@@ -165,12 +175,13 @@ function NimbusMethod({
     startMethod();
   }, [activeProblemInfo, methodStarted]);
 
-  const iterate = async () => {
+  const iterate = async (nimbusState: NimbusState = "classification") => {
     // Attempt to iterate
     SetLoading(true);
 
     switch (nimbusState) {
       case "classification": {
+        // CLASSIFICATION!
         if (!classificationOk) {
           // classification not ok, do nothing
           SetHelpMessage(
@@ -221,7 +232,7 @@ function NimbusMethod({
               "Select the solutions you would like to be saved for later viewing."
             );
             // SetShowQuestionnaire(true);
-            SetNimbusState("archive");
+            SetCurrentState("archive");
             break;
           } else {
             // not ok
@@ -237,6 +248,7 @@ function NimbusMethod({
         }
       }
       case "archive": {
+        // ARCHIVE SOLUTIONS -> SELECT PREFERRED
         try {
           const res = await fetch(`${apiUrl}/method/control`, {
             method: "POST",
@@ -284,8 +296,9 @@ function NimbusMethod({
 
             SetHelpMessage("CHANGE ME!!!!");
             // SetNimbusState("intermediate");
+            // SKIP INTERMEDIATE STEP
             try {
-              const res = await fetch(`${apiUrl}/method/control`, {
+              const resArchive = await fetch(`${apiUrl}/method/control`, {
                 method: "POST",
                 headers: {
                   Authorization: `Bearer ${tokens.access}`,
@@ -299,15 +312,28 @@ function NimbusMethod({
                 }),
               });
 
-              if (res.status === 200) {
+              if (resArchive.status === 200) {
                 // ok
-                const body = await res.json();
-                // const response = body.response;
+                const bodyArchive = await resArchive.json();
+                const responseArchive = bodyArchive.response;
+
+                if (nSolutionsInArchive === 0) {
+                  // do nothing
+                } else {
+                  // pick archived solutions
+                  SetArchivedSolutions(
+                    ParseSolutions(
+                      responseArchive.objectives.slice(0, nSolutionsInArchive),
+                      activeProblemInfo!
+                    )
+                  );
+                }
 
                 SetHelpMessage(
                   "Please select the solution you prefer the most from the shown solution."
                 );
-                SetNimbusState("select preferred");
+                SetCurrentState("select preferred");
+                SetSolutionsArchivedAfterClassification(true);
                 break;
               } else {
                 // not ok
@@ -334,13 +360,66 @@ function NimbusMethod({
           break;
         }
       }
-      case "select preferred": {
+      case "classify preferred":
+      case "stop with preferred": {
+        // SELECT PREFERRED -> STOP or CLASSIFICATION
         if (selectedIndices.length === 0) {
           SetHelpMessage("Please select a preferred solution first.");
           // do nothing;
           break;
         }
         try {
+          if (!solutionsArchivedAfterClassification) {
+            // archive and intermediate steps need to be skipped, henche, empty indices
+            const skipRes = await fetch(`${apiUrl}/method/control`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${tokens.access}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                response: {
+                  indices: [],
+                },
+              }),
+            });
+
+            if (skipRes.status === 200) {
+              // ok
+            } else {
+              console.log(
+                `Could not skip archive, response code ${skipRes.status}`
+              );
+              // do nothing
+              break;
+            }
+
+            const resInt = await fetch(`${apiUrl}/method/control`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${tokens.access}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                response: {
+                  indices: [],
+                  number_of_desired_solutions: 0,
+                },
+              }),
+            });
+
+            if (resInt.status === 200) {
+              // ok
+            } else {
+              console.log(
+                `Could not skip intermediate solutions, response code ${skipRes.status}`
+              );
+              // do nothing
+              break;
+            }
+          }
+
+          // else, continue normally
           const res = await fetch(`${apiUrl}/method/control`, {
             method: "POST",
             headers: {
@@ -350,7 +429,7 @@ function NimbusMethod({
             body: JSON.stringify({
               response: {
                 index: selectedIndices[0],
-                continue: cont,
+                continue: nimbusState === "classify preferred",
               },
             }),
           });
@@ -360,7 +439,7 @@ function NimbusMethod({
             const body = await res.json();
             const response = body.response;
 
-            if (cont) {
+            if (nimbusState === "classify preferred") {
               // continue iterating
               const newPreferred =
                 newSolutions !== undefined
@@ -384,7 +463,7 @@ function NimbusMethod({
 
               SetSelectedIndices([]);
               SetHelpMessage("Please classify each of the shown objectives.");
-              SetNimbusState("classification");
+              SetCurrentState("classification");
               SetNIteration(nIteration + 1);
               break;
             } else {
@@ -401,7 +480,7 @@ function NimbusMethod({
               SetPreferredPoint(response.objective);
               SetFinalVariables(response.solution);
               SetHelpMessage("Stopped. Showing final solution reached.");
-              SetNimbusState("stop");
+              SetCurrentState("stop");
               SetShowAfter(true);
               break;
             }
@@ -429,7 +508,7 @@ function NimbusMethod({
   // only allow two selected indices at any given time in the 'intermediate' state, and one index at any given time in the
   //
   useEffect(() => {
-    if (nimbusState === "select preferred") {
+    if (currentState === "select preferred") {
       if (selectedIndices.length === 1 || selectedIndices.length === 0) {
         // do nothing
         return;
@@ -440,7 +519,7 @@ function NimbusMethod({
   }, [selectedIndices]);
 
   useEffect(() => {
-    if (nimbusState === "not started") {
+    if (currentState === "not started") {
       // do nothing if not started
       return;
     }
@@ -546,47 +625,11 @@ function NimbusMethod({
         <Col sm={8}>
           <p>{`Help: ${helpMessage}`}</p>
         </Col>
-        <Col sm={2}></Col>
         <Col sm={4}></Col>
         <Col sm={4}>
-          {!loading && nimbusState !== "stop" && (
-            <Button
-              size={"lg"}
-              onClick={iterate}
-              disabled={
-                (nimbusState === "classification" && !classificationOk) ||
-                (nimbusState === "select preferred" &&
-                  selectedIndices.length !== 1)
-              }
-            >
-              {nimbusState === "classification" &&
-                classificationOk &&
-                "Iterate"}
-              {nimbusState === "classification" &&
-                !classificationOk &&
-                "Check the classifications"}
-              {nimbusState === "archive" &&
-                selectedIndices.length > 0 &&
-                "Save"}
-              {nimbusState === "archive" &&
-                selectedIndices.length === 0 &&
-                "Continue"}
-              {nimbusState === "select preferred" &&
-                cont &&
-                selectedIndices.length === 1 &&
-                "Continue"}
-              {nimbusState === "select preferred" &&
-                cont &&
-                selectedIndices.length !== 1 &&
-                "Select a solution first"}
-              {nimbusState === "select preferred" &&
-                !cont &&
-                selectedIndices.length === 1 &&
-                "Stop"}
-              {nimbusState === "select preferred" &&
-                !cont &&
-                selectedIndices.length !== 1 &&
-                "Select a solution first"}
+          {!loading && (
+            <Button size={"lg"} onClick={() => iterate("classification")}>
+              {"Iterate"}
             </Button>
           )}
           {loading && (
@@ -604,8 +647,8 @@ function NimbusMethod({
         </Col>
         <Col sm={4}></Col>
       </Row>
-      {nimbusState === "not started" && <div>Method not started yet</div>}
-      {nimbusState === "classification" && (
+      {currentState === "not started" && <div>Method not started yet</div>}
+      {currentState === "classification" && (
         <>
           <Row>
             <Col sm={12}>
@@ -685,7 +728,7 @@ function NimbusMethod({
           </Row>
         </>
       )}
-      {nimbusState === "archive" && (
+      {(currentState === "archive" || currentState === "select preferred") && (
         <>
           {showQuestionnaire && (
             <QuestionsModal
@@ -701,6 +744,19 @@ function NimbusMethod({
               questionnaireTitle={`Questions after poviding classifications in iteration ${nIteration}`}
             />
           )}
+          <Row>
+            <Col sm={1}></Col>
+            <Col sm={3} onClick={() => iterate("archive")}>
+              <Button>{"Save selected solutions to archive"}</Button>
+            </Col>
+            <Col sm={4} onClick={() => iterate("classify preferred")}>
+              <Button>{"Classify currently selected solution"}</Button>
+            </Col>
+            <Col sm={3} onClick={() => iterate("stop with preferred")}>
+              <Button>{"Stop with currently selected solution"}</Button>
+            </Col>
+            <Col sm={1}></Col>
+          </Row>
           <Row>
             <Col sm={12}>
               <h4 className={"mt-3"}>{"New solutions"}</h4>
@@ -723,66 +779,33 @@ function NimbusMethod({
               </div>
             </Col>
           </Row>
-        </>
-      )}
-      {nimbusState === "select preferred" && (
-        <>
-          <Row>
-            <Col sm={12}>
-              <h4 className={"mt-3"}>{"Select the most preferred solution"}</h4>
-            </Col>
-            <Col sm={6}>
-              <Form>
-                <Form.Group as={Row}>
-                  <Form.Label column sm={8}>
-                    {
-                      "Would you like to continue to classification of the selected solution's objectives or to stop?"
-                    }
-                  </Form.Label>
-                  <Col sm={3}>
-                    <Form.Check
-                      className={"mt-3"}
-                      id="stop-switch"
-                      type="switch"
-                      label={
-                        cont ? (
-                          <>
-                            {"stop/"}
-                            <b>{"continue"}</b>
-                          </>
-                        ) : (
-                          <>
-                            <b>{"stop"}</b>
-                            {"/continue"}
-                          </>
-                        )
-                      }
-                      checked={cont}
-                      onChange={() => SetCont(!cont)}
-                    ></Form.Check>
-                  </Col>
-                </Form.Group>
-              </Form>
-              <SolutionTableMultiSelect
-                objectiveData={newSolutions!}
-                activeIndices={selectedIndices}
-                setIndices={SetSelectedIndices}
-                tableTitle={"Solutions"}
-              />
-            </Col>
-            <Col sm={6}>
-              <div className={"mt-1"}>
-                <ParallelAxes
-                  objectiveData={ToTrueValues(newSolutions!)}
-                  selectedIndices={selectedIndices}
-                  handleSelection={SetSelectedIndices}
+          {nSolutionsInArchive > 0 && (
+            <Row>
+              <Col sm={12}>
+                <h4 className={"mt-3"}>{"Archived solutions"}</h4>
+              </Col>
+              <Col sm={6}>
+                <SolutionTableMultiSelect
+                  objectiveData={archivedSolutions!}
+                  activeIndices={selectedIndicesArchive}
+                  setIndices={SetSelectedIndicesArchive}
+                  tableTitle={""}
                 />
-              </div>
-            </Col>
-          </Row>
+              </Col>
+              <Col sm={6}>
+                <div className={"mt-1"}>
+                  <ParallelAxes
+                    objectiveData={ToTrueValues(archivedSolutions!)}
+                    selectedIndices={selectedIndicesArchive}
+                    handleSelection={SetSelectedIndicesArchive}
+                  />
+                </div>
+              </Col>
+            </Row>
+          )}
         </>
       )}
-      {nimbusState === "stop" && (
+      {currentState === "stop" && (
         <>
           <SolutionTable
             objectiveData={ParseSolutions([preferredPoint], activeProblemInfo)}

@@ -112,7 +112,7 @@ function ClassificationsInputForm({
         <ListGroup.Item variant="dark">
           <Row>
             <Col sm={8}>Class</Col>
-            <Col sm={4}>Limit</Col>
+            <Col sm={4}>Value</Col>
           </Row>
         </ListGroup.Item>
         <ListGroup.Item>
