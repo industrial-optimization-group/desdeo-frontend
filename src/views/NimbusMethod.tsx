@@ -66,6 +66,8 @@ function NimbusMethod({
     solutionsArchivedAfterClassification,
     SetSolutionsArchivedAfterClassification,
   ] = useState<boolean>(false);
+  const [newSolutionTableOffset, SetNewSolutionTableOffset] =
+    useState<number>(0);
 
   // related to quesionnaires
   const [showAfter, SetShowAfter] = useState<boolean>(false);
@@ -292,9 +294,6 @@ function NimbusMethod({
             );
             SetNewSolutions(toBeShown);
 
-            // reset the number of solutions
-            SetNumberOfSolutions(1);
-
             SetHelpMessage("CHANGE ME!!!!");
             // SetNimbusState("intermediate");
             // SKIP INTERMEDIATE STEP
@@ -375,9 +374,22 @@ function NimbusMethod({
         // SELECT PREFERRED -> STOP or CLASSIFICATION
         console.log("Selected index archive");
         console.log(selectedIndexArchive);
-        if (selectedIndices.length === 0) {
+        console.log("Selected indices");
+        console.log(selectedIndices);
+
+        let index: number = 0;
+
+        if (selectedIndices.length === 0 && selectedIndexArchive === -1) {
           SetHelpMessage("Please select a preferred solution first.");
           // do nothing;
+          break;
+        } else if (selectedIndices.length > 0) {
+          index = selectedIndices[0] + newSolutionTableOffset;
+        } else if (selectedIndexArchive !== -1) {
+          index = selectedIndexArchive;
+        } else {
+          SetHelpMessage("Invalid selection.");
+          // do nothin;
           break;
         }
         try {
@@ -440,7 +452,7 @@ function NimbusMethod({
             },
             body: JSON.stringify({
               response: {
-                index: selectedIndices[0],
+                index: index,
                 continue: nimbusState === "classify preferred",
               },
             }),
@@ -455,7 +467,7 @@ function NimbusMethod({
               // continue iterating
               const newPreferred =
                 newSolutions !== undefined
-                  ? newSolutions.values[selectedIndices[0]].value
+                  ? newSolutions.values[index].value
                   : [];
               await LogInfoToDB(
                 tokens,
@@ -477,6 +489,12 @@ function NimbusMethod({
               SetHelpMessage("Please classify each of the shown objectives.");
               SetCurrentState("classification");
               SetNIteration(nIteration + 1);
+              // reset the number of solutions
+              SetNumberOfSolutions(1);
+              // update new solution table offset
+              SetNewSolutionTableOffset(
+                newSolutionTableOffset + nSolutionsInArchive
+              );
               break;
             } else {
               // stop iterating
