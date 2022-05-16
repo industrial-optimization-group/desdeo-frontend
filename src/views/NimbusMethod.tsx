@@ -70,9 +70,11 @@ function NimbusMethod({
     useState<number>(0);
 
   // related to quesionnaires
-  const [showAfter, SetShowAfter] = useState<boolean>(false);
-  const [afterQSuccess, SetAfterQSuccess] = useState<boolean>(false);
-  const [showQuestionnaire, SetShowQuestionnaire] = useState<boolean>(false);
+  const [showQAfterIterate, SetShowQAfterIterate] = useState<boolean>(false);
+  const [showQAfterNew, SetShowQAfterNew] = useState<boolean>(false);
+  const [showQEndMethod, SetShowQEndMethod] = useState<boolean>(false);
+  const [afterQEndMethodSuccess, SetAfterQEndMethodSuccess] =
+    useState<boolean>(false);
 
   // fetch current problem info
   useEffect(() => {
@@ -232,7 +234,9 @@ function NimbusMethod({
             SetHelpMessage(
               "Select the solutions you would like to be saved for later viewing."
             );
-            // SetShowQuestionnaire(true);
+
+            // check num of iterations first
+            SetShowQAfterIterate(true);
             SetCurrentState("archive");
             SetSolutionsArchivedAfterClassification(false);
             SetSelectedIndexArchive(-1);
@@ -511,7 +515,6 @@ function NimbusMethod({
               SetFinalVariables(response.solution);
               SetHelpMessage("Stopped. Showing final solution reached.");
               SetCurrentState("stop");
-              SetShowAfter(true);
               break;
             }
           } else {
@@ -657,9 +660,13 @@ function NimbusMethod({
         </Col>
         <Col sm={4}></Col>
         <Col sm={4}>
-          {!loading && (
-            <Button size={"lg"} onClick={() => iterate("classification")}>
-              {"Iterate"}
+          {!loading && currentState === "classification" && (
+            <Button
+              size={"lg"}
+              onClick={() => iterate("classification")}
+              disabled={!classificationOk}
+            >
+              {classificationOk ? "Iterate" : "Invalid classification"}
             </Button>
           )}
           {loading && (
@@ -760,7 +767,7 @@ function NimbusMethod({
       )}
       {(currentState === "archive" || currentState === "select preferred") && (
         <>
-          {showQuestionnaire && (
+          {showQAfterIterate && (
             <QuestionsModal
               apiUrl={apiUrl}
               tokens={tokens}
@@ -768,10 +775,25 @@ function NimbusMethod({
               questionnaireType={"During"}
               nIteration={nIteration}
               handleSuccess={(isSuccess) => {
-                SetShowQuestionnaire(!isSuccess);
+                SetShowQAfterIterate(!isSuccess);
+                SetShowQAfterNew(isSuccess);
               }}
-              show={showQuestionnaire}
+              show={showQAfterIterate}
               questionnaireTitle={`Questions after poviding classifications in iteration ${nIteration}`}
+            />
+          )}
+          {showQAfterNew && (
+            <QuestionsModal
+              apiUrl={apiUrl}
+              tokens={tokens}
+              description={`After new solutions have been computed and shown to the decision maker in iteration ${nIteration}in NIMBUS.`}
+              questionnaireType={"NewSolutions"}
+              nIteration={nIteration}
+              handleSuccess={(isSuccess) => {
+                SetShowQAfterNew(!isSuccess);
+              }}
+              show={showQAfterNew}
+              questionnaireTitle={`Questions after viewing new solutions.`}
             />
           )}
           <Row>
@@ -914,12 +936,12 @@ function NimbusMethod({
               </tr>
             </tbody>
           </Table>
-          {!afterQSuccess && (
-            <Button onClick={() => SetShowAfter(!showAfter)}>
+          {!afterQEndMethodSuccess && (
+            <Button onClick={() => SetShowQEndMethod(!showQEndMethod)}>
               Answer questionnaire
             </Button>
           )}
-          {afterQSuccess && (
+          {afterQEndMethodSuccess && (
             <Link to={"/"}>
               <Button>{"Back to index"}</Button>
             </Link>
@@ -931,10 +953,10 @@ function NimbusMethod({
             questionnaireType={"After"}
             nIteration={nIteration}
             handleSuccess={(isSuccess) => {
-              SetShowAfter(!isSuccess);
-              SetAfterQSuccess(isSuccess);
+              SetShowQEndMethod(!isSuccess);
+              SetAfterQEndMethodSuccess(isSuccess);
             }}
-            show={showAfter}
+            show={showQEndMethod}
             questionnaireTitle={"After NIMBUS questions"}
           />
         </>

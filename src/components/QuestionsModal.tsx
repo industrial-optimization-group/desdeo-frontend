@@ -80,7 +80,21 @@ function QuestionsModal({
     // fetch questionnaire depending on questionnaireType
     const fetchQuestionnaire = async () => {
       console.log("fetching quesitons...");
-      const endPoint = questionnaireType === "After" ? "after" : "during";
+
+      let endPoint = "";
+      if (questionnaireType === "After") {
+        endPoint = "after";
+      } else if (questionnaireType === "During") {
+        endPoint = "during";
+      } else if (questionnaireType === "NewSolutions") {
+        endPoint = "during/new";
+      } else {
+        console.log(
+          `Unsupported questionnaire type ${questionnaireType} encountered.`
+        );
+        return;
+        // do nothing
+      }
 
       try {
         var urls: string;
@@ -158,7 +172,21 @@ function QuestionsModal({
       description: string
     ) => {
       SetLoading(true);
-      const endPoint = questionnaireType === "After" ? "after" : "during";
+
+      let endPoint = "";
+      if (questionnaireType === "After") {
+        endPoint = "after";
+      } else if (questionnaireType === "During") {
+        endPoint = "during";
+      } else if (questionnaireType === "NewSolutions") {
+        endPoint = "during/new";
+      } else {
+        console.log(
+          `Unsupported questionnaire type ${questionnaireType} encountered.`
+        );
+        return;
+        // do nothing
+      }
 
       try {
         const res = await fetch(`${apiUrl}/questionnaire/${endPoint}`, {
@@ -243,15 +271,18 @@ function QuestionsModal({
                                 </Row>
                                 {[...Array(7)].map((_, j) => {
                                   return (
-                                    <Form.Check
-                                      inline
-                                      defaultChecked={j === 3 ? true : false}
-                                      label={likertScale.get(j)}
-                                      key={`keyofcheck${i}${j}`}
-                                      name={`group${i}`}
-                                      type={"radio"}
-                                      value={j + 1}
-                                    />
+                                    <>
+                                      <Form.Check
+                                        inline
+                                        defaultChecked={j === 3 ? true : false}
+                                        label={likertScale.get(j)}
+                                        key={`keyofcheck${i}${j}`}
+                                        name={`group${i}`}
+                                        type={"radio"}
+                                        value={j + 1}
+                                      />
+                                      {j !== 6 ? <br /> : <></>}
+                                    </>
                                   );
                                 })}
                               </Form.Group>
@@ -284,15 +315,18 @@ function QuestionsModal({
                                 </Row>
                                 {[...Array(5)].map((_, j) => {
                                   return (
-                                    <Form.Check
-                                      inline
-                                      defaultChecked={j === 2 ? true : false}
-                                      label={semanticDiff.get(j)}
-                                      key={`keyofcheck${i}${j}`}
-                                      name={`group${i}`}
-                                      type={"radio"}
-                                      value={j + 1}
-                                    />
+                                    <>
+                                      <Form.Check
+                                        inline
+                                        defaultChecked={j === 2 ? true : false}
+                                        label={semanticDiff.get(j)}
+                                        key={`keyofcheck${i}${j}`}
+                                        name={`group${i}`}
+                                        type={"radio"}
+                                        value={j + 1}
+                                      />
+                                      {j !== 4 ? <br /> : <></>}
+                                    </>
                                   );
                                 })}
                               </Form.Group>
