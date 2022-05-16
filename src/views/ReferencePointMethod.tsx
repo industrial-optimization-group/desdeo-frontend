@@ -467,7 +467,7 @@ function ReferencePointMethod({
               nIteration={nIteration}
               handleSuccess={(isSuccess) => {
                 SetShowQAfterIteration(!isSuccess);
-                SetShowQAfterNew(true);
+                SetShowQAfterNew(isSuccess);
               }}
               show={showQAfterIteration}
               questionnaireTitle={`Questions after providing preferences`}

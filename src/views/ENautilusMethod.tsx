@@ -58,7 +58,6 @@ function ENautilusMethod({
   const [loading, SetLoading] = useState<boolean>(false);
   const [methodStarted, SetMethodStarted] = useState<boolean>(false);
   // const [isFirstIteration, SetIsFirstIteration] = useState<boolean>(true);
-  const [showQuestionnaire, SetShowQuestionnaire] = useState<boolean>(false);
   const [nIteration, SetNIteration] = useState<number>(0);
   const [finalObjectives, SetFinalObjectives] = useState<number[]>([]);
   const [finalVariables, SetFinalVariables] = useState<number[]>([]);
@@ -97,8 +96,11 @@ function ENautilusMethod({
   });
 
   // Hooks realted to the questionnaires
-  const [showAfter, SetShowAfter] = useState<boolean>(false);
-  const [afterQSuccess, SetAfterQSuccess] = useState<boolean>(false);
+  const [showQEndMethod, SetShowQEndMethod] = useState<boolean>(false);
+  const [endMethodQSuccess, SetEndMethodQSuccess] = useState<boolean>(false);
+  const [showQAfterIteration, SetShowQAfterIteration] =
+    useState<boolean>(false);
+  const [showQAfterNew, SetShowQAfterNew] = useState<boolean>(false);
 
   const {
     register: registerIter,
@@ -186,6 +188,7 @@ function ENautilusMethod({
         if (res.status == 200) {
           const body = await res.json();
           console.log(body.response);
+          SetNIteration(1);
           SetMethodStarted(true);
           SetHelpText(
             "Select a desired number of iterations and a desired number of intermediate points to be shown in each iteration."
@@ -412,8 +415,11 @@ function ENautilusMethod({
           // Update current state with the new state
           SetNumOfIterations(response.n_iterations_left);
           SetHelpText("Select the most preferred intermediate point.");
+
+          if (nIteration === 1 || nIteration === 4) {
+            SetShowQAfterIteration(true);
+          }
           SetNIteration(nIteration + 1);
-          SetShowQuestionnaire(true);
 
           await LogInfoToDB(
             tokens,
@@ -699,18 +705,33 @@ function ENautilusMethod({
             distances={currentIterationState.distances}
           />
         </Row>
-        {showQuestionnaire && (
+        {showQAfterIteration && (
           <QuestionsModal
             apiUrl={apiUrl}
             tokens={tokens}
-            description={`After iteration ${nIteration} in the E-NAUTILUS Method.`}
+            description={`After iteration ${nIteration} in the E-NAUTILUS method.`}
             questionnaireType="During"
             nIteration={nIteration}
             handleSuccess={(isSuccess) => {
-              SetShowQuestionnaire(!isSuccess);
+              SetShowQAfterIteration(!isSuccess);
+              SetShowQAfterNew(isSuccess);
             }}
-            show={showQuestionnaire}
+            show={showQAfterIteration}
             questionnaireTitle={`Questoins after iterating ${nIteration} times`}
+          />
+        )}
+        {showQAfterNew && (
+          <QuestionsModal
+            apiUrl={apiUrl}
+            tokens={tokens}
+            description={`After showing new intermediate points in iteration ${nIteration} in E-NAUTILUS method.`}
+            questionnaireType={"NewSolutions"}
+            nIteration={nIteration}
+            handleSuccess={(isSuccess) => {
+              SetShowQAfterNew(!isSuccess);
+            }}
+            show={showQAfterNew}
+            questionnaireTitle={`Questions after computing new intermediate points`}
           />
         )}
       </Container>
@@ -744,12 +765,12 @@ function ENautilusMethod({
             </tr>
           </tbody>
         </Table>
-        {!afterQSuccess && (
-          <Button onClick={() => SetShowAfter(!showAfter)}>
+        {!endMethodQSuccess && (
+          <Button onClick={() => SetShowQEndMethod(!showQEndMethod)}>
             Answer questionnaire
           </Button>
         )}
-        {afterQSuccess && (
+        {endMethodQSuccess && (
           <Link to={"/"}>
             <Button>{"Back to index"}</Button>
           </Link>
@@ -761,10 +782,10 @@ function ENautilusMethod({
           questionnaireType="After"
           nIteration={nIteration}
           handleSuccess={(isSuccess) => {
-            SetShowAfter(!isSuccess);
-            SetAfterQSuccess(isSuccess);
+            SetShowQEndMethod(!isSuccess);
+            SetEndMethodQSuccess(isSuccess);
           }}
-          show={showAfter}
+          show={showQEndMethod}
           questionnaireTitle={"After E-NAUTILUS questions"}
         />
       </Container>
