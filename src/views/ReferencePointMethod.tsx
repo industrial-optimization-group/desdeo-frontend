@@ -51,9 +51,11 @@ function ReferencePointMethod({
   const [nIteration, SetNIteration] = useState<number>(0);
 
   // related to questionnaire and logging
-  const [showAfter, SetShowAfter] = useState<boolean>(false);
-  const [afterQSuccess, SetAfterQSuccess] = useState<boolean>(false);
-  const [showQuestionnaire, SetShowQuestionnaire] = useState<boolean>(false);
+  const [showQEndMethod, SetShowQEndMethod] = useState<boolean>(false);
+  const [endMethodQSuccess, SetEndMethodQSuccess] = useState<boolean>(false);
+  const [showQAfterIteration, SetShowQAfterIteration] =
+    useState<boolean>(false);
+  const [showQAfterNew, SetShowQAfterNew] = useState<boolean>(false);
 
   useEffect(() => {
     if (alternatives !== undefined) {
@@ -233,7 +235,10 @@ function ReferencePointMethod({
               activeProblemInfo!
             )
           );
-          SetShowQuestionnaire(true);
+
+          if (nIteration === 1 || nIteration === 4) {
+            SetShowQAfterIteration(true);
+          }
           const alternativesValues = alternatives
             ? alternatives.values.map((value) => value.value)
             : [];
@@ -453,20 +458,33 @@ function ReferencePointMethod({
               </Row>
             </>
           )}
-          {showQuestionnaire && (
+          {showQAfterIteration && (
             <QuestionsModal
               apiUrl={apiUrl}
               tokens={tokens}
-              description={`After iteration ${
-                nIteration - 1
-              } in the Reference Point Method.`}
+              description={`After iteration ${nIteration} in the Reference Point Method.`}
               questionnaireType="During"
               nIteration={nIteration}
               handleSuccess={(isSuccess) => {
-                SetShowQuestionnaire(!isSuccess);
+                SetShowQAfterIteration(!isSuccess);
+                SetShowQAfterNew(true);
               }}
-              show={showQuestionnaire}
-              questionnaireTitle={`Questions after iterating ${nIteration} times`}
+              show={showQAfterIteration}
+              questionnaireTitle={`Questions after providing preferences`}
+            />
+          )}
+          {showQAfterNew && (
+            <QuestionsModal
+              apiUrl={apiUrl}
+              tokens={tokens}
+              description={`After seeing new soltuion in iteration ${nIteration} in the Reference point method.`}
+              questionnaireType={"NewSolutions"}
+              nIteration={nIteration}
+              handleSuccess={(isSuccess) => {
+                SetShowQAfterNew(!isSuccess);
+              }}
+              show={showQAfterNew}
+              questionnaireTitle={"Questions after new solutions"}
             />
           )}
         </>
@@ -496,12 +514,12 @@ function ReferencePointMethod({
               </tr>
             </tbody>
           </Table>
-          {!afterQSuccess && (
-            <Button onClick={() => SetShowAfter(!showAfter)}>
+          {!endMethodQSuccess && (
+            <Button onClick={() => SetShowQEndMethod(!showQEndMethod)}>
               Answer questionnaire
             </Button>
           )}
-          {afterQSuccess && (
+          {endMethodQSuccess && (
             <Link to={"/"}>
               <Button>{"Back to index"}</Button>
             </Link>
@@ -513,10 +531,10 @@ function ReferencePointMethod({
             questionnaireType="After"
             nIteration={nIteration}
             handleSuccess={(isSuccess) => {
-              SetShowAfter(!isSuccess);
-              SetAfterQSuccess(isSuccess);
+              SetShowQEndMethod(!isSuccess);
+              SetEndMethodQSuccess(isSuccess);
             }}
-            show={showAfter}
+            show={showQEndMethod}
             questionnaireTitle={"After Reference Point Method questions"}
           />
         </>
