@@ -236,7 +236,9 @@ function NimbusMethod({
             );
 
             // check num of iterations first
-            SetShowQAfterIterate(true);
+            if (nIteration === 1 || nIteration === 4) {
+              SetShowQAfterIterate(true);
+            }
             SetCurrentState("archive");
             SetSolutionsArchivedAfterClassification(false);
             SetSelectedIndexArchive(-1);
