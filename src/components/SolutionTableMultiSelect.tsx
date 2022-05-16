@@ -25,8 +25,8 @@ function ArraysAreEqual(a1: number[], a2: number[]): boolean {
 function checkForSimilarArrays(data: ObjectiveDatum[]): number[] {
   const isSimilarToSomething: number[] = [];
 
-  for (let i = 0; i < data[0].value.length; i++) {
-    for (let j = 0; j < data[0].value.length; j++) {
+  for (let i = 0; i < data.length; i++) {
+    for (let j = 0; j < data.length; j++) {
       if (i === j) {
         // do not compare array to itself
         continue;

@@ -134,3 +134,13 @@ body {
   background-color: lightgray;
   pointer-events: none;
 }
+
+.side-modal {
+  float: right;
+  width: 25% !important;
+  margin-right: 1% !important;
+}
+
+.backdrop-modal {
+  opacity: 0.05 !important;
+}

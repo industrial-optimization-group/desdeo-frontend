@@ -5,7 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { start } from "repl";
 import { url } from "inspector";
 
-type QuestionnaireType = "After" | "During";
+type QuestionnaireType = "After" | "During" | "NewSolutions";
 
 interface QuestionsModalProps {
   tokens: Tokens;
@@ -208,10 +208,14 @@ function QuestionsModal({
   return (
     <Modal
       show={show}
-      fullscreen={true}
+      backdrop={"static"}
       size={"xl"}
       centered
       aria-labelledby="contained-modal-title-vcenter"
+      dialogClassName={questionnaireType === "NewSolutions" ? "side-modal" : ""}
+      backdropClassName={
+        questionnaireType === "NewSolutions" ? "backdrop-modal" : ""
+      }
     >
       <Modal.Header>
         <Modal.Title>{questionnaireTitle}</Modal.Title>
