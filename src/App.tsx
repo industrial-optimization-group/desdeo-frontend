@@ -5,7 +5,7 @@ import Login from "./views/Login";
 import LandingPage from "./views/LandingPage";
 import NavigationBar from "./components/NavigationBar";
 import Logout from "./views/Logout";
-import Register from "./views/Register";
+import Finish from "./views/Finish";
 import ProblemDefinition from "./views/ProblemDefinition";
 import ProblemExplore from "./views/ProblemExplore";
 import ReferencePointMethod from "./views/ReferencePointMethod";
@@ -83,8 +83,15 @@ function App() {
               setTokens={SetTokens}
             />
           </Route>
-          <Route path="/register" exact>
-            <Register />
+          <Route path="/finish" exact>
+            <Finish
+              apiUrl={API_URL}
+              isLoggedIn={isLoggedIn}
+              setIsLoggedIn={SetIsLoggedIn}
+              setLoggedAs={SetLoggedAs}
+              tokens={tokens}
+              setTokens={SetTokens}
+            />
           </Route>
           <Route path="/problem/create" exact>
             <ProblemDefinition

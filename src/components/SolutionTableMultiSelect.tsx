@@ -30,6 +30,12 @@ function checkForSimilarArrays(data: ObjectiveDatum[]): number[] {
       if (i === j) {
         // do not compare array to itself
         continue;
+      } else if (
+        isSimilarToSomething.includes(i) ||
+        isSimilarToSomething.includes(j)
+      ) {
+        // do not exluce twice
+        continue;
       }
 
       if (ArraysAreEqual(data[i].value, data[j].value)) {
@@ -132,4 +138,4 @@ function SolutionTableMultiSelect({
   );
 }
 
-export default SolutionTableMultiSelect;
+export { SolutionTableMultiSelect, checkForSimilarArrays };

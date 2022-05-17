@@ -88,6 +88,28 @@ function LandingPage({
     }
   }, [isLoggedIn, tokens]);
 
+  useEffect(() => {
+    const regxp_rmp = new RegExp("^rpm_");
+    const regxp_nimbus = new RegExp("^nimbus_");
+    const regxp_enautilus = new RegExp("^enautilus_");
+
+    if (regxp_rmp.test(loggedAs)) {
+      // rpm
+      SetState("reference_point_method");
+      onClick("reference_point_method");
+    } else if (regxp_nimbus.test(loggedAs)) {
+      // nimbus
+      SetState("synchronous_nimbus");
+      onClick("synchronous_nimbus");
+    } else if (regxp_enautilus.test(loggedAs)) {
+      // enautilus
+      SetState("enautilus");
+      onClick("enautilus");
+    } else {
+      // do nothing
+    }
+  }, [problemId]);
+
   const onClick = (methodName: string) => {
     const createMethod = async () => {
       if (problemId === -1) {
@@ -142,7 +164,7 @@ function LandingPage({
             <Col>
               <p>
                 {
-                  "In this study, you the participant, will be tasked to solve a multiobjective optimization problem with three objectives to be maximized simultaneously. You will perform this task using two different interactive methods for multiobjective optimization. After solving the problem with each method, you will be asked to fill out a survey."
+                  "In this study, you the participant, will be tasked to solve a multiobjective optimization problem with three objectives to be maximized simultaneously. You will perform this task using an interactive method for multiobjective optimization. Throughout the solving process, you will be prompted with various questionnaires. At the end of the process, you will need to answer one final questionnaire."
                 }
               </p>
 
@@ -201,7 +223,7 @@ function LandingPage({
           state === "synchronous_nimbus" ||
           state === "enautilus") && (
           <>
-            <h3>{`${StateToName(state)} chosen`}</h3>
+            <h3>{`${StateToName(state)}`}</h3>
             <Link to={"/method/optimize"}>
               <Button>{"Start optimizing!"}</Button>
             </Link>

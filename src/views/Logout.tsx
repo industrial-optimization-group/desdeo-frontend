@@ -73,23 +73,12 @@ function Logout({
   }, []); // this way useEffect runs only once per page load
 
   if (!isLoggedIn) {
-    return (
-      <Container>
-        You are already logged out.
-        <Redirect to="/" />
-      </Container>
-    );
+    return <Container>You are logged out.</Container>;
   }
 
   return (
     <>
-      {logoutOk && (
-        <Container>
-          {" "}
-          Logged out successfully!
-          <Redirect to="/" />
-        </Container>
-      )}
+      {logoutOk && <Container> Logged out successfully!</Container>}
       {!logoutOk && (
         <Container>{`Could not logout. Reason ${errMsg}`}</Container>
       )}

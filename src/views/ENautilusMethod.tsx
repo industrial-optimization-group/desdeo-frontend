@@ -784,8 +784,8 @@ function ENautilusMethod({
           </Button>
         )}
         {endMethodQSuccess && (
-          <Link to={"/"}>
-            <Button>{"Back to index"}</Button>
+          <Link to={"/finish"}>
+            <Button>{"Finish"}</Button>
           </Link>
         )}
         <QuestionsModal

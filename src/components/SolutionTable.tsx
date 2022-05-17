@@ -1,14 +1,7 @@
-import React, { useEffect, useState } from "react";
-import {
-  Container,
-  ListGroup,
-  Tab,
-  Row,
-  Col,
-  ListGroupItem,
-  Table,
-} from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Container, Tab, Table } from "react-bootstrap";
 import { ObjectiveData } from "../types/ProblemTypes";
+import { checkForSimilarArrays } from "./SolutionTableMultiSelect";
 
 interface SolutionTableProps {
   objectiveData: ObjectiveData;
@@ -37,6 +30,10 @@ function SolutionTable({
   useEffect(() => {
     SetKey(selectedIndex);
   }, [selectedIndex]);
+
+  const [doNotShow] = useState<number[]>(
+    checkForSimilarArrays(objectiveData.values)
+  );
 
   const ideal = objectiveData.ideal;
   const nadir = objectiveData.nadir;
@@ -67,24 +64,28 @@ function SolutionTable({
               })}
             </tr>
             {data.map((datum, index) => {
-              return (
-                <tr
-                  onClick={() => SetKey(index)}
-                  key={index}
-                  className={index === selectedIndex ? "tableSelected" : ""}
-                >
-                  <td>{`#${index + 1}`}</td>
-                  {datum.value.map((value) => {
-                    return (
-                      <td>{`${
-                        objectiveData.directions[index] === 1
-                          ? value.toPrecision(4)
-                          : -value.toPrecision(4)
-                      }`}</td>
-                    );
-                  })}
-                </tr>
-              );
+              if (doNotShow.includes(index)) {
+                return;
+              } else {
+                return (
+                  <tr
+                    onClick={() => SetKey(index)}
+                    key={index}
+                    className={index === selectedIndex ? "tableSelected" : ""}
+                  >
+                    <td>{`#${index + 1}`}</td>
+                    {datum.value.map((value) => {
+                      return (
+                        <td>{`${
+                          objectiveData.directions[index] === 1
+                            ? value.toPrecision(4)
+                            : -value.toPrecision(4)
+                        }`}</td>
+                      );
+                    })}
+                  </tr>
+                );
+              }
             })}
             <tr className="tableInfo">
               <td>{"Nadir"}</td>

@@ -8,7 +8,7 @@ import { ParseSolutions, ToTrueValues } from "../utils/DataHandling";
 import { HorizontalBars, ParallelAxes } from "desdeo-components";
 import SolutionTable from "../components/SolutionTable";
 import SolutionTableNimbus from "../components/SolutionTableNimbus";
-import SolutionTableMultiSelect from "../components/SolutionTableMultiSelect";
+import { SolutionTableMultiSelect } from "../components/SolutionTableMultiSelect";
 import { Link } from "react-router-dom";
 import { LogInfoToDB } from "../utils/Logging";
 import QuestionsModal from "../components/QuestionsModal";
@@ -948,8 +948,8 @@ function NimbusMethod({
             </Button>
           )}
           {afterQEndMethodSuccess && (
-            <Link to={"/"}>
-              <Button>{"Back to index"}</Button>
+            <Link to={"/finish"}>
+              <Button>{"Finish"}</Button>
             </Link>
           )}
           <QuestionsModal
