@@ -176,23 +176,23 @@ function LandingPage({
             </Col>
           </Row>
           <Row>
-            <Col sm={1}></Col>
-            <Col sm={3}>
+            <Col sm={3}></Col>
+            <Col sm={2}>
               <Button onClick={(_) => onClick("reference_point_method")}>
                 {"Reference point method"}
               </Button>
             </Col>
-            <Col sm={3}>
+            <Col sm={2}>
               <Button onClick={(_) => onClick("enautilus")}>
                 {"E-NAUTILUS"}
               </Button>
             </Col>
-            <Col sm={3}>
+            <Col sm={2}>
               <Button onClick={(_) => onClick("synchronous_nimbus")}>
                 {"Synchronous NIMBUS"}
               </Button>
             </Col>
-            <Col sm={1}></Col>
+            <Col sm={3}></Col>
           </Row>
         </>
       )}

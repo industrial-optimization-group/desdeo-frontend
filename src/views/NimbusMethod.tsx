@@ -232,7 +232,7 @@ function NimbusMethod({
               ParseSolutions(response.objectives, activeProblemInfo!)
             );
             SetHelpMessage(
-              "Select the solutions you would like to be saved for later viewing."
+              "Select new solutions to be saved to an archive, or select the currently preferred solution for classification or to stop with."
             );
 
             // check num of iterations first
@@ -339,7 +339,7 @@ function NimbusMethod({
                 }
 
                 SetHelpMessage(
-                  "Please select the solution you prefer the most from the shown solution."
+                  "Please select the solution you prefer the most from the shown solutions. You must select only one solution to continue."
                 );
                 SetCurrentState("select preferred");
                 SetSolutionsArchivedAfterClassification(true);
@@ -757,6 +757,14 @@ function NimbusMethod({
                     activeProblemInfo.minimize[i] === 1 ? v : -v
                   )}
                   setReferencePoint={inferClassifications} // the reference point is passed in its true form to the callback
+                  dimensionsMaybe={{
+                    chartHeight: 400,
+                    chartWidth: 800,
+                    marginLeft: 0,
+                    marginRight: 150,
+                    marginTop: 0,
+                    marginBottom: 30,
+                  }}
                 />
               </div>
             </Col>

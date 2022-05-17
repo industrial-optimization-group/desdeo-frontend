@@ -92,7 +92,7 @@ function ENautilusMethod({
     errors: errorsInit,
   } = useForm<FormData>({
     mode: "onSubmit",
-    defaultValues: { selectedNumOfPoints: 5, selectedNumOfIterations: 10 },
+    defaultValues: { selectedNumOfPoints: 4, selectedNumOfIterations: 5 },
   });
 
   // Hooks realted to the questionnaires
@@ -474,12 +474,13 @@ function ENautilusMethod({
             <Form action="" onSubmit={handleSubmitInit(onSubmitInitialize)}>
               <Form.Group>
                 <Row>
-                  <Col sm={2}></Col>
-                  <Col sm={3}>
-                    <Form.Label column="sm" key="lableofiterations">
+                  <Col sm={1}></Col>
+                  <Col sm={4}>
+                    <Form.Label column="lg" key="lableofiterations">
                       Number of iterations
                     </Form.Label>
-                    <Form.Control
+                    <Form.Select
+                      size={"lg"}
                       key="controlofiterations"
                       name="selectedNumOfIterations"
                       ref={registerInit({
@@ -494,7 +495,12 @@ function ENautilusMethod({
                           message: "Minimum number of iterations is 1.",
                         },
                       })}
-                    ></Form.Control>
+                    >
+                      <option value={"4"}>{"4"}</option>
+                      <option value={"5"}>{"5"}</option>
+                      <option value={"6"}>{"6"}</option>
+                      <option value={"7"}>{"7"}</option>
+                    </Form.Select>
                     <ErrorMessage
                       errors={errorsInit}
                       name={"selectedNumOfIterations"}
@@ -502,11 +508,11 @@ function ENautilusMethod({
                     ></ErrorMessage>
                   </Col>
                   <Col sm={2}></Col>
-                  <Col sm={3}>
-                    <Form.Label column="sm" key="lableofpoints">
+                  <Col sm={4}>
+                    <Form.Label column="lg" key="lableofpoints">
                       Number of intermediate points
                     </Form.Label>
-                    <Form.Control
+                    <Form.Select
                       key="controlofpoints"
                       name="selectedNumOfPoints"
                       ref={registerInit({
@@ -521,14 +527,21 @@ function ENautilusMethod({
                           message: "Minimun number of points is 2.",
                         },
                       })}
-                    ></Form.Control>
+                    >
+                      <option value={"2"}>{"2"}</option>
+                      <option value={"3"}>{"3"}</option>
+                      <option value={"4"}>{"4"}</option>
+                      <option value={"5"}>{"5"}</option>
+                      <option value={"6"}>{"6"}</option>
+                      <option value={"7"}>{"7"}</option>
+                    </Form.Select>
                     <ErrorMessage
                       errors={errorsInit}
                       name={"selectedNumOfPoints"}
                       render={({ message }) => <p>{message}</p>}
                     ></ErrorMessage>
                   </Col>
-                  <Col sm={2}></Col>
+                  <Col sm={1}></Col>
                 </Row>
               </Form.Group>
               <Row>
