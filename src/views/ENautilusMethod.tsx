@@ -418,8 +418,9 @@ function ENautilusMethod({
 
           if (nIteration === 1 || nIteration === 4) {
             SetShowQAfterIteration(true);
+          } else {
+            SetNIteration(nIteration + 1);
           }
-          SetNIteration(nIteration + 1);
 
           await LogInfoToDB(
             tokens,
@@ -742,6 +743,7 @@ function ENautilusMethod({
             nIteration={nIteration}
             handleSuccess={(isSuccess) => {
               SetShowQAfterNew(!isSuccess);
+              SetNIteration(nIteration + 1);
             }}
             show={showQAfterNew}
             questionnaireTitle={`Questions after computing new intermediate points`}

@@ -506,7 +506,7 @@ function NimbusMethod({
                 "Final solution",
                 `{"Objective values": ${JSON.stringify(
                   response.objective
-                )}, "Variable values": ${JSON.stringify(response.solution)}},`,
+                )}, "Variable values": ${JSON.stringify(response.solution)},}`,
                 "User reached the final solution in NIMBUS."
               );
               SetPreferredPoint(response.objective);
@@ -792,7 +792,7 @@ function NimbusMethod({
             <QuestionsModal
               apiUrl={apiUrl}
               tokens={tokens}
-              description={`After new solutions have been computed and shown to the decision maker in iteration ${nIteration}in NIMBUS.`}
+              description={`After new solutions have been computed and shown to the decision maker in iteration ${nIteration} in NIMBUS.`}
               questionnaireType={"NewSolutions"}
               nIteration={nIteration}
               handleSuccess={(isSuccess) => {
@@ -955,7 +955,7 @@ function NimbusMethod({
           <QuestionsModal
             apiUrl={apiUrl}
             tokens={tokens}
-            description={"Questions asked at the nd of the iterating NIMBUS."}
+            description={"Questions asked at the end of the iterating NIMBUS."}
             questionnaireType={"After"}
             nIteration={nIteration}
             handleSuccess={(isSuccess) => {

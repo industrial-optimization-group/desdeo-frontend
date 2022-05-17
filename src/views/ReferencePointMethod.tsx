@@ -236,9 +236,6 @@ function ReferencePointMethod({
             )
           );
 
-          if (nIteration === 1 || nIteration === 4) {
-            SetShowQAfterIteration(true);
-          }
           const alternativesValues = alternatives
             ? alternatives.values.map((value) => value.value)
             : [];
@@ -251,7 +248,11 @@ function ReferencePointMethod({
             )},"Iteration": ${nIteration},}`,
             "User provided a reference point in the Reference Point Method."
           );
-          SetNIteration(nIteration + 1);
+          if (nIteration === 1 || nIteration === 4) {
+            SetShowQAfterIteration(true);
+          } else {
+            SetNIteration(nIteration + 1);
+          }
           console.log(response.additional_solutions);
         } else {
           console.log("Got a response which is not 200");
@@ -477,11 +478,12 @@ function ReferencePointMethod({
             <QuestionsModal
               apiUrl={apiUrl}
               tokens={tokens}
-              description={`After seeing new soltuion in iteration ${nIteration} in the Reference point method.`}
+              description={`After seeing new solutions in iteration ${nIteration} in the Reference point method.`}
               questionnaireType={"NewSolutions"}
               nIteration={nIteration}
               handleSuccess={(isSuccess) => {
                 SetShowQAfterNew(!isSuccess);
+                SetNIteration(nIteration + 1);
               }}
               show={showQAfterNew}
               questionnaireTitle={"Questions after new solutions"}
