@@ -60,6 +60,9 @@ function SolutionTableMultiSelect({
     SetKeys(activeIndices);
   }, [activeIndices]);
 
+  const ideal = objectiveData.ideal;
+  const nadir = objectiveData.nadir;
+
   return (
     <Container>
       <Tab.Container id="table-of-alternatives">
@@ -67,6 +70,7 @@ function SolutionTableMultiSelect({
         <Table hover>
           <thead>
             <tr>
+              <th>{"Candidate"}</th>
               {objectiveData.names.map((name, i) => {
                 return (
                   <th>{`${name} (${
@@ -77,6 +81,13 @@ function SolutionTableMultiSelect({
             </tr>
           </thead>
           <tbody>
+            <tr className={"tableInfo"}>
+              <td>{"Ideal"}</td>
+              {ideal.map((v, i) => {
+                const v_ = objectiveData.directions[i] === 1 ? v : -v;
+                return <td>{`${v_.toPrecision(4)}`}</td>;
+              })}
+            </tr>
             {data.map((datum, index: number) => {
               if (doNotShow.includes(index)) {
                 return;
@@ -93,6 +104,7 @@ function SolutionTableMultiSelect({
                     className={keys.includes(index) ? "tableSelected" : ""}
                     key={index}
                   >
+                    <td>{`#${index + 1}`}</td>
                     {datum.value.map((value, i) => {
                       return (
                         <td>
@@ -106,6 +118,13 @@ function SolutionTableMultiSelect({
                 );
               }
             })}
+            <tr className="tableInfo">
+              <td>{"Nadir"}</td>
+              {nadir.map((v, i) => {
+                const v_ = objectiveData.directions[i] === 1 ? v : -v;
+                return <td>{`${v_.toPrecision(4)}`}</td>;
+              })}
+            </tr>
           </tbody>
         </Table>
       </Tab.Container>
