@@ -471,16 +471,12 @@ function NimbusMethod({
 
             if (nimbusState === "classify preferred") {
               // continue iterating
-              const newPreferred =
-                newSolutions !== undefined
-                  ? newSolutions.values[index].value
-                  : [];
               await LogInfoToDB(
                 tokens,
                 apiUrl,
                 "Preference",
                 `{"Preferred solution": ${JSON.stringify(
-                  newPreferred
+                  response.objective_values
                 )}, "Iteration": ${nIteration},}`,
                 "User chose a new preferred solution in NIMBUS."
               );
