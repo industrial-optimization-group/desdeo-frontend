@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { Tokens } from "../types/AppTypes";
 import { Container, Row, Col, Form, Button, Modal } from "react-bootstrap";
 import { useForm, Controller } from "react-hook-form";
-import { start } from "repl";
-import { url } from "inspector";
+import { ErrorMessage } from "@hookform/error-message";
 
 type QuestionnaireType = "After" | "During" | "NewSolutions";
 
@@ -49,7 +48,11 @@ function QuestionsModal({
   const [loading, SetLoading] = useState<boolean>(false);
 
   // Form states for collecting answers
-  const { control, handleSubmit, errors } = useForm<FormData>({
+  const {
+    control,
+    formState: { errors },
+    handleSubmit,
+  } = useForm<FormData>({
     mode: "onSubmit",
   });
   const likertScale = new Map<number, string>([
@@ -269,12 +272,18 @@ function QuestionsModal({
                                     </Form.Label>
                                   </Col>
                                 </Row>
+                                <ErrorMessage
+                                  errors={errors}
+                                  name={`answers.${i}`}
+                                  render={({ message }) => (
+                                    <p className={"warning"}>{message}</p>
+                                  )}
+                                />
                                 {[...Array(7)].map((_, j) => {
                                   return (
                                     <>
                                       <Form.Check
                                         inline
-                                        defaultChecked={j === 3 ? true : false}
                                         label={likertScale.get(j)}
                                         key={`keyofcheck${i}${j}`}
                                         name={`group${i}`}
@@ -290,7 +299,8 @@ function QuestionsModal({
                             name={`answers.${i}`}
                             key={`keyofq${i}`}
                             control={control}
-                            defaultValue={"4"}
+                            defaultValue={""}
+                            rules={{ required: "Answer missing" }}
                           ></Controller>
                         </Col>
                       </Row>
@@ -313,12 +323,18 @@ function QuestionsModal({
                                     </Form.Label>
                                   </Col>
                                 </Row>
+                                <ErrorMessage
+                                  errors={errors}
+                                  name={`answers.${i}`}
+                                  render={({ message }) => (
+                                    <p className={"warning"}>{message}</p>
+                                  )}
+                                />
                                 {[...Array(5)].map((_, j) => {
                                   return (
                                     <>
                                       <Form.Check
                                         inline
-                                        defaultChecked={j === 2 ? true : false}
                                         label={semanticDiff.get(j)}
                                         key={`keyofcheck${i}${j}`}
                                         name={`group${i}`}
@@ -334,7 +350,8 @@ function QuestionsModal({
                             name={`answers.${i}`}
                             key={`keyofq${i}`}
                             control={control}
-                            defaultValue={"3"}
+                            defaultValue={""}
+                            rules={{ required: "Answer missing" }}
                           ></Controller>
                         </Col>
                       </Row>
@@ -357,6 +374,13 @@ function QuestionsModal({
                                     </Form.Label>
                                   </Col>
                                 </Row>
+                                <ErrorMessage
+                                  errors={errors}
+                                  name={`answers.${i}`}
+                                  render={({ message }) => (
+                                    <p className={"warning"}>{message}</p>
+                                  )}
+                                />
                                 <Row>
                                   <Col sm={3} />
                                   <Col>
@@ -374,7 +398,8 @@ function QuestionsModal({
                             name={`answers.${i}`}
                             key={`keyofq${i}`}
                             control={control}
-                            defaultValue={"No answer"}
+                            defaultValue={""}
+                            rules={{ required: "Answer missing" }}
                           ></Controller>
                         </Col>
                       </Row>
@@ -388,6 +413,15 @@ function QuestionsModal({
             </Container>
           </Modal.Body>
           <Modal.Footer>
+            <Row>
+              {errors.answers !== undefined && (
+                <>
+                  <p className={"warning"}>
+                    {"There are some missing fields."}
+                  </p>
+                </>
+              )}
+            </Row>
             <Row>
               <Col sm={3}></Col>
               <Col sm={6}>
