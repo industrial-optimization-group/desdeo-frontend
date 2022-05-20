@@ -494,9 +494,7 @@ function NimbusMethod({
               // reset the number of solutions
               SetNumberOfSolutions(1);
               // update new solution table offset
-              SetNewSolutionTableOffset(
-                newSolutionTableOffset + nSolutionsInArchive
-              );
+              SetNewSolutionTableOffset(nSolutionsInArchive);
               break;
             } else {
               // stop iterating
