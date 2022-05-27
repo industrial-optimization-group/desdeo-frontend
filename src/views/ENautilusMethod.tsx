@@ -416,9 +416,7 @@ function ENautilusMethod({
           SetNumOfIterations(response.n_iterations_left);
           SetHelpText("Select the most preferred intermediate point.");
 
-          if (nIteration === 1 || nIteration === 4) {
-            SetShowQAfterIteration(true);
-          } else {
+          if (nIteration !== 1 && nIteration !== 4) {
             SetNIteration(nIteration + 1);
           }
 
@@ -588,7 +586,17 @@ function ENautilusMethod({
               </Button>
             )}
             {preferredPointIndex >= 0 && (
-              <Button size={"lg"} onClick={() => iterate()} disabled={loading}>
+              <Button
+                size={"lg"}
+                onClick={() => {
+                  if (nIteration === 1 || nIteration === 4) {
+                    SetShowQAfterIteration(true);
+                  } else {
+                    iterate();
+                  }
+                }}
+                disabled={loading}
+              >
                 {loading
                   ? "Loading..."
                   : changeRemaining
@@ -729,6 +737,9 @@ function ENautilusMethod({
             handleSuccess={(isSuccess) => {
               SetShowQAfterIteration(!isSuccess);
               SetShowQAfterNew(isSuccess);
+              if (isSuccess) {
+                iterate();
+              }
             }}
             show={showQAfterIteration}
             questionnaireTitle={`Questoins after iterating ${nIteration} times`}

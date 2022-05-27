@@ -243,9 +243,15 @@ function QuestionsModal({
       size={"xl"}
       centered
       aria-labelledby="contained-modal-title-vcenter"
-      dialogClassName={questionnaireType === "NewSolutions" ? "side-modal" : ""}
+      dialogClassName={
+        questionnaireType === "NewSolutions" || questionnaireType === "During"
+          ? "side-modal"
+          : ""
+      }
       backdropClassName={
-        questionnaireType === "NewSolutions" ? "backdrop-modal" : ""
+        questionnaireType === "NewSolutions" || questionnaireType === "During"
+          ? "backdrop-modal"
+          : ""
       }
     >
       <Modal.Header>

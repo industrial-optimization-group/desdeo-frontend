@@ -248,11 +248,11 @@ function ReferencePointMethod({
             )},"Iteration": ${nIteration},}`,
             "User provided a reference point in the Reference Point Method."
           );
-          if (nIteration === 1 || nIteration === 4) {
-            SetShowQAfterIteration(true);
-          } else {
+
+          if (nIteration !== 1 && nIteration !== 4) {
             SetNIteration(nIteration + 1);
           }
+
           console.log(response.additional_solutions);
         } else {
           console.log("Got a response which is not 200");
@@ -321,7 +321,13 @@ function ReferencePointMethod({
             <Col sm={4}>
               <Button
                 size={"lg"}
-                onClick={() => iterate(false)}
+                onClick={() => {
+                  if (nIteration === 1 || nIteration === 4) {
+                    SetShowQAfterIteration(true);
+                  } else {
+                    iterate(false);
+                  }
+                }}
                 hidden={loading}
               >
                 {"Iterate"}
@@ -469,6 +475,9 @@ function ReferencePointMethod({
               handleSuccess={(isSuccess) => {
                 SetShowQAfterIteration(!isSuccess);
                 SetShowQAfterNew(isSuccess);
+                if (isSuccess) {
+                  iterate(false);
+                }
               }}
               show={showQAfterIteration}
               questionnaireTitle={`Questions after providing preferences`}

@@ -235,10 +235,6 @@ function NimbusMethod({
               "Select new solutions to be saved to an archive, or select the currently preferred solution for classification or to stop with."
             );
 
-            // check num of iterations first
-            if (nIteration === 1 || nIteration === 4) {
-              SetShowQAfterIterate(true);
-            }
             SetCurrentState("archive");
             SetSolutionsArchivedAfterClassification(false);
             SetSelectedIndexArchive(-1);
@@ -659,7 +655,13 @@ function NimbusMethod({
           {!loading && currentState === "classification" && (
             <Button
               size={"lg"}
-              onClick={() => iterate("classification")}
+              onClick={() => {
+                if (nIteration === 1 || nIteration === 4) {
+                  SetShowQAfterIterate(true);
+                } else {
+                  iterate("classification");
+                }
+              }}
               disabled={!classificationOk}
             >
               {classificationOk ? "Iterate" : "Invalid classification"}
@@ -769,37 +771,42 @@ function NimbusMethod({
           </Row>
         </>
       )}
+      <>
+        {showQAfterIterate && (
+          <QuestionsModal
+            apiUrl={apiUrl}
+            tokens={tokens}
+            description={`After providing classifications in iteration ${nIteration} in NIMBUS.`}
+            questionnaireType={"During"}
+            nIteration={nIteration}
+            handleSuccess={(isSuccess) => {
+              SetShowQAfterIterate(!isSuccess);
+              SetShowQAfterNew(isSuccess);
+              if (isSuccess) {
+                iterate("classification");
+              }
+            }}
+            show={showQAfterIterate}
+            questionnaireTitle={`Questions after poviding classifications in iteration ${nIteration}`}
+          />
+        )}
+        {showQAfterNew && (
+          <QuestionsModal
+            apiUrl={apiUrl}
+            tokens={tokens}
+            description={`After new solutions have been computed and shown to the decision maker in iteration ${nIteration} in NIMBUS.`}
+            questionnaireType={"NewSolutions"}
+            nIteration={nIteration}
+            handleSuccess={(isSuccess) => {
+              SetShowQAfterNew(!isSuccess);
+            }}
+            show={showQAfterNew}
+            questionnaireTitle={`Questions after viewing new solutions.`}
+          />
+        )}
+      </>
       {(currentState === "archive" || currentState === "select preferred") && (
         <>
-          {showQAfterIterate && (
-            <QuestionsModal
-              apiUrl={apiUrl}
-              tokens={tokens}
-              description={`After providing classifications in iteration ${nIteration} in NIMBUS.`}
-              questionnaireType={"During"}
-              nIteration={nIteration}
-              handleSuccess={(isSuccess) => {
-                SetShowQAfterIterate(!isSuccess);
-                SetShowQAfterNew(isSuccess);
-              }}
-              show={showQAfterIterate}
-              questionnaireTitle={`Questions after poviding classifications in iteration ${nIteration}`}
-            />
-          )}
-          {showQAfterNew && (
-            <QuestionsModal
-              apiUrl={apiUrl}
-              tokens={tokens}
-              description={`After new solutions have been computed and shown to the decision maker in iteration ${nIteration} in NIMBUS.`}
-              questionnaireType={"NewSolutions"}
-              nIteration={nIteration}
-              handleSuccess={(isSuccess) => {
-                SetShowQAfterNew(!isSuccess);
-              }}
-              show={showQAfterNew}
-              questionnaireTitle={`Questions after viewing new solutions.`}
-            />
-          )}
           <Row>
             <Col sm={1}></Col>
             <Col sm={3}>
