@@ -571,7 +571,11 @@ function ENautilusMethod({
             <Button
               size={"lg"}
               id={"step-back-btn"}
-              disabled={prevIterationsStates.length < 1 || changeRemaining}
+              disabled={
+                prevIterationsStates.length < 1 ||
+                changeRemaining ||
+                numOfIterations === 1
+              }
               onClick={() => {
                 iterate(true);
               }}
@@ -589,6 +593,7 @@ function ENautilusMethod({
               <Button
                 size={"lg"}
                 onClick={() => {
+                  console.log(numOfIterations);
                   if (nIteration === 1 || nIteration === 4) {
                     SetShowQAfterIteration(true);
                   } else {
@@ -610,6 +615,7 @@ function ENautilusMethod({
           <Col sm={4}>
             <Button
               size={"lg"}
+              disabled={numOfIterations === 1}
               id={"change-remaining-btn"}
               onClick={() => {
                 SetChangeRemaining(!changeRemaining);

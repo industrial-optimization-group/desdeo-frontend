@@ -104,7 +104,7 @@ function SolutionTableNautilus({
                       </>
                     );
                   })}
-                  <td>{distances[index].toPrecision(2)}</td>
+                  <td>{parseFloat(distances[index].toPrecision(2))}</td>
                 </tr>
               );
             })}
