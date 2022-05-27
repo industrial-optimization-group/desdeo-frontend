@@ -69,8 +69,8 @@ function ClassificationsInputForm({
     reset({
       values: classificationLevels.map((v, i) =>
         directions[i] === 1
-          ? parseFloat(v.toFixed(4))
-          : -parseFloat(v.toFixed(4))
+          ? parseFloat(v.toFixed(6))
+          : -parseFloat(v.toFixed(6))
       ),
       classifications: classifications,
     });
