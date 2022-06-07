@@ -71,6 +71,13 @@ function QuestionsModal({
     [3, "High"],
     [4, "Very high"],
   ]);
+  const semanticDiffAlt = new Map<number, string>([
+    [0, "Very dissimilar"],
+    [1, "Dissimilar"],
+    [2, "Neutral"],
+    [3, "Similar"],
+    [4, "Very similar"],
+  ]);
   const marginTop: number = 5;
   const marginBot: number = 5;
 
@@ -341,7 +348,11 @@ function QuestionsModal({
                                     <>
                                       <Form.Check
                                         inline
-                                        label={semanticDiff.get(j)}
+                                        label={
+                                          q.name === "DP_1-2-differential"
+                                            ? semanticDiffAlt.get(j)
+                                            : semanticDiff.get(j)
+                                        }
                                         key={`keyofcheck${i}${j}`}
                                         name={`group${i}`}
                                         type={"radio"}

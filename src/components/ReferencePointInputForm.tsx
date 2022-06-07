@@ -84,8 +84,8 @@ function ReferencePointInputForm({
                         name={`values.${i}`}
                         defaultValue={`${
                           directions[i] === 1
-                            ? referencePoint[i].toPrecision(4)
-                            : -referencePoint[i].toPrecision(4)
+                            ? referencePoint[i].toPrecision(6)
+                            : -referencePoint[i].toPrecision(6)
                         }`}
                         ref={register({
                           required: true,

@@ -488,7 +488,7 @@ function NimbusMethod({
               SetCurrentState("classification");
               SetNIteration(nIteration + 1);
               // reset the number of solutions
-              SetNumberOfSolutions(1);
+              // SetNumberOfSolutions(1);
               // update new solution table offset
               SetNewSolutionTableOffset(nSolutionsInArchive);
               break;
