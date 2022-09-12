@@ -28,6 +28,9 @@ function App() {
   const [activeProblemId, SetActiveProblemId] = useState<number | null>(null);
   const [tokens, SetTokens] = useState<Tokens>({ access: "", refresh: "" });
   const [chosenMethod, SetChosenMethod] = useState("");
+  const [preferredAnimal, SetPreferredAnimal] = useState<"" | "cat" | "dog">(
+    ""
+  );
 
   const API_URL: string = "http://127.0.0.1:5000";
 
@@ -63,6 +66,7 @@ function App() {
               setActiveProblemId={SetActiveProblemId}
               tokens={tokens}
               setChosenMethod={SetChosenMethod}
+              setPreferredAnimal={SetPreferredAnimal}
             />
           </Route>
           <Route path="/login" exact>

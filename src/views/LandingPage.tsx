@@ -13,6 +13,7 @@ interface LandingPageProps {
   setActiveProblemId: React.Dispatch<React.SetStateAction<number | null>>;
   tokens: Tokens;
   setChosenMethod: React.Dispatch<React.SetStateAction<string>>;
+  setPreferredAnimal: React.Dispatch<React.SetStateAction<"" | "cat" | "dog">>;
 }
 
 function LandingPage({
@@ -23,6 +24,7 @@ function LandingPage({
   setActiveProblemId,
   tokens,
   setChosenMethod,
+  setPreferredAnimal,
 }: LandingPageProps) {
   const [problemId, SetProblemId] = useState<number>(-1);
   const [state, SetState] = useState<
@@ -239,13 +241,23 @@ function LandingPage({
           <Row>
             <Col sm={2} />
             <Col sm={3}>
-              <Button onClick={(_) => SetPreferredAnimal("cat")}>
+              <Button
+                onClick={(_) => {
+                  SetPreferredAnimal("cat");
+                  setPreferredAnimal("cat");
+                }}
+              >
                 {"Cats!"}
               </Button>
             </Col>
             <Col sm={2} />
             <Col sm={3}>
-              <Button onClick={(_) => SetPreferredAnimal("dog")}>
+              <Button
+                onClick={(_) => {
+                  SetPreferredAnimal("dog");
+                  setPreferredAnimal("dog");
+                }}
+              >
                 {"Dogs!"}
               </Button>
             </Col>
