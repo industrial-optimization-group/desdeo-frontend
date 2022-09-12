@@ -23,6 +23,7 @@ interface ReferencePointMethodProps {
   apiUrl: string;
   methodCreated: boolean;
   activeProblemId: number | null;
+  preferredAnimal: string;
 }
 
 function ReferencePointMethod({
@@ -32,6 +33,7 @@ function ReferencePointMethod({
   apiUrl,
   methodCreated,
   activeProblemId,
+  preferredAnimal,
 }: ReferencePointMethodProps) {
   const [activeProblemInfo, SetActiveProblemInfo] = useState<ProblemInfo>();
   const [methodStarted, SetMethodStarted] = useState<boolean>(false);
@@ -322,11 +324,15 @@ function ReferencePointMethod({
               <Button
                 size={"lg"}
                 onClick={() => {
+                  // no questionnaire, just iterate
+                  iterate(false);
+                  /*
                   if (nIteration === 1 || nIteration === 4) {
                     SetShowQAfterIteration(true);
                   } else {
                     iterate(false);
                   }
+                  */
                 }}
                 hidden={loading}
               >
@@ -526,14 +532,23 @@ function ReferencePointMethod({
             </tbody>
           </Table>
           {!endMethodQSuccess && (
-            <Button onClick={() => SetShowQEndMethod(!showQEndMethod)}>
-              Answer questionnaire
+            <Button
+              onClick={() => {
+                // SetShowQEndMethod(!showQEndMethod);
+                // skip final Q
+                SetEndMethodQSuccess(true);
+              }}
+            >
+              {`Show me my ideal ${preferredAnimal} breed!`}
             </Button>
           )}
           {endMethodQSuccess && (
-            <Link to={"/finish"}>
-              <Button>{"Finish"}</Button>
-            </Link>
+            <>
+              <p>Transform variable to cat or dog.</p>
+              <Link to={"/finish"}>
+                <Button>{"Finish"}</Button>
+              </Link>
+            </>
           )}
           <QuestionsModal
             apiUrl={apiUrl}
