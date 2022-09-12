@@ -55,6 +55,10 @@ function LandingPage({
   */
 
   useEffect(() => {
+    if (preferredAnimal === "") {
+      // do nothing
+      return;
+    }
     if (isLoggedIn && tokens.access !== "") {
       // fetch the problem
       const fetchProblems = async () => {
@@ -91,7 +95,7 @@ function LandingPage({
       // do nothing
       return;
     }
-  }, [isLoggedIn, tokens]);
+  }, [preferredAnimal]);
 
   /*
   useEffect(() => {
