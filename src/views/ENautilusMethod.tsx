@@ -41,6 +41,7 @@ interface EnautilusMethodProps {
   apiUrl: string;
   methodCreated: boolean;
   activeProblemId: number | null;
+  preferredAnimal: string;
 }
 
 function ENautilusMethod({
@@ -50,6 +51,7 @@ function ENautilusMethod({
   apiUrl,
   methodCreated,
   activeProblemId,
+  preferredAnimal,
 }: EnautilusMethodProps) {
   // General state variables to keep track of the current state of the method
   const [isInitialized, SetIsInitialized] = useState<boolean>(false);
@@ -593,12 +595,15 @@ function ENautilusMethod({
               <Button
                 size={"lg"}
                 onClick={() => {
-                  console.log(numOfIterations);
+                  // do not show Q
+                  iterate();
+                  /*
                   if (nIteration === 1 || nIteration === 4) {
                     SetShowQAfterIteration(true);
                   } else {
                     iterate();
                   }
+                  */
                 }}
                 disabled={loading}
               >
@@ -784,28 +789,37 @@ function ENautilusMethod({
         <Table striped bordered hover>
           <thead>
             <tr>
-              {finalVariables.map((_, i) => {
-                return <th>{`x${i + 1}`}</th>;
+              {[finalVariables].map((_, i) => {
+                return <th>{`${preferredAnimal} breed`}</th>;
               })}
             </tr>
           </thead>
           <tbody>
             <tr>
-              {finalVariables.map((v) => {
-                return <td>{`${v.toFixed(4)}`}</td>;
+              {[finalVariables].map((v) => {
+                return <td>{`${v}`}</td>;
               })}
             </tr>
           </tbody>
         </Table>
         {!endMethodQSuccess && (
-          <Button onClick={() => SetShowQEndMethod(!showQEndMethod)}>
-            Answer questionnaire
+          <Button
+            onClick={() => {
+              // SetShowQEndMethod(!showQEndMethod);
+              // skip final Q
+              SetEndMethodQSuccess(true);
+            }}
+          >
+            {`Show me my ideal ${preferredAnimal} breed!`}
           </Button>
         )}
         {endMethodQSuccess && (
-          <Link to={"/finish"}>
-            <Button>{"Finish"}</Button>
-          </Link>
+          <>
+            <p>Transform variable to cat or dog.</p>
+            <Link to={"/finish"}>
+              <Button>{"Finish"}</Button>
+            </Link>
+          </>
         )}
         <QuestionsModal
           apiUrl={apiUrl}

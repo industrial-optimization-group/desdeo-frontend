@@ -155,6 +155,7 @@ function App() {
                 tokens={tokens}
                 methodCreated={methodCreated}
                 activeProblemId={activeProblemId}
+                preferredAnimal={preferredAnimal}
               />
             )}
           </Route>

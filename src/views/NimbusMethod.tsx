@@ -954,8 +954,14 @@ function NimbusMethod({
             </tbody>
           </Table>
           {!afterQEndMethodSuccess && (
-            <Button onClick={() => SetShowQEndMethod(!showQEndMethod)}>
-              Answer questionnaire
+            <Button
+              onClick={() => {
+                // SetShowQEndMethod(!showQEndMethod);
+                // skip final Q
+                SetAfterQEndMethodSuccess(true);
+              }}
+            >
+              {`Show me my ideal ${preferredAnimal} breed!`}
             </Button>
           )}
           {afterQEndMethodSuccess && (
