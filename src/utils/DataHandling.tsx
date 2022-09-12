@@ -1,4 +1,4 @@
-import { InferencePriority } from "typescript";
+import { InferencePriority, isNamedImports } from "typescript";
 import {
   ObjectiveDatum,
   ObjectiveData,
@@ -24,12 +24,9 @@ function ParseSolutions(
 }
 
 function ToTrueValues(data: ObjectiveData): ObjectiveData {
-  const newDatums: ObjectiveDatum[] = data.values.map((d, i) => {
+  const newDatums: ObjectiveDatum[] = data.values.map((d, _) => {
     return {
-      value:
-        data.directions[i] === 1
-          ? (d.value as number[])
-          : d.value.map((x) => -x),
+      value: d.value.map((v, i) => (data.directions[i] === 1 ? v : -v)),
       selected: false,
     };
   });

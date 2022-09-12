@@ -518,15 +518,15 @@ function ReferencePointMethod({
           <Table striped bordered hover>
             <thead>
               <tr>
-                {finalVariables.map((_, i) => {
-                  return <th>{`x${i + 1}`}</th>;
+                {[finalVariables].map((_, i) => {
+                  return <th>{`${preferredAnimal} breed`}</th>;
                 })}
               </tr>
             </thead>
             <tbody>
               <tr>
-                {finalVariables.map((v) => {
-                  return <td>{`${v.toFixed(4)}`}</td>;
+                {[finalVariables].map((v) => {
+                  return <td>{`${v}`}</td>;
                 })}
               </tr>
             </tbody>

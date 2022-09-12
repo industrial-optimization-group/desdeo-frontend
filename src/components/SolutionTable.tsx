@@ -16,6 +16,8 @@ function SolutionTable({
   selectedIndex,
   tableTitle,
 }: SolutionTableProps) {
+  console.log("OBJECTIVE DATA");
+  console.log(objectiveData);
   const [key, SetKey] = useState<number>(selectedIndex);
   const [data, SetData] = useState(objectiveData.values);
 
@@ -74,10 +76,10 @@ function SolutionTable({
                     className={index === selectedIndex ? "tableSelected" : ""}
                   >
                     <td>{`#${index + 1}`}</td>
-                    {datum.value.map((value) => {
+                    {datum.value.map((value, i) => {
                       return (
                         <td>{`${
-                          objectiveData.directions[index] === 1
+                          objectiveData.directions[i] === 1
                             ? value.toPrecision(4)
                             : -value.toPrecision(4)
                         }`}</td>

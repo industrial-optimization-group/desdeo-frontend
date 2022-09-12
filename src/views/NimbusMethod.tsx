@@ -20,6 +20,7 @@ interface NimbusMethodProps {
   apiUrl: string;
   methodCreated: boolean;
   activeProblemId: number | null;
+  preferredAnimal: string;
 }
 
 type Classification = "<" | "<=" | ">=" | "=" | "0";
@@ -39,6 +40,7 @@ function NimbusMethod({
   apiUrl,
   methodCreated,
   activeProblemId,
+  preferredAnimal,
 }: NimbusMethodProps) {
   const [activeProblemInfo, SetActiveProblemInfo] = useState<ProblemInfo>();
   const [methodStarted, SetMethodStarted] = useState<boolean>(false);
@@ -656,11 +658,15 @@ function NimbusMethod({
             <Button
               size={"lg"}
               onClick={() => {
+                // just iterate, do not show Q
+                iterate("classification");
+                /*
                 if (nIteration === 1 || nIteration === 4) {
                   SetShowQAfterIterate(true);
                 } else {
                   iterate("classification");
                 }
+                */
               }}
               disabled={!classificationOk}
             >
@@ -934,15 +940,15 @@ function NimbusMethod({
           <Table striped bordered hover>
             <thead>
               <tr>
-                {finalVariables.map((_, i) => {
-                  return <th>{`x${i + 1}`}</th>;
+                {[finalVariables].map((_, i) => {
+                  return <th>{`${preferredAnimal} breed`}</th>;
                 })}
               </tr>
             </thead>
             <tbody>
               <tr>
-                {finalVariables.map((v) => {
-                  return <td>{`${v.toFixed(4)}`}</td>;
+                {[finalVariables].map((v) => {
+                  return <td>{`${v}`}</td>;
                 })}
               </tr>
             </tbody>
