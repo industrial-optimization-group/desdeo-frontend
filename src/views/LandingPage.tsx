@@ -28,7 +28,11 @@ function LandingPage({
   const [state, SetState] = useState<
     "reference_point_method" | "synchronous_nimbus" | "enautilus" | "home"
   >("home");
+  const [preferredAnimal, SetPreferredAnimal] = useState<"cat" | "dog" | "">(
+    ""
+  );
 
+  /*
   function StateToName(
     stateName:
       | "reference_point_method"
@@ -48,6 +52,7 @@ function LandingPage({
       return "Something went wrong";
     }
   }
+  */
 
   useEffect(() => {
     if (isLoggedIn && tokens.access !== "") {
@@ -88,6 +93,7 @@ function LandingPage({
     }
   }, [isLoggedIn, tokens]);
 
+  /*
   useEffect(() => {
     const regxp_rmp = new RegExp("^rpm_");
     const regxp_nimbus = new RegExp("^nimbus_");
@@ -109,6 +115,7 @@ function LandingPage({
       // do nothing
     }
   }, [problemId]);
+  */
 
   const onClick = (methodName: string) => {
     const createMethod = async () => {
@@ -157,7 +164,13 @@ function LandingPage({
 
   return (
     <Container>
-      <h2>Experimental study</h2>
+      <h2>
+        {preferredAnimal === ""
+          ? "Find out your ideal cat or dog breed!"
+          : preferredAnimal === "cat"
+          ? "Find out your ideal cat breed!"
+          : "Find out your ideal dog breed!"}
+      </h2>
       {!isLoggedIn && state === "home" && (
         <>
           <Row>
@@ -186,35 +199,53 @@ function LandingPage({
           </Row>
         </>
       )}
-      {isLoggedIn && state === "home" && (
+      {isLoggedIn && state === "home" && preferredAnimal !== "" && (
         <>
           <Row>
             <Col>
-              <p>
-                {
-                  "Begin solving the sustainability problem by clicking on one of the buttons below."
-                }
-              </p>
+              <p>{"I would like to give preferences in the form of..."}</p>
             </Col>
           </Row>
           <Row>
-            <Col sm={3}></Col>
-            <Col sm={2}>
+            <Col sm={4}>
               <Button onClick={(_) => onClick("reference_point_method")}>
-                {"Reference point method"}
+                {"A reference point"}
               </Button>
             </Col>
-            <Col sm={2}>
-              <Button onClick={(_) => onClick("enautilus")}>
-                {"E-NAUTILUS"}
-              </Button>
-            </Col>
-            <Col sm={2}>
+            <Col sm={4}>
               <Button onClick={(_) => onClick("synchronous_nimbus")}>
-                {"Synchronous NIMBUS"}
+                {"Classifications"}
               </Button>
             </Col>
-            <Col sm={3}></Col>
+            <Col sm={4}>
+              <Button onClick={(_) => onClick("enautilus")}>
+                {"By not trading off"}
+              </Button>
+            </Col>
+          </Row>
+        </>
+      )}
+      {isLoggedIn && state === "home" && preferredAnimal === "" && (
+        <>
+          <Row>
+            <Col>
+              <p>{"I like..."}</p>
+            </Col>
+          </Row>
+          <Row>
+            <Col sm={2} />
+            <Col sm={3}>
+              <Button onClick={(_) => SetPreferredAnimal("cat")}>
+                {"Cats!"}
+              </Button>
+            </Col>
+            <Col sm={2} />
+            <Col sm={3}>
+              <Button onClick={(_) => SetPreferredAnimal("dog")}>
+                {"Dogs!"}
+              </Button>
+            </Col>
+            <Col sm={2} />
           </Row>
         </>
       )}
@@ -223,9 +254,8 @@ function LandingPage({
           state === "synchronous_nimbus" ||
           state === "enautilus") && (
           <>
-            <h3>{`${StateToName(state)}`}</h3>
             <Link to={"/method/optimize"}>
-              <Button>{"Start optimizing!"}</Button>
+              <Button>{`Let us find out your ideal ${preferredAnimal} breed!`}</Button>
             </Link>
           </>
         )}
