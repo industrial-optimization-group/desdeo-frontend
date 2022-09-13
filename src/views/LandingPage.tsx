@@ -253,6 +253,7 @@ function LandingPage({
               <Button
                 onClick={(_) => {
                   SetPreferredAnimal("cat");
+                  setPreferredAnimal("cat");
                 }}
               >
                 <>{"Choose cats!"}</>
@@ -269,6 +270,7 @@ function LandingPage({
               </Figure>
               <Button
                 onClick={(_) => {
+                  SetPreferredAnimal("dog");
                   setPreferredAnimal("dog");
                 }}
               >
