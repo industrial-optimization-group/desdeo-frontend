@@ -112,7 +112,10 @@ function NimbusMethod({
             problemId: body.problem_id,
             problemName: body.problem_name,
             problemType: body.problem_type,
-            objectiveNames: body.objective_names,
+            objectiveNames:
+              preferredAnimal === "cat"
+                ? ["🙀🙀", "😡🧑", "😺😸", "🐱👌", "🧑👌", "🚽💩", "💇‍♀️😿"]
+                : body.objective_names,
             variableNames: body.variable_names,
             nObjectives: body.n_objectives,
             ideal: body.ideal,
@@ -766,14 +769,6 @@ function NimbusMethod({
                     activeProblemInfo.minimize[i] === 1 ? v : -v
                   )}
                   setReferencePoint={inferClassifications} // the reference point is passed in its true form to the callback
-                  dimensionsMaybe={{
-                    chartHeight: 400,
-                    chartWidth: 800,
-                    marginLeft: 0,
-                    marginRight: 150,
-                    marginTop: 0,
-                    marginBottom: 30,
-                  }}
                 />
               </div>
             </Col>
@@ -879,11 +874,11 @@ function NimbusMethod({
                   handleSelection={SetSelectedIndices}
                   dimensionsMaybe={{
                     chartHeight: 600,
-                    chartWidth: 850,
+                    chartWidth: 1000,
                     marginLeft: 0,
                     marginRight: 0,
-                    marginTop: 30,
-                    marginBottom: 0,
+                    marginTop: 80,
+                    marginBottom: 60,
                   }}
                 />
               </div>
@@ -896,7 +891,7 @@ function NimbusMethod({
               </Col>
               <Col sm={6}>
                 <SolutionTableNimbus
-                  objectiveData={archivedSolutions!}
+                  objectiveData={ToTrueValues(archivedSolutions!)}
                   selectedIndex={selectedIndexArchive}
                   setIndex={(x: number) => {
                     SetSelectedIndexArchive(x);
@@ -918,11 +913,11 @@ function NimbusMethod({
                     }}
                     dimensionsMaybe={{
                       chartHeight: 600,
-                      chartWidth: 850,
+                      chartWidth: 1000,
                       marginLeft: 0,
                       marginRight: 0,
-                      marginTop: 30,
-                      marginBottom: 0,
+                      marginTop: 80,
+                      marginBottom: 60,
                     }}
                   />
                 </div>
