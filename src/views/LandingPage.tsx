@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Tokens } from "../types/AppTypes";
+import Figure from "react-bootstrap/Figure";
 
 interface LandingPageProps {
   apiUrl: string;
@@ -241,24 +242,37 @@ function LandingPage({
           <Row>
             <Col sm={2} />
             <Col sm={3}>
+              <h3>{"Cats! 😻"}</h3>
+              <Figure>
+                <Figure.Image
+                  alt={"Pile of cats!"}
+                  src={"animal_pics/cats.jpg"}
+                  height={"100%"}
+                />
+              </Figure>
               <Button
                 onClick={(_) => {
                   SetPreferredAnimal("cat");
-                  setPreferredAnimal("cat");
                 }}
               >
-                {"Cats!"}
+                <>{"Choose cats!"}</>
               </Button>
             </Col>
             <Col sm={2} />
             <Col sm={3}>
+              <h3>{"Dogs! 🐕"}</h3>
+              <Figure>
+                <Figure.Image
+                  alt={"Pile of dogs!"}
+                  src={"animal_pics/dogs.jpg"}
+                />
+              </Figure>
               <Button
                 onClick={(_) => {
-                  SetPreferredAnimal("dog");
                   setPreferredAnimal("dog");
                 }}
               >
-                {"Dogs!"}
+                {"Choose dogs!"}
               </Button>
             </Col>
             <Col sm={2} />
