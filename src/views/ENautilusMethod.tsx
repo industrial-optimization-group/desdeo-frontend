@@ -146,7 +146,10 @@ function ENautilusMethod({
             problemId: body.problem_id,
             problemName: body.problem_name,
             problemType: body.problem_type,
-            objectiveNames: body.objective_names,
+            objectiveNames:
+              preferredAnimal === "cat"
+                ? ["🙀🙀", "😡🧑", "😺😸", "🐱👌", "🧑👌", "🚽💩", "💇‍♀️😿"]
+                : body.objective_names,
             variableNames: body.variable_names,
             nObjectives: body.n_objectives,
             ideal: body.ideal,
@@ -702,14 +705,6 @@ function ENautilusMethod({
                     oldAlternative={ToTrueValues(
                       ParseSolutions([prevPrefPoint], activeProblemInfo!)
                     )}
-                    dimensionsMaybe={{
-                      chartHeight: 700,
-                      chartWidth: 850,
-                      marginLeft: 0,
-                      marginRight: 0,
-                      marginTop: 30,
-                      marginBottom: 0,
-                    }}
                   />
                 </Col>
               </Row>
