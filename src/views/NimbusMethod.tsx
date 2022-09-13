@@ -12,6 +12,7 @@ import { SolutionTableMultiSelect } from "../components/SolutionTableMultiSelect
 import { Link } from "react-router-dom";
 import { LogInfoToDB } from "../utils/Logging";
 import QuestionsModal from "../components/QuestionsModal";
+import { StringToAnimal } from "../utils/StringToAnimal";
 
 interface NimbusMethodProps {
   isLoggedIn: boolean;
@@ -21,6 +22,7 @@ interface NimbusMethodProps {
   methodCreated: boolean;
   activeProblemId: number | null;
   preferredAnimal: string;
+  figPath: string;
 }
 
 type Classification = "<" | "<=" | ">=" | "=" | "0";
@@ -41,6 +43,7 @@ function NimbusMethod({
   methodCreated,
   activeProblemId,
   preferredAnimal,
+  figPath,
 }: NimbusMethodProps) {
   const [activeProblemInfo, SetActiveProblemInfo] = useState<ProblemInfo>();
   const [methodStarted, SetMethodStarted] = useState<boolean>(false);
@@ -936,23 +939,6 @@ function NimbusMethod({
             selectedIndex={0}
             tableTitle={"Final objective values"}
           />
-          <p>{"Final decision variable values:"}</p>
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                {[finalVariables].map((_, i) => {
-                  return <th>{`${preferredAnimal} breed`}</th>;
-                })}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                {[finalVariables].map((v) => {
-                  return <td>{`${v}`}</td>;
-                })}
-              </tr>
-            </tbody>
-          </Table>
           {!afterQEndMethodSuccess && (
             <Button
               onClick={() => {
@@ -965,9 +951,18 @@ function NimbusMethod({
             </Button>
           )}
           {afterQEndMethodSuccess && (
-            <Link to={"/finish"}>
-              <Button>{"Finish"}</Button>
-            </Link>
+            <>
+              <Row>
+                <Col sm={3}></Col>
+                <Col sm={6}>
+                  {StringToAnimal(finalVariables as unknown as string, figPath)}
+                </Col>
+                <Col sm={3}></Col>
+              </Row>
+              <Link to={"/finish"}>
+                <Button>{"Finish"}</Button>
+              </Link>
+            </>
           )}
           <QuestionsModal
             apiUrl={apiUrl}

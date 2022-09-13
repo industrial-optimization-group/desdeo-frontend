@@ -19,6 +19,7 @@ import { useForm } from "react-hook-form";
 import { ErrorMessage } from "@hookform/error-message";
 import { Link } from "react-router-dom";
 import { LogInfoToDB } from "../utils/Logging";
+import { StringToAnimal } from "../utils/StringToAnimal";
 
 interface FormData {
   selectedNumOfPoints: number;
@@ -42,6 +43,7 @@ interface EnautilusMethodProps {
   methodCreated: boolean;
   activeProblemId: number | null;
   preferredAnimal: string;
+  figPath: string;
 }
 
 function ENautilusMethod({
@@ -52,6 +54,7 @@ function ENautilusMethod({
   methodCreated,
   activeProblemId,
   preferredAnimal,
+  figPath,
 }: EnautilusMethodProps) {
   // General state variables to keep track of the current state of the method
   const [isInitialized, SetIsInitialized] = useState<boolean>(false);
@@ -785,23 +788,6 @@ function ENautilusMethod({
           selectedIndex={0}
           tableTitle={"Final objective values"}
         />
-        <p>{"Final decision variable values"}</p>
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              {[finalVariables].map((_, i) => {
-                return <th>{`${preferredAnimal} breed`}</th>;
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              {[finalVariables].map((v) => {
-                return <td>{`${v}`}</td>;
-              })}
-            </tr>
-          </tbody>
-        </Table>
         {!endMethodQSuccess && (
           <Button
             onClick={() => {
@@ -815,7 +801,13 @@ function ENautilusMethod({
         )}
         {endMethodQSuccess && (
           <>
-            <p>Transform variable to cat or dog.</p>
+            <Row>
+              <Col sm={3}></Col>
+              <Col sm={6}>
+                {StringToAnimal(finalVariables as unknown as string, figPath)}
+              </Col>
+              <Col sm={3}></Col>
+            </Row>
             <Link to={"/finish"}>
               <Button>{"Finish"}</Button>
             </Link>

@@ -33,6 +33,7 @@ function App() {
   );
 
   const API_URL: string = "http://127.0.0.1:5000";
+  const FIG_PATH: string = "/animal_pics/";
 
   /*
   const MethodSwitch = (methodName: string) => {
@@ -134,6 +135,7 @@ function App() {
                 methodCreated={methodCreated}
                 activeProblemId={activeProblemId}
                 preferredAnimal={preferredAnimal}
+                figPath={FIG_PATH}
               />
             )}
             {chosenMethod === "synchronous_nimbus" && (
@@ -145,6 +147,7 @@ function App() {
                 methodCreated={methodCreated}
                 activeProblemId={activeProblemId}
                 preferredAnimal={preferredAnimal}
+                figPath={FIG_PATH}
               />
             )}
             {chosenMethod === "enautilus" && (
@@ -156,6 +159,7 @@ function App() {
                 methodCreated={methodCreated}
                 activeProblemId={activeProblemId}
                 preferredAnimal={preferredAnimal}
+                figPath={FIG_PATH}
               />
             )}
           </Route>
