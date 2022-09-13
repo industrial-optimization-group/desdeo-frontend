@@ -117,7 +117,10 @@ function ReferencePointMethod({
             problemId: body.problem_id,
             problemName: body.problem_name,
             problemType: body.problem_type,
-            objectiveNames: body.objective_names,
+            objectiveNames:
+              preferredAnimal === "cat"
+                ? ["🙀🙀", "😡🧑", "😺😸", "🐱👌", "🧑👌", "🚽💩", "💇‍♀️😿"]
+                : body.objective_names,
             variableNames: body.variable_names,
             nObjectives: body.n_objectives,
             ideal: body.ideal,
@@ -418,14 +421,6 @@ function ReferencePointMethod({
                       )
                     )
                   }
-                  dimensionsMaybe={{
-                    chartHeight: 400,
-                    chartWidth: 800,
-                    marginLeft: 0,
-                    marginRight: 150,
-                    marginTop: 0,
-                    marginBottom: 30,
-                  }}
                 />
               )}
             </Col>
@@ -462,11 +457,11 @@ function ReferencePointMethod({
                       }}
                       dimensionsMaybe={{
                         chartHeight: 600,
-                        chartWidth: 850,
+                        chartWidth: 1000,
                         marginLeft: 0,
                         marginRight: 0,
-                        marginTop: 30,
-                        marginBottom: 0,
+                        marginTop: 80,
+                        marginBottom: 60,
                       }}
                     />
                   </div>
