@@ -120,6 +120,8 @@ function ReferencePointMethod({
             objectiveNames:
               preferredAnimal === "cat"
                 ? ["🙀🙀", "😡🧑", "😺😸", "🐱👌", "🧑👌", "🚽💩", "💇‍♀️😿"]
+                : preferredAnimal === "dog"
+                ? ["😨🥺", "🎓🤓", "🎮🏃", "😡🥊", "🧑👌", "🐶👌", "😬😤"]
                 : body.objective_names,
             variableNames: body.variable_names,
             nObjectives: body.n_objectives,

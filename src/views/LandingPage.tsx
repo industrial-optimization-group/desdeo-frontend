@@ -75,8 +75,18 @@ function LandingPage({
 
           if (res.status == 200) {
             const body = await res.json();
-            setActiveProblemId(body.problems[0].id);
-            SetProblemId(body.problems[0].id);
+            if (preferredAnimal === "cat") {
+              setActiveProblemId(body.problems[0].id);
+              SetProblemId(body.problems[0].id);
+            } else if (preferredAnimal === "dog") {
+              setActiveProblemId(body.problems[1].id);
+              SetProblemId(body.problems[1].id);
+            } else {
+              console.log(
+                `Could not find problem for preferred animal ${preferredAnimal}`
+              );
+              // do nothing
+            }
             // problems fetched!
           } else {
             console.log(
