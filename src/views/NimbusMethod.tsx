@@ -654,7 +654,9 @@ function NimbusMethod({
     <Container>
       <Row>
         <Col sm={12}>
-          <h3>Synchronous NIMBUS</h3>
+          <h3 className="mb-3">{`${
+            preferredAnimal === "cat" ? "😺" : "🐶"
+          } The NIMBUS method ${preferredAnimal === "cat" ? "😺" : "🐶"}`}</h3>
         </Col>
         <Col sm={2}></Col>
         <Col sm={8}>
@@ -956,8 +958,8 @@ function NimbusMethod({
                 </Col>
                 <Col sm={3}></Col>
               </Row>
-              <Link to={"/finish"}>
-                <Button>{"Finish"}</Button>
+              <Link to={"/"}>
+                <Button>{"Back to start"}</Button>
               </Link>
             </>
           )}

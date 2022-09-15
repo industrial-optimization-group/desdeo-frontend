@@ -322,7 +322,9 @@ function ReferencePointMethod({
 
   return (
     <Container>
-      <h3 className="mb-3">{"Reference point method"}</h3>
+      <h3 className="mb-3">{`${
+        preferredAnimal === "cat" ? "😺" : "🐶"
+      } Reference point method ${preferredAnimal === "cat" ? "😺" : "🐶"}`}</h3>
       {!showFinal && (
         <>
           <p>{`Help: ${helpMessage}`}</p>
@@ -534,8 +536,8 @@ function ReferencePointMethod({
                 </Col>
                 <Col sm={3}></Col>
               </Row>
-              <Link to={"/finish"}>
-                <Button>{"Finish"}</Button>
+              <Link to={"/"}>
+                <Button>{"Back to start"}</Button>
               </Link>
             </>
           )}

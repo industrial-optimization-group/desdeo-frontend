@@ -191,16 +191,17 @@ function LandingPage({
       {!isLoggedIn && state === "home" && (
         <>
           <Row>
+            <Figure>
+              <Figure.Image
+                alt={"A cat and a dog"}
+                src={"catanddog.jpg"}
+                width={"80%"}
+              />
+            </Figure>
             <Col>
               <p>
                 {
-                  "In this study, you the participant, will be tasked to solve a multiobjective optimization problem with three objectives to be maximized simultaneously. You will perform this task using an interactive method for multiobjective optimization. Throughout the solving process, you will be prompted with various questionnaires. At the end of the process, you will need to answer one final questionnaire."
-                }
-              </p>
-
-              <p>
-                {
-                  "You may begin by logging in with the credentials that have been provided to you before the experiment."
+                  "Find our your ideal cat or dog breed in this playful example on how multiobjective optimization problems can be found anywhere! Our data is based on a real scientific study, but our problem formulation should not be taken too seriously. Whatever our method suggests to you, remember, you are the decision maker and you make the final decision!"
                 }
               </p>
             </Col>
@@ -209,7 +210,7 @@ function LandingPage({
             <Col sm={4}></Col>
             <Col sm={4}>
               <Link to={"/login"}>
-                <Button>{"Login"}</Button>
+                <Button>{"START!"}</Button>
               </Link>
             </Col>
             <Col sm={4}></Col>
@@ -225,16 +226,37 @@ function LandingPage({
           </Row>
           <Row>
             <Col sm={4}>
+              <Figure>
+                <Figure.Image
+                  alt={"Reference point"}
+                  src={"reference_point.png"}
+                  width={"100%"}
+                />
+              </Figure>
               <Button onClick={(_) => onClick("reference_point_method")}>
                 {"A reference point"}
               </Button>
             </Col>
             <Col sm={4}>
+              <Figure>
+                <Figure.Image
+                  alt={"Classification"}
+                  src={"classification.png"}
+                  width={"100%"}
+                />
+              </Figure>
               <Button onClick={(_) => onClick("synchronous_nimbus")}>
                 {"Classifications"}
               </Button>
             </Col>
             <Col sm={4}>
+              <Figure>
+                <Figure.Image
+                  alt={"No trade-off"}
+                  src={"no_trade_off.png"}
+                  width={"100%"}
+                />
+              </Figure>
               <Button onClick={(_) => onClick("enautilus")}>
                 {"By not trading off"}
               </Button>

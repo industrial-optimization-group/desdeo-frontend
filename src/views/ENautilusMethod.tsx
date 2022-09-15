@@ -474,7 +474,11 @@ function ENautilusMethod({
       <Container>
         <Row>
           <Col>
-            <h3 className="mb-3">E-NAUTILUS method</h3>
+            <h3 className="mb-3">{`${
+              preferredAnimal === "cat" ? "😺" : "🐶"
+            } The E-NAUTILUS method ${
+              preferredAnimal === "cat" ? "😺" : "🐶"
+            }`}</h3>
             <p>{`Help: ${helpText}`}</p>
           </Col>
         </Row>
@@ -805,8 +809,8 @@ function ENautilusMethod({
               </Col>
               <Col sm={3}></Col>
             </Row>
-            <Link to={"/finish"}>
-              <Button>{"Finish"}</Button>
+            <Link to={"/"}>
+              <Button>{"Back to start"}</Button>
             </Link>
           </>
         )}
