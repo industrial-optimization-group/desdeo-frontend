@@ -817,19 +817,6 @@ function NimbusMethod({
         <>
           <Row>
             <Col sm={1}></Col>
-            <Col sm={3}>
-              <Button
-                onClick={() => iterate("archive")}
-                disabled={
-                  solutionsArchivedAfterClassification ||
-                  selectedIndices.length === 0
-                }
-              >
-                {solutionsArchivedAfterClassification
-                  ? "Solutions archived!"
-                  : "Save selected solutions to archive"}
-              </Button>
-            </Col>
             <Col sm={4}>
               <Button
                 onClick={() => iterate("classify preferred")}
@@ -843,6 +830,7 @@ function NimbusMethod({
                 {"Classify currently selected solution"}
               </Button>
             </Col>
+            <Col sm={3}></Col>
             <Col sm={3}>
               <Button
                 onClick={() => iterate("stop with preferred")}
