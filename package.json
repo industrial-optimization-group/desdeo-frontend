@@ -2,6 +2,7 @@
   "name": "realdmexperiments",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "yarn@1.22.19",
   "dependencies": {
     "@hookform/error-message": "^0.0.5",
     "@material-ui/core": "^4.12.3",
